@@ -216,14 +216,14 @@ export default function DashboardPage() {
                 <section className="dashboard-cards" aria-label="Your cycle overview">
                     <article className="dashboard-card dashboard-card--cycle">
                         <p className="dashboard-card__eyebrow"><span aria-hidden="true">♡</span> YOUR CYCLE</p>
-                        <p className="dashboard-card__metric">{data?.cycle_day ? `Day ${data.cycle_day}` : 'Your story starts here'}</p>
-                        <p className="dashboard-card__description">{data?.latest_period ? `Last period began ${formatDate(data.latest_period.start_date)}.` : 'Add your most recent period dates below whenever you feel ready.'}</p>
+                        <p className="dashboard-card__metric">{usesHormonalContraception ? 'Bleeding log' : data?.cycle_day ? `Day ${data.cycle_day}` : 'Your story starts here'}</p>
+                        <p className="dashboard-card__description">{data?.latest_period ? `${usesHormonalContraception ? 'Last bleeding log began' : 'Last period began'} ${formatDate(data.latest_period.start_date)}.` : 'Add your most recent period dates below whenever you feel ready.'}</p>
                         <p className="dashboard-card__footnote">Your cycle is personal; estimates can vary from month to month.</p>
                     </article>
                     <article className="dashboard-card dashboard-card--estimate">
                         <p className="dashboard-card__eyebrow"><span aria-hidden="true">✧</span> {usesHormonalContraception ? 'NEXT BLEED ESTIMATE' : 'NEXT PERIOD ESTIMATE'}</p>
-                        <p className="dashboard-card__metric dashboard-card__metric--date">{formatDate(estimatedDate)}</p>
-                        <p className="dashboard-card__description">{estimateCaption(data?.days_until_estimate ?? null)}</p>
+                        <p className="dashboard-card__metric dashboard-card__metric--date">{usesHormonalContraception ? 'Your rhythm may differ' : formatDate(estimatedDate)}</p>
+                        <p className="dashboard-card__description">{usesHormonalContraception ? 'Hormonal contraception can change bleeding patterns, so we focus on your logs instead of estimating a natural cycle.' : estimateCaption(data?.days_until_estimate ?? null)}</p>
                         {estimatedDate && <div className="cycle-countdown" aria-label="Estimated cycle progress"><span style={{width: `${Math.max(0, Math.min(100, 100 - Math.max(0, data?.days_until_estimate ?? 0) / Math.max(1, data?.profile.average_cycle_length ?? 28) * 100))}%`}} /></div>}
                         <p className="dashboard-card__footnote">{usesHormonalContraception ? 'Bleeding can change on hormonal contraception, so a natural-cycle estimate is not shown.' : 'An estimate based on the information you’ve logged, not a guarantee.'}</p>
                     </article>
