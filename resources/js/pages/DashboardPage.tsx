@@ -4,6 +4,7 @@ import PregnancyDashboard from './PregnancyDashboard';
 import PostpartumDashboard from './PostpartumDashboard';
 import { getMoonPhase } from '../utils/moonPhase';
 import '../styles/personalization.css';
+import CycleDashboardHome from './CycleDashboardHome';
 
 type Sign = 'Aries' | 'Taurus' | 'Gemini' | 'Cancer' | 'Leo' | 'Virgo' | 'Libra' | 'Scorpio' | 'Sagittarius' | 'Capricorn' | 'Aquarius' | 'Pisces';
 type Goal = 'track_cycle' | 'predict_moon' | 'manage_symptoms' | 'cosmic_cycle' | 'fertility_support' | 'trying_to_conceive' | 'pregnancy_support' | 'postpartum_support';
@@ -210,6 +211,8 @@ export default function DashboardPage() {
     if (isLoading) return <main className="dashboard-loading" aria-live="polite">Opening your little universe…</main>;
     if (data?.profile.active_journey === 'pregnancy') return <PregnancyDashboard data={data} onLogout={handleLogout} onRefresh={loadDashboard} />;
     if (data?.profile.active_journey === 'postpartum') return <PostpartumDashboard data={data} onLogout={handleLogout} onRefresh={loadDashboard} />;
+    return <CycleDashboardHome data={data} onLogout={handleLogout} onRefresh={loadDashboard} />;
+
     const estimatedDate = data?.estimated_next_period ?? null;
     const usesHormonalContraception = ['pill', 'hormonal_iud', 'implant', 'injection', 'patch', 'ring'].includes(data?.profile.contraception_type ?? '');
     const firstName = data?.profile.display_name?.trim() || data?.user.name.split(' ')[0] || 'there';
