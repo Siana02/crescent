@@ -211,6 +211,7 @@ export default function DashboardPage() {
     if (isLoading) return <main className="dashboard-loading" aria-live="polite">Opening your little universe…</main>;
     if (data?.profile.active_journey === 'pregnancy') return <PregnancyDashboard data={data} onLogout={handleLogout} onRefresh={loadDashboard} />;
     if (data?.profile.active_journey === 'postpartum') return <PostpartumDashboard data={data} onLogout={handleLogout} onRefresh={loadDashboard} />;
+    if (!data) return <main className="dashboard-loading" role="alert">{error || 'We could not open your dashboard. Please refresh and try again.'}</main>;
     return <CycleDashboardHome data={data} onLogout={handleLogout} onRefresh={loadDashboard} />;
 
     const estimatedDate = data?.estimated_next_period ?? null;
