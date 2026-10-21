@@ -324,10 +324,7 @@ export default function OnboardingPage() {
                         </>}
                     </div>}
                     {step === 2 && <div className="onboarding-fields">
-                        <div className="onboarding-date-grid">
-                            <Field label="When did your last period start?"><input type="date" value={periodStart} max={new Date().toISOString().slice(0, 10)} onChange={event => setPeriodStart(event.target.value)} /></Field>
-                            <Field label="When did it end?"><input type="date" value={periodEnd} max={new Date().toISOString().slice(0, 10)} min={periodStart || undefined} onChange={event => setPeriodEnd(event.target.value)} /></Field>
-                        </div>
+                        <div className="onboarding-cycle-calendar"><div className="onboarding-cycle-calendar__intro"><span>✿ YOUR RECENT RHYTHM</span><p>Think of the last bleed you remember. We’ll place it on your personal moon calendar.</p></div><div className="onboarding-date-grid"><CalendarField label="The first day" hint="When did your period begin?" value={periodStart} maxDate={localDateString(new Date())} onChange={value => { setPeriodStart(value); if (periodEnd && value && periodEnd < value) setPeriodEnd(""); }} /><CalendarField label="The last day" hint="When did your bleeding finish?" value={periodEnd} maxDate={localDateString(new Date())} minDate={periodStart || undefined} onChange={setPeriodEnd} /></div><div className="onboarding-cycle-whisper"><span aria-hidden="true">☾</span><p>No pressure to remember perfectly. If you’re unsure, leave the dates blank and begin logging from today.</p></div></div>
                         <Field label="How long is your usual cycle?">
                             <select value={cycleLengthUnknown ? 'unknown' : cycleLength} onChange={event => { setCycleLengthUnknown(event.target.value === 'unknown'); if (event.target.value !== 'unknown') setCycleLength(event.target.value); }}>
                                 <option value="unknown">🤷‍♀️ I have no idea</option>
