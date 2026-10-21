@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 const features = [
     {
         number: '01',
@@ -63,6 +65,8 @@ function MoonArtwork() {
 }
 
 export default function LandingPage() {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
     return (
         <div className="site-shell">
             <header className="site-header">
@@ -71,13 +75,24 @@ export default function LandingPage() {
                     <span className="brand-word">crescent<span>.</span></span>
                 </a>
 
-                <nav className="desktop-nav" aria-label="Main navigation">
-                    <a href="#why-crescent">Why Crescent</a>
-                    <a href="#how-it-works">How it works</a>
-                    <a href="#our-promise">Our promise</a>
+                <nav id="primary-navigation" className={isMenuOpen ? 'desktop-nav desktop-nav--open' : 'desktop-nav'} aria-label="Main navigation">
+                    <a href="#why-crescent" onClick={() => setIsMenuOpen(false)}>Why Crescent</a>
+                    <a href="#how-it-works" onClick={() => setIsMenuOpen(false)}>How it works</a>
+                    <a href="#our-promise" onClick={() => setIsMenuOpen(false)}>Our promise</a>
                 </nav>
 
-                <a className="header-link" href="#get-started">
+                <button
+                    className="menu-toggle"
+                    type="button"
+                    aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                    aria-controls="primary-navigation"
+                    aria-expanded={isMenuOpen}
+                    onClick={() => setIsMenuOpen((open) => !open)}
+                >
+                    <span className="menu-toggle__lines" aria-hidden="true"><span /><span /><span /></span>
+                </button>
+
+                <a className="header-link" href="#get-started" onClick={() => setIsMenuOpen(false)}>
                     Your journey <span aria-hidden="true">↗</span>
                 </a>
             </header>
