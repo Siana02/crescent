@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('invite_code', 12)->unique();
             $table->json('sharing_preferences')->nullable();
             $table->timestamp('accepted_at')->nullable();
+            $table->timestamp('expires_at')->nullable();
             $table->timestamps();
             $table->index(['user_one_id', 'status']);
             $table->index(['user_two_id', 'status']);
