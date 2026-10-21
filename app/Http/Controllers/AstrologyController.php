@@ -58,7 +58,7 @@ class AstrologyController extends Controller
                 throw new \RuntimeException('We could not match that birthplace. Try a city and country, such as Nairobi, Kenya.');
             });
 
-            $cacheKey = 'cosmyday:natal:'.hash('sha256', implode('|', [$birthDate, $profile->birth_time ?? 'unknown-time', $location['lat'], $location['lon']]));
+            $cacheKey = 'cosmyday:natal:v2:'.hash('sha256', implode('|', [$birthDate, $profile->birth_time ?? 'unknown-time', $location['lat'], $location['lon']]));
             $chart = Cache::remember($cacheKey, now()->addDays(30), function () use ($birthDate, $hour, $minute, $location) {
                 [$year, $month, $day] = array_map('intval', explode('-', $birthDate));
                 $response = $this->client()->post(self::BASE_URL.'/natal', [
@@ -200,74 +200,217 @@ class AstrologyController extends Controller
 
     private function normalisePlacements(array $payload): array
     {
-        $candidates = data_get($payload, 'planets')
-            ?? data_get($payload, 'placements')
-            ?? data_get($payload, 'planetary_positions')
-            ?? data_get($payload, 'data.planets')
-            ?? data_get($payload, 'data.placements')
-            ?? data_get($payload, 'data.planetary_positions')
-            ?? data_get($payload, 'natal_chart.planets')
-            ?? data_get($payload, 'chart.planets')
-            ?? [];
-        if (! is_array($candidates)) {
-            return [];
-        }
-        $placements = [];
-        foreach ($candidates as $key => $item) {
-            if (! is_array($item)) {
+        $roots = [];
+        $queue = [$payload];
+        $seen = [];
+        while ($queue !== [] && count($roots) < 12) {
+            $root = array_shift($queue);
+            if (! is_array($root)) {
                 continue;
             }
-            $name = data_get($item, 'name', data_get($item, 'planet', data_get($item, 'body', is_string($key) ? $key : '')));
-            $sign = data_get($item, 'sign', data_get($item, 'zodiac_sign', data_get($item, 'sign_name')));
-            if (is_array($sign)) {
-                $sign = data_get($sign, 'name', data_get($sign, 'label', data_get($sign, 'sign')));
-            }
-            if (! is_string($name) || ! is_string($sign) || $name === '' || $sign === '') {
+            $fingerprint = md5(serialize(array_keys($root)));
+            if (isset($seen[$fingerprint])) {
                 continue;
             }
-            $placements[] = [
-                'name' => $name, 'sign' => Str::title($sign),
-                'degree' => data_get($item, 'degree', data_get($item, 'position.degree')),
-                'house' => data_get($item, 'house'),
-                'retrograde' => (bool) data_get($item, 'retrograde', data_get($item, 'is_retrograde', false)),
-            ];
-        }
-        $ascendant = data_get($payload, 'ascendant')
-            ?? data_get($payload, 'angles.ascendant')
-            ?? data_get($payload, 'chart.ascendant')
-            ?? data_get($payload, 'natal_chart.ascendant');
-        if (is_array($ascendant)) {
-            $ascendantSign = data_get($ascendant, 'sign', data_get($ascendant, 'zodiac_sign', data_get($ascendant, 'sign_name')));
-            if (is_string($ascendantSign) && $ascendantSign !== '') {
-                $placements[] = [
-                    'name' => 'Ascendant',
-                    'sign' => Str::title($ascendantSign),
-                    'degree' => data_get($ascendant, 'degree', data_get($ascendant, 'position.degree')),
-                    'house' => 1,
-                    'retrograde' => false,
-                ];
+            $seen[$fingerprint] = true;
+            $roots[] = $root;
+            foreach (['data', 'result', 'output', 'chart', 'natal', 'natal_chart', 'natalChart', 'birth_chart', 'birthChart', 'chart_data', 'chartData'] as $key) {
+                if (isset($root[$key]) && is_array($root[$key])) {
+                    $queue[] = $root[$key];
+                }
             }
-        } elseif (is_string($ascendant) && $ascendant !== '') {
-            $placements[] = ['name' => 'Ascendant', 'sign' => Str::title($ascendant), 'degree' => null, 'house' => 1, 'retrograde' => false];
         }
 
-        if (! collect($placements)->contains(fn ($placement) => Str::lower($placement['name']) === 'ascendant')) {
-            $houses = data_get($payload, 'houses', data_get($payload, 'house_cusps', data_get($payload, 'chart.houses', [])));
+        $placements = [];
+        foreach ($roots as $root) {
+            foreach ([
+                ['Sun', ['sun_sign', 'sunSign', 'sun.sign', 'sun.zodiac_sign', 'sun.zodiacSign']],
+                ['Moon', ['moon_sign', 'moonSign', 'moon.sign', 'moon.zodiac_sign', 'moon.zodiacSign']],
+                ['Ascendant', ['rising_sign', 'risingSign', 'ascendant_sign', 'ascendantSign', 'ascendant.sign', 'ascendant.zodiac_sign', 'angles.ascendant.sign']],
+            ] as [$name, $paths]) {
+                foreach ($paths as $path) {
+                    $value = data_get($root, $path);
+                    if ($value !== null) {
+                        $this->addPlacement($placements, $name, $value);
+                        break;
+                    }
+                }
+            }
+
+            foreach (['planets', 'placements', 'planetary_positions', 'planet_positions', 'positions', 'bodies'] as $key) {
+                $candidates = data_get($root, $key);
+                if (! is_array($candidates)) {
+                    continue;
+                }
+                foreach ($candidates as $index => $item) {
+                    if (is_string($item) && is_string($index)) {
+                        $this->addPlacement($placements, $index, $item);
+                        continue;
+                    }
+                    if (! is_array($item)) {
+                        continue;
+                    }
+                    $name = data_get($item, 'name')
+                        ?? data_get($item, 'planet')
+                        ?? data_get($item, 'body')
+                        ?? data_get($item, 'planet_name')
+                        ?? data_get($item, 'planetName')
+                        ?? data_get($item, 'body_name')
+                        ?? data_get($item, 'bodyName')
+                        ?? (is_string($index) ? $index : null);
+                    $sign = data_get($item, 'sign')
+                        ?? data_get($item, 'zodiac_sign')
+                        ?? data_get($item, 'zodiacSign')
+                        ?? data_get($item, 'sign_name')
+                        ?? data_get($item, 'signName')
+                        ?? data_get($item, 'zodiac.name')
+                        ?? data_get($item, 'zodiac.sign')
+                        ?? data_get($item, 'position.sign')
+                        ?? data_get($item, 'position.zodiac_sign')
+                        ?? data_get($item, 'position.zodiacSign');
+                    if ($sign === null && is_numeric(data_get($item, 'longitude'))) {
+                        $sign = $this->signFromLongitude((float) data_get($item, 'longitude'));
+                    }
+                    if ($name !== null && $sign !== null) {
+                        $this->addPlacement($placements, $name, $sign, $item);
+                    }
+                }
+            }
+
+            foreach (['angles', 'points', 'chart_points'] as $key) {
+                $angles = data_get($root, $key);
+                if (! is_array($angles)) {
+                    continue;
+                }
+                foreach ($angles as $angle) {
+                    if (! is_array($angle)) {
+                        continue;
+                    }
+                    $name = data_get($angle, 'name', data_get($angle, 'point', data_get($angle, 'body')));
+                    if (is_string($name) && (str_contains(Str::lower($name), 'asc') || str_contains(Str::lower($name), 'rising'))) {
+                        $sign = data_get($angle, 'sign', data_get($angle, 'sign_name', data_get($angle, 'signName', data_get($angle, 'zodiac.name'))));
+                        if ($sign === null && is_numeric(data_get($angle, 'longitude'))) {
+                            $sign = $this->signFromLongitude((float) data_get($angle, 'longitude'));
+                        }
+                        $this->addPlacement($placements, 'Ascendant', $sign, $angle);
+                    }
+                }
+            }
+
+            $ascendant = data_get($root, 'ascendant')
+                ?? data_get($root, 'houses.ascendant')
+                ?? data_get($root, 'house_cusps.ascendant')
+                ?? data_get($root, 'angles.ascendant');
+            if ($ascendant !== null) {
+                if (is_array($ascendant)) {
+                    $sign = data_get($ascendant, 'sign')
+                        ?? data_get($ascendant, 'zodiac_sign')
+                        ?? data_get($ascendant, 'sign_name')
+                        ?? data_get($ascendant, 'signName')
+                        ?? data_get($ascendant, 'zodiac.name');
+                    if ($sign === null && is_numeric(data_get($ascendant, 'longitude'))) {
+                        $sign = $this->signFromLongitude((float) data_get($ascendant, 'longitude'));
+                    }
+                    $this->addPlacement($placements, 'Ascendant', $sign, $ascendant);
+                } elseif (is_string($ascendant)) {
+                    $this->addPlacement($placements, 'Ascendant', $ascendant);
+                } elseif (is_numeric($ascendant)) {
+                    $this->addPlacement($placements, 'Ascendant', $this->signFromLongitude((float) $ascendant));
+                }
+            }
+
+            $houses = data_get($root, 'houses.cusps', data_get($root, 'houses', data_get($root, 'house_cusps', [])));
             if (is_array($houses)) {
                 foreach ($houses as $index => $house) {
                     if (! is_array($house)) {
                         continue;
                     }
                     $number = (int) data_get($house, 'house', data_get($house, 'number', is_numeric($index) ? ((int) $index + (array_is_list($houses) ? 1 : 0)) : 0));
-                    $houseSign = data_get($house, 'sign', data_get($house, 'zodiac_sign', data_get($house, 'sign_name')));
-                    if ($number === 1 && is_string($houseSign) && $houseSign !== '') {
-                        $placements[] = ['name' => 'Ascendant', 'sign' => Str::title($houseSign), 'degree' => data_get($house, 'degree'), 'house' => 1, 'retrograde' => false];
-                        break;
+                    if ($number !== 1) {
+                        continue;
                     }
+                    $sign = data_get($house, 'sign')
+                        ?? data_get($house, 'zodiac_sign')
+                        ?? data_get($house, 'sign_name')
+                        ?? data_get($house, 'signName')
+                        ?? data_get($house, 'zodiac.name')
+                        ?? data_get($house, 'start_cusp.zodiac.name');
+                    if ($sign === null) {
+                        $longitude = data_get($house, 'longitude', data_get($house, 'degree', data_get($house, 'cusp', data_get($house, 'start_cusp.degree'))));
+                        if (is_numeric($longitude)) {
+                            $sign = $this->signFromLongitude((float) $longitude);
+                        }
+                    }
+                    if ($sign !== null) {
+                        $this->addPlacement($placements, 'Ascendant', $sign, ['house' => 1]);
+                    }
+                    break;
                 }
             }
         }
 
-        return $placements;
+        return array_values($placements);
+    }
+
+    private function addPlacement(array &$placements, mixed $name, mixed $sign, array $details = []): void
+    {
+        if (! is_string($name) || trim($name) === '') {
+            return;
+        }
+        $nameLower = Str::lower(trim($name));
+        if (str_contains($nameLower, 'sun')) {
+            $label = 'Sun';
+        } elseif (str_contains($nameLower, 'moon')) {
+            $label = 'Moon';
+        } elseif (str_contains($nameLower, 'asc') || str_contains($nameLower, 'rising')) {
+            $label = 'Ascendant';
+        } else {
+            $label = Str::title(str_replace(['_', '-'], ' ', trim($name)));
+        }
+
+        $signName = $this->normaliseSign($sign);
+        if ($signName === null) {
+            return;
+        }
+        $key = Str::lower($label);
+        $placements[$key] = [
+            'name' => $label,
+            'sign' => $signName,
+            'degree' => data_get($details, 'degree', data_get($details, 'position.degree', data_get($details, 'degree_in_sign', data_get($details, 'degreeInSign')))),
+            'house' => data_get($details, 'house', data_get($details, 'house_number')),
+            'retrograde' => (bool) data_get($details, 'retrograde', data_get($details, 'is_retrograde', data_get($details, 'isRetrograde', data_get($details, 'is_retro', false)))),
+        ];
+    }
+
+    private function normaliseSign(mixed $value): ?string
+    {
+        if (is_array($value)) {
+            $value = data_get($value, 'name')
+                ?? data_get($value, 'label')
+                ?? data_get($value, 'sign')
+                ?? data_get($value, 'sign_name')
+                ?? data_get($value, 'signName')
+                ?? data_get($value, 'zodiac.name');
+        }
+        if (! is_string($value)) {
+            return null;
+        }
+        $value = Str::lower(trim($value));
+        $signs = [
+            'aries' => 'Aries', 'taurus' => 'Taurus', 'gemini' => 'Gemini',
+            'cancer' => 'Cancer', 'leo' => 'Leo', 'virgo' => 'Virgo',
+            'libra' => 'Libra', 'scorpio' => 'Scorpio', 'sagittarius' => 'Sagittarius',
+            'capricorn' => 'Capricorn', 'aquarius' => 'Aquarius', 'pisces' => 'Pisces',
+        ];
+        return $signs[$value] ?? null;
+    }
+
+    private function signFromLongitude(float $longitude): ?string
+    {
+        if ($longitude < 0 || $longitude > 360) {
+            return null;
+        }
+        $signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+        return $signs[((int) floor(fmod($longitude, 360.0) / 30)) % 12];
     }
 }
