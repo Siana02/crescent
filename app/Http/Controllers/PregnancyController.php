@@ -26,14 +26,20 @@ class PregnancyController extends Controller
             default => $validated['due_date'],
         };
 
-        $pregnancy = $request->user()->pregnancy()->updateOrCreate([], [
+        $pregnancyValues = [
             'due_date' => $dueDate,
             'last_period_date' => $validated['due_date_source'] === 'last_period_date' ? $validated['last_period_date'] : null,
             'conception_date' => $validated['due_date_source'] === 'conception_date' ? $validated['conception_date'] : ($validated['conception_date'] ?? null),
             'due_date_source' => $validated['due_date_source'],
             'wants_baby_astrology' => $validated['wants_baby_astrology'] ?? false,
             'status' => 'active',
-        ]);
+        ];
+        $pregnancy = $request->user()->pregnancies()->where('status', 'active')->latest()->first();
+        if ($pregnancy) {
+            $pregnancy->update($pregnancyValues);
+        } else {
+            $pregnancy = $request->user()->pregnancies()->create($pregnancyValues);
+        }
 
         $profile = $request->user()->cycleProfile()->firstOrCreate([], [
             'timezone' => config('app.timezone', 'UTC'),
@@ -61,7 +67,7 @@ class PregnancyController extends Controller
 
     public function checkin(Request $request): JsonResponse
     {
-        $pregnancy = $request->user()->pregnancy()->where('status', 'active')->firstOrFail();
+        $pregnancy = $request->user()->pregnancies()->where('status', 'active')->latest()->firstOrFail();
         $timezone = $request->user()->cycleProfile?->timezone ?: config('app.timezone', 'UTC');
         $today = CarbonImmutable::today($timezone)->toDateString();
 
@@ -126,7 +132,7 @@ class PregnancyController extends Controller
 
     public function postpartumCheckin(Request $request): JsonResponse
     {
-        $pregnancy = $request->user()->pregnancy()->where('status', 'postpartum')->firstOrFail();
+        $pregnancy = $request->user()->pregnancies()->where('status', 'postpartum')->latest()->firstOrFail();
         $timezone = $request->user()->cycleProfile?->timezone ?: config('app.timezone', 'UTC');
         $today = CarbonImmutable::today($timezone)->toDateString();
 
