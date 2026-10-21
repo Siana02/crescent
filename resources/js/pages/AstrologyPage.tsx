@@ -42,14 +42,16 @@ export default function AstrologyPage(){
  async function load(){
   setBusy(true);setError('');
   try{
-   const [c,e,t,h,s]=await Promise.all([
+   const [c,e,t,h,s,m,w]=await Promise.all([
     fetch('/api/astrology/chart',{credentials:'same-origin',headers:{Accept:'application/json'}}),
     fetch('/api/astrology/events?days=30&min_importance=40&limit=24',{credentials:'same-origin',headers:{Accept:'application/json'}}),
     fetch('/api/astrology/transit',{credentials:'same-origin',headers:{Accept:'application/json'}}),
     fetch('/api/astrology/horoscope',{credentials:'same-origin',headers:{Accept:'application/json'}}),
     fetch('/api/astrology/sky',{credentials:'same-origin',headers:{Accept:'application/json'}}),
+    fetch('/api/astrology/moon',{credentials:'same-origin',headers:{Accept:'application/json'}}),
+    fetch('/api/astrology/week-ahead',{credentials:'same-origin',headers:{Accept:'application/json'}}),
    ]);
-   const cd=await c.json();const ed=await e.json();const td=await t.json();const hd=await h.json();const sd=await s.json();
+   const cd=await c.json();const ed=await e.json();const td=await t.json();const hd=await h.json();const sd=await s.json();const md=await m.json();const wd=await w.json();
    if(c.status===401){window.location.assign('/login');return;}
    if(!c.ok&&!cd.needs_birth_details)throw new Error(cd.message??'Your birth chart could not be loaded.');
    setChart(cd);
