@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PeriodLogController extends Controller
 {
@@ -16,6 +17,7 @@ class PeriodLogController extends Controller
         $validated = $request->validate([
             'start_date' => ['required', 'date_format:Y-m-d', "before_or_equal:$today"],
             'end_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:start_date', "before_or_equal:$today"],
+            'flow_intensity' => ['nullable', Rule::in(['spotting', 'light', 'medium', 'heavy', 'other'])],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -23,6 +25,7 @@ class PeriodLogController extends Controller
             ['start_date' => $validated['start_date']],
             [
                 'end_date' => $validated['end_date'] ?? null,
+                'flow_intensity' => $validated['flow_intensity'] ?? null,
                 'notes' => $validated['notes'] ?? null,
             ],
         );
@@ -43,6 +46,7 @@ class PeriodLogController extends Controller
             'period' => [
                 'start_date' => $period->start_date->format('Y-m-d'),
                 'end_date' => $period->end_date?->format('Y-m-d'),
+                'flow_intensity' => $period->flow_intensity,
             ],
         ], 201);
     }
