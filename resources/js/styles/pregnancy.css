@@ -92,3 +92,29 @@
 @media(max-width:760px){.pregnancy-overview{grid-template-columns:1fr}.pregnancy-companion{grid-template-columns:1fr}.pregnancy-week-card{align-items:flex-start}.pregnancy-symptom-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.pregnancy-header{align-items:flex-start;padding:16px}.pregnancy-header__actions{gap:8px}.pregnancy-header__actions>span{display:none}.pregnancy-main{width:calc(100% - 24px);padding-top:18px}.pregnancy-hero{padding:24px 19px}.pregnancy-hero__sparkles span:nth-child(3){right:8%}.pregnancy-hero h1{font-size:37px}.pregnancy-week-card{display:grid;justify-items:center;padding:19px;text-align:center}.pregnancy-week-ring{width:100px;height:100px;flex-basis:100px}.pregnancy-week-card__copy small{display:block}.pregnancy-due-card{padding:19px}.pregnancy-week-guide{align-items:flex-start;padding:18px;flex-direction:column}.pregnancy-week-guide__seal{align-self:center}.pregnancy-cosmos,.pregnancy-checkin{padding:17px}.pregnancy-cosmos__cards{grid-template-columns:1fr}.pregnancy-symptom-grid{grid-template-columns:1fr 1fr}.pregnancy-symptom{align-items:flex-start;gap:6px;padding:9px 7px}.pregnancy-symptom>span{font-size:16px}.pregnancy-symptom strong{font-size:8px}.pregnancy-companion{padding:18px}.pregnancy-footer{flex-direction:column}}
 @media(prefers-reduced-motion:reduce){.pregnancy-symptom{transition:none}}
+
+
+.postpartum-shell{background:radial-gradient(ellipse at 10% 0,#f8e9ef 0,transparent 35%),radial-gradient(ellipse at 95% 14%,#f0e8f7 0,transparent 31%),#fffafc}
+.postpartum-hero{background:radial-gradient(ellipse at 90% 0,#f5e4ee 0,transparent 48%),radial-gradient(ellipse at 0 100%,#f1e9f8 0,transparent 44%),linear-gradient(135deg,#fffdfd,#fff8fb)}
+.postpartum-welcome{display:flex;align-items:center;gap:17px;margin-top:17px;padding:22px;border:1px solid #ead9e9;border-radius:17px;background:linear-gradient(120deg,#fffafd,#f8f0fa)}
+.postpartum-welcome__icon{display:grid;place-items:center;flex:0 0 56px;width:56px;height:56px;border-radius:18px;background:#f3e8f5;font-size:28px}
+.postpartum-welcome h2,.postpartum-today h2{margin:6px 0;color:#654f6d;font-family:var(--serif,Georgia,serif);font-size:24px;font-weight:400}
+.postpartum-welcome p:not(.pregnancy-eyebrow){margin:0;color:#93829a;font-size:10px;line-height:1.8}
+.postpartum-log-form{display:grid;gap:15px;padding:22px;border:1px solid #eadbea;border-radius:18px;background:#fffdfd}
+.postpartum-category-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.postpartum-category{display:grid;align-content:start;justify-items:start;gap:6px;min-height:100px;padding:12px;border:1px solid #ebdeeb;border-radius:13px;background:#fffafd;color:#715b7a;text-align:left;cursor:pointer;transition:border-color .16s,background .16s,transform .16s}
+.postpartum-category:hover{transform:translateY(-1px);border-color:#c8adcf}
+.postpartum-category.is-selected{border-color:#b393c0;background:#f3eaf6}
+.postpartum-category>span{font-size:22px}
+.postpartum-category strong{font-size:10px}
+.postpartum-category small{color:#9d8ca3;font-size:8px;line-height:1.55}
+.postpartum-today{margin-top:22px;padding:22px;border:1px solid #eadbea;border-radius:17px;background:#fffdfd}
+.postpartum-log-list{display:grid;gap:8px;margin-top:13px}
+.postpartum-log-list article{display:flex;align-items:flex-start;gap:11px;padding:12px;border:1px solid #eee2ef;border-radius:12px;background:#fffafd}
+.postpartum-log-list article>span{display:grid;place-items:center;flex:0 0 35px;width:35px;height:35px;border-radius:12px;background:#f3e9f6;font-size:18px}
+.postpartum-log-list article strong,.postpartum-log-list article small{display:block}
+.postpartum-log-list article strong{color:#715b7a;font-size:10px}
+.postpartum-log-list article small{margin-top:4px;color:#95859b;font-size:9px;line-height:1.7;white-space:pre-wrap}
+.postpartum-empty{color:#9b8ba1;font-size:10px;line-height:1.8}
+@media(max-width:520px){.postpartum-welcome{align-items:flex-start;padding:17px}.postpartum-welcome__icon{flex-basis:43px;width:43px;height:43px;font-size:22px}.postpartum-category-grid{grid-template-columns:1fr 1fr}.postpartum-category{min-height:90px;padding:10px}}
+@media(prefers-reduced-motion:reduce){.postpartum-category{transition:none}.postpartum-category:hover{transform:none}}
