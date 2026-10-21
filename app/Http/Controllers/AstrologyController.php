@@ -39,7 +39,7 @@ class AstrologyController extends Controller
             $location = Cache::remember($locationKey, now()->addDays(30), function () use ($profile) {
                 $response = RateLimiter::attempt('cosmyday:location-search', 1, fn () => $this->client()->get(self::BASE_URL.'/search-location', ['q' => $profile->birth_place]), 1);
                 if ($response === false) {
-                    throw new \\RuntimeException('Birthplace lookup is busy. Please try again in a moment.');
+                    throw new \RuntimeException('Birthplace lookup is busy. Please try again in a moment.');
                 }
                 if (! $response->successful()) {
                     throw new \RuntimeException('CosmyDay could not find that birthplace.');
