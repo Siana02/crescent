@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -9,9 +10,12 @@ class PeriodLogController extends Controller
 {
     public function store(Request $request): JsonResponse
     {
+        $timezone = $request->user()->cycleProfile()->value('timezone') ?? config('app.timezone', 'UTC');
+        $today = CarbonImmutable::today($timezone)->toDateString();
+
         $validated = $request->validate([
-            'start_date' => ['required', 'date', 'before_or_equal:today'],
-            'end_date' => ['nullable', 'date', 'after_or_equal:start_date', 'before_or_equal:today'],
+            'start_date' => ['required', 'date_format:Y-m-d', "before_or_equal:$today"],
+            'end_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:start_date', "before_or_equal:$today"],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
