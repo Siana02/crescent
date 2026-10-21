@@ -631,7 +631,7 @@ a:focus-visible { outline: 3px solid #b88bbd; outline-offset: 4px; }
 .auth-description { margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.8; }
 .auth-form { display: grid; gap: 16px; margin-top: 27px; }
 .auth-form label, .cycle-settings__form label { display: grid; gap: 8px; color: #5b4c61; font-size: 11px; font-weight: 700; }
-.auth-form input, .cycle-settings__form input {
+.auth-form input, .cycle-settings__form input, .cycle-settings__form select {
     width: 100%;
     min-height: 45px;
     padding: 0 13px;
@@ -643,7 +643,7 @@ a:focus-visible { outline: 3px solid #b88bbd; outline-offset: 4px; }
     font: inherit;
     font-size: 12px;
 }
-.auth-form input:focus, .cycle-settings__form input:focus { border-color: #9d7ca5; box-shadow: 0 0 0 3px #bda6c126; }
+.auth-form input:focus, .cycle-settings__form input:focus, .cycle-settings__form select:focus { border-color: #9d7ca5; box-shadow: 0 0 0 3px #bda6c126; }
 .auth-submit { width: 100%; margin-top: 4px; }
 .auth-error, .dashboard-alert { margin: 0; padding: 12px 14px; border: 1px solid #e9c5ca; border-radius: 8px; background: #fff3f2; color: #8b3e4b; font-size: 11px; line-height: 1.6; }
 .auth-switch { margin: 22px 0 0; color: var(--muted); font-size: 11px; }
