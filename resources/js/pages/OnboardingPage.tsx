@@ -35,6 +35,101 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
     return <label className="onboarding-field"><span>{label}</span>{children}{hint && <small>{hint}</small>}</label>;
 }
 
+
+function dateParts(value: string): Date | null {
+    if (!value) return null;
+    const [year, month, day] = value.split('-').map(Number);
+    return new Date(year, month - 1, day);
+}
+function localDateString(date: Date): string {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+function CalendarField({ label, hint, value, onChange, maxDate, minDate }: {
+    label: string; hint?: string; value: string; onChange: (value: string) => void;
+    maxDate?: string; minDate?: string;
+}) {
+    const [open, setOpen] = useState(false);
+    const [viewMonth, setViewMonth] = useState(() => {
+        const initial = dateParts(value) ?? new Date();
+        return new Date(initial.getFullYear(), initial.getMonth(), 1);
+    });
+    useEffect(() => {
+        if (value) {
+            const selected = dateParts(value);
+            if (selected) setViewMonth(new Date(selected.getFullYear(), selected.getMonth(), 1));
+        }
+    }, [value]);
+    const monthName = viewMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+    const offset = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1).getDay();
+    const dayCount = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 0).getDate();
+    const today = localDateString(new Date());
+    const days = Array.from({ length: offset + dayCount }, (_, index) => index < offset ? null : index - offset + 1);
+    return <div className="onboarding-calendar-field">
+        <span className="onboarding-calendar-label">{label}</span>
+        <button type="button" className={`onboarding-calendar-trigger ${value ? 'has-date' : ''}`} aria-expanded={open} onClick={() => setOpen(current => !current)}>
+            <span className="onboarding-calendar-trigger__moon" aria-hidden="true">☾</span>
+            <span><strong>{dateParts(value)?.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }) ?? 'Choose a day in your cycle'}</strong><small>{value ? 'Tap to change your date' : 'Open your little moon calendar'}</small></span>
+            <span className="onboarding-calendar-trigger__icon" aria-hidden="true">✿</span>
+        </button>
+        {hint && <small className="onboarding-calendar-hint">{hint}</small>}
+        {open && <div className="onboarding-calendar-popover">
+            <div className="onboarding-calendar-heading">
+                <button type="button" aria-label="Previous month" onClick={() => setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() - 1, 1))}>‹</button>
+                <div><small>YOUR CYCLE, YOUR TIME</small><strong>{monthName}</strong></div>
+                <button type="button" aria-label="Next month" onClick={() => setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1))}>›</button>
+            </div>
+            <div className="onboarding-calendar-weekdays">{['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => <span key={day + index}>{day}</span>)}</div>
+            <div className="onboarding-calendar-days">
+                {days.map((day, index) => {
+                    if (day === null) return <span key={`blank-${index}`} className="onboarding-calendar-blank" />;
+                    const date = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), day);
+                    const iso = localDateString(date);
+                    const disabled = (!!maxDate && iso > maxDate) || (!!minDate && iso < minDate);
+                    const selected = iso === value;
+                    return <button type="button" key={iso} disabled={disabled} aria-pressed={selected} className={`onboarding-calendar-day ${selected ? 'is-selected' : ''} ${iso === today ? 'is-today' : ''}`} onClick={() => { onChange(iso); setOpen(false); }}>
+                        <span>{day}</span>{selected && <i aria-hidden="true">✿</i>}
+                    </button>;
+                })}
+            </div>
+            <div className="onboarding-calendar-footer"><span>✧ Every date is part of your story</span>{value && <button type="button" onClick={() => { onChange(''); setOpen(false); }}>Clear date</button>}</div>
+        </div>}
+    </div>;
+}
+
+function BirthTimeField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+    const [hour, setHour] = useState(() => { const h = Number(value.split(':')[0] || 0); return String(h % 12 || 12); });
+    const [minute, setMinute] = useState(() => value.split(':')[1] || '00');
+    const [period, setPeriod] = useState(() => Number(value.split(':')[0] || 0) >= 12 ? 'PM' : 'AM');
+    useEffect(() => {
+        const [rawHour, rawMinute] = value ? value.split(':') : ['', '00'];
+        if (rawHour !== '') { const h = Number(rawHour); setHour(String(h % 12 || 12)); setMinute(rawMinute || '00'); setPeriod(h >= 12 ? 'PM' : 'AM'); }
+    }, [value]);
+    function update(nextHour: string, nextMinute: string, nextPeriod: string) {
+        const h = (Number(nextHour) % 12) + (nextPeriod === 'PM' ? 12 : 0);
+        onChange(`${String(h).padStart(2, '0')}:${nextMinute}`);
+    }
+    return <div className="onboarding-clock">
+        <span className="onboarding-clock__face" aria-hidden="true">◷</span>
+        <select aria-label="Birth hour" value={hour} onChange={event => { setHour(event.target.value); update(event.target.value, minute, period); }}>{Array.from({ length: 12 }, (_, i) => String(i + 1)).map(item => <option key={item} value={item}>{item}</option>)}</select>
+        <span className="onboarding-clock__colon">:</span>
+        <select aria-label="Birth minute" value={minute} onChange={event => { setMinute(event.target.value); update(hour, event.target.value, period); }}>{Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0')).map(item => <option key={item} value={item}>{item}</option>)}</select>
+        <select aria-label="AM or PM" value={period} onChange={event => { setPeriod(event.target.value); update(hour, minute, event.target.value); }}><option>AM</option><option>PM</option></select>
+    </div>;
+}
+
+const CONTRACEPTION_CHOICES = [
+    { value: 'none', icon: '🌿', title: 'None — natural tracking', detail: 'I’m not using contraception' },
+    { value: 'pill', icon: '🌸', title: 'The pill', detail: 'Hormonal oral contraception' },
+    { value: 'patch', icon: '🩹', title: 'Patch', detail: 'Hormonal patch' },
+    { value: 'ring', icon: '⭕', title: 'Vaginal ring', detail: 'Hormonal ring' },
+    { value: 'implant', icon: '✨', title: 'Implant', detail: 'Hormonal implant' },
+    { value: 'injection', icon: '💉', title: 'Injection', detail: 'Hormonal injection' },
+    { value: 'hormonal_iud', icon: '🌙', title: 'Hormonal IUD', detail: 'Hormonal coil' },
+    { value: 'copper_iud', icon: '🪷', title: 'Copper IUD', detail: 'Non-hormonal coil' },
+    { value: 'other', icon: '🫧', title: 'Other / barrier method', detail: 'Another method' },
+    { value: 'prefer_not_to_say', icon: '🤍', title: 'I’d rather not say', detail: 'This can stay private' },
+];
+
 export default function OnboardingPage() {
     const [step, setStep] = useState(0);
     const [displayName, setDisplayName] = useState('');
@@ -215,12 +310,12 @@ export default function OnboardingPage() {
                             <input value={displayName} onChange={event => setDisplayName(event.target.value)} maxLength={100} placeholder="Your name or chosen nickname" autoComplete="nickname" />
                         </Field>
                         <Field label="When is your birthday?" hint="Optional. We only use it for personalisation you choose.">
-                            <input type="date" value={birthDate} max={new Date().toISOString().slice(0, 10)} onChange={event => setBirthDate(event.target.value)} />
+                            <CalendarField label="" value={birthDate} maxDate={localDateString(new Date())} onChange={setBirthDate} hint="Your birthday helps us celebrate your solar season." />
                         </Field>
                         {wantsAstrology && <>
                             <div className="onboarding-optional-title">✧ A little more cosmic (all optional)</div>
                             <Field label="What time were you born?" hint="Skip this if you don't know your exact time.">
-                                <input type="time" value={birthTime} disabled={birthTimeUnknown} onChange={event => setBirthTime(event.target.value)} />
+                                <div className={birthTimeUnknown ? "onboarding-clock-wrap is-disabled" : "onboarding-clock-wrap"}><BirthTimeField value={birthTime} onChange={setBirthTime} /></div>
                                 <span className="onboarding-inline-check"><input type="checkbox" checked={birthTimeUnknown} onChange={event => setBirthTimeUnknown(event.target.checked)} /> I don't know my exact time</span>
                             </Field>
                             <Field label="Where were you born?" hint="City and country help with chart calculations later.">
@@ -242,20 +337,7 @@ export default function OnboardingPage() {
                         <fieldset className="onboarding-radio-field"><legend>Is your cycle regular?</legend>
                             {[['regular', 'Yes, mostly'], ['irregular', 'No, it varies'], ['unknown', "I'm not sure"]].map(([value, label]) => <label key={value}><input type="radio" name="regularity" value={value} checked={regularity === value} onChange={() => setRegularity(value as Regularity)} /><span>{label}</span></label>)}
                         </fieldset>
-                        <Field label="Are you using contraception?" hint="This helps us avoid misleading ovulation estimates.">
-                            <select value={contraception} onChange={event => setContraception(event.target.value)}>
-                                <option value="none">None — natural tracking</option>
-                                <option value="pill">Hormonal pill</option>
-                                <option value="patch">Hormonal patch</option>
-                                <option value="ring">Hormonal ring</option>
-                                <option value="implant">Hormonal implant</option>
-                                <option value="injection">Hormonal injection</option>
-                                <option value="hormonal_iud">Hormonal IUD</option>
-                                <option value="copper_iud">Copper IUD</option>
-                                <option value="other">Other / barrier method</option>
-                                <option value="prefer_not_to_say">Prefer not to say</option>
-                            </select>
-                        </Field>
+                        <fieldset className="onboarding-contraception"><legend>Are you using contraception?</legend><p>Choose the little card that feels right. This helps Crescent care for your cycle estimates thoughtfully.</p><div className="onboarding-contraception__grid">{CONTRACEPTION_CHOICES.map(choice => <button type="button" key={choice.value} aria-pressed={contraception === choice.value} className={`onboarding-contraception-card ${contraception === choice.value ? 'is-selected' : ''}`} onClick={() => setContraception(choice.value)}><span aria-hidden="true">{choice.icon}</span><strong>{choice.title}</strong><small>{choice.detail}</small><i aria-hidden="true">{contraception === choice.value ? '✦' : '○'}</i></button>)}</div></fieldset>
                         {['pill', 'patch', 'ring', 'implant', 'injection', 'hormonal_iud'].includes(contraception) && <p className="onboarding-safety-note">♡ Hormonal contraception can change or suppress ovulation. Crescent will focus on logging bleeding and daily wellbeing rather than assuming a natural ovulation pattern.</p>}
                     </div>}
                     {step === 3 && <div className="onboarding-choices">
