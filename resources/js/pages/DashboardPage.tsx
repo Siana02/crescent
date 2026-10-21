@@ -77,7 +77,7 @@ export default function DashboardPage() {
     const [isCheckingIn, setIsCheckingIn] = useState(false);
     const [error, setError] = useState('');
     const [notice, setNotice] = useState('');
-    const [checkinNotice, setCheckinNotice] = useState('');
+    const [checkinNotice, setCheckinNotice] = useState('');\n    const [inviteType, setInviteType] = useState<'observer' | 'co_tracker'>('observer');\n    const [isInviting, setIsInviting] = useState(false);\n    const [newInviteCode, setNewInviteCode] = useState('');
     const moon = getMoonPhase();
     const periodMoon = data?.latest_period ? getMoonPhase(new Date(data.latest_period.start_date + 'T12:00:00')) : null;
     const moonArchetype = periodMoon?.name === 'New moon' ? 'White Moon' : periodMoon?.name === 'Full moon' ? 'Red Moon' : ['First quarter', 'Last quarter'].includes(periodMoon?.name ?? '') ? 'Quarter Moon' : periodMoon ? 'Crescent / Gibbous Moon' : null;
@@ -175,7 +175,26 @@ export default function DashboardPage() {
         finally { setIsCheckingIn(false); }
     }
 
-    async function handleLogout() {
+
+    async function handleInviteCompanion(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        setIsInviting(true); setError(''); setNotice(''); setNewInviteCode('');
+        try {
+            const response = await fetch('/api/relationships/invite', {
+                method: 'POST', credentials: 'same-origin',
+                headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken() },
+                body: JSON.stringify({ relationship_type: inviteType }),
+            });
+            const result = (await response.json()) as { invite_code?: string; message?: string; errors?: Record<string, string[]> };
+            if (!response.ok) throw new Error(firstError(result, 'We could not create your Cosmic Sync Code.'));
+            setNewInviteCode(result.invite_code ?? '');
+            setNotice('Your invitation is ready. Share the code whenever your companion is ready. ✨');
+            await loadDashboard();
+        } catch (e) {
+            setError(e instanceof Error ? e.message : 'We could not create your invitation.');
+        } finally { setIsInviting(false); }
+    }
+\n    async function handleLogout() {
         try {
             await fetch('/auth/logout', { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrfToken() } });
         } finally { window.location.assign('/'); }
@@ -214,7 +233,7 @@ export default function DashboardPage() {
                 {error && <p className="dashboard-alert" role="alert">{error}</p>}
                 {notice && <p className="dashboard-notice" role="status">{notice}</p>}
 
-                {!!data?.relationships?.length && <section className="relationship-hub"><div><p className="dashboard-eyebrow">YOUR RELATIONSHIP HUB ✧</p><h2>A little connection, on your terms</h2><p>Invitations do not share cycle details automatically. Sharing stays off until you choose otherwise.</p></div><div className="relationship-hub__list">{data.relationships.map(relationship => <article key={relationship.id} className="relationship-hub__item"><span className="relationship-hub__icon" aria-hidden="true">{relationship.relationship_type === 'co_tracker' ? '🌷' : '💌'}</span><div><strong>{relationship.status === 'pending' ? 'Invitation waiting' : relationship.status === 'accepted' ? `Connected with ${relationship.companion_name ?? 'your companion'}` : 'Connection ended'}</strong><small>{relationship.relationship_type === 'co_tracker' ? 'Co-cycling companion' : 'Observer companion'} · {relationship.sharing_enabled ? 'Cycle details shared' : 'Cycle details private'}</small>{relationship.invite_code && <small>Cosmic Sync Code: <b>{relationship.invite_code}</b></small>}</div></article>)}</div></section>}
+                <section className="relationship-hub"><div className="relationship-hub__intro"><p className="dashboard-eyebrow">YOUR RELATIONSHIP HUB ✧</p><h2>A little connection, on your terms</h2><p>Started solo? That can change whenever you’re ready. Invite a companion now or later. Cycle details are never shared automatically.</p></div><form className="relationship-invite-form" onSubmit={handleInviteCompanion}><label>Who would you like to invite?<select value={inviteType} onChange={event => setInviteType(event.target.value as 'observer' | 'co_tracker')}><option value="observer">A partner or observer</option><option value="co_tracker">A co-cycling companion</option></select></label><Button type="submit" disabled={isInviting}>{isInviting ? 'Preparing your invitation…' : 'Create a Cosmic Sync Code ✧'}</Button></form>{newInviteCode && <div className="relationship-new-code"><span>Your new Cosmic Sync Code</span><strong>{newInviteCode}</strong><button type="button" onClick={() => navigator.clipboard?.writeText(newInviteCode)}>Copy code</button><small>It expires in seven days. Your companion can join when they’re ready.</small></div>}{!!data?.relationships?.length && <div className="relationship-hub__list">{data.relationships.map(relationship => <article key={relationship.id} className="relationship-hub__item"><span className="relationship-hub__icon" aria-hidden="true">{relationship.relationship_type === 'co_tracker' ? '🌷' : '💌'}</span><div><strong>{relationship.status === 'pending' ? 'Invitation waiting' : relationship.status === 'accepted' ? `Connected with ${relationship.companion_name ?? 'your companion'}` : 'Connection ended'}</strong><small>{relationship.relationship_type === 'co_tracker' ? 'Co-cycling companion' : 'Observer companion'} · {relationship.sharing_enabled ? 'Cycle details shared' : 'Cycle details private'}</small>{relationship.invite_code && <small>Cosmic Sync Code: <b>{relationship.invite_code}</b></small>}</div></article>)}</div>}</section>
 
                 <section className="dashboard-cards" aria-label="Your cycle overview">
                     <article className="dashboard-card dashboard-card--cycle">
