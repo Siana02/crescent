@@ -147,6 +147,9 @@ class AstrologyController extends Controller
             ?? data_get($payload, 'planetary_positions')
             ?? data_get($payload, 'data.planets')
             ?? data_get($payload, 'data.placements')
+            ?? data_get($payload, 'data.planetary_positions')
+            ?? data_get($payload, 'natal_chart.planets')
+            ?? data_get($payload, 'chart.planets')
             ?? [];
         if (! is_array($candidates)) {
             return [];
