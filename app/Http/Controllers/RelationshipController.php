@@ -23,6 +23,7 @@ class RelationshipController extends Controller
             'status' => 'pending',
             'invite_code' => Str::upper(Str::random(8)),
             'sharing_preferences' => ['cycle_details' => false],
+            'expires_at' => now()->addDays(7),
         ]);
 
         return response()->json([
@@ -41,6 +42,7 @@ class RelationshipController extends Controller
 
         $relationship = Relationship::where('invite_code', Str::upper($validated['invite_code']))
             ->where('status', 'pending')
+            ->where('expires_at', '>', now())
             ->first();
 
         if (! $relationship) {
