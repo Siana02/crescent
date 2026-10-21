@@ -301,7 +301,7 @@ export default function OnboardingPage() {
             <div className="onboarding-orbit" aria-hidden="true"><span>☾</span><i>✦</i><b>✧</b></div>
             <p className="onboarding-eyebrow">A LITTLE COSMIC MAGIC</p>
             <h1>Gathering your little universe…</h1>
-            <p>Setting up your cycle space and making room for what matters to you.</p>
+            <p>{pregnancyJourney ? 'Preparing your pregnancy universe, keeping your cycle history separate, and making room for what matters to you.' : 'Setting up your cycle space and making room for what matters to you.'}</p>
             {connectionNotice && <div className="onboarding-invite"><span>Connection made ✨</span><strong>{connectionNotice}</strong><small>Your cycle details remain private until sharing is explicitly enabled.</small><button type="button" className="onboarding-dashboard-link" onClick={() => window.location.assign('/dashboard')}>Enter my dashboard →</button></div>}
             {inviteCode && <div className="onboarding-invite"><span>Your Cosmic Sync Code</span><strong>{inviteCode}</strong><button type="button" onClick={() => navigator.clipboard?.writeText(inviteCode)}>Copy code</button><small>Share this with your companion. Your cycle details stay private until you choose to share them.</small><button type="button" className="onboarding-dashboard-link" onClick={() => window.location.assign('/dashboard')}>Enter my dashboard →</button></div>}
         </main>;
