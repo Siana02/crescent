@@ -5,8 +5,9 @@ import { getMoonPhase } from '../utils/moonPhase';
 type DashboardData = {
     user: { name: string; email: string };
     profile: {
-        average_cycle_length: number;
-        average_period_length: number;
+        average_cycle_length: number | null;
+        average_period_length: number | null;
+        cycle_regularity: 'regular' | 'irregular' | 'unknown';
         timezone: string;
     };
     latest_period: { start_date: string; end_date: string | null } | null;
@@ -15,10 +16,7 @@ type DashboardData = {
     days_until_estimate: number | null;
 };
 
-type ApiError = {
-    message?: string;
-    errors?: Record<string, string[]>;
-};
+type ApiError = { message?: string; errors?: Record<string, string[]> };
 
 function csrfToken(): string {
     return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
@@ -26,11 +24,8 @@ function csrfToken(): string {
 
 function formatDate(date: string | null): string {
     if (!date) return 'Not logged yet';
-    return new Intl.DateTimeFormat(undefined, {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-    }).format(new Date(`${date}T12:00:00`));
+    return new Intl.DateTimeFormat(undefined, { month: 'long', day: 'numeric', year: 'numeric' })
+        .format(new Date(`${date}T12:00:00`));
 }
 
 function localDateInputValue(date = new Date()): string {
@@ -41,7 +36,7 @@ function localDateInputValue(date = new Date()): string {
 }
 
 function estimateCaption(days: number | null): string {
-    if (days === null) return 'Log a period to see your estimate.';
+    if (days === null) return 'Add your cycle length and a period start date to see an estimate.';
     if (days < 0) return `${Math.abs(days)} day${Math.abs(days) === 1 ? '' : 's'} past this estimate`;
     if (days === 0) return 'Estimated for today';
     return `About ${days} day${days === 1 ? '' : 's'} from now`;
@@ -50,8 +45,10 @@ function estimateCaption(days: number | null): string {
 export default function DashboardPage() {
     const [data, setData] = useState<DashboardData | null>(null);
     const [lastPeriodStart, setLastPeriodStart] = useState('');
-    const [averageCycleLength, setAverageCycleLength] = useState('28');
-    const [averagePeriodLength, setAveragePeriodLength] = useState('5');
+    const [lastPeriodEnd, setLastPeriodEnd] = useState('');
+    const [averageCycleLength, setAverageCycleLength] = useState('');
+    const [averagePeriodLength, setAveragePeriodLength] = useState('');
+    const [cycleRegularity, setCycleRegularity] = useState<'regular' | 'irregular' | 'unknown'>('unknown');
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState('');
@@ -64,7 +61,6 @@ export default function DashboardPage() {
             credentials: 'same-origin',
             headers: { Accept: 'application/json' },
         });
-
         if (response.status === 401) {
             window.location.assign('/login');
             return;
@@ -74,8 +70,10 @@ export default function DashboardPage() {
         const result = (await response.json()) as DashboardData;
         setData(result);
         setLastPeriodStart(result.latest_period?.start_date ?? '');
-        setAverageCycleLength(String(result.profile.average_cycle_length));
-        setAveragePeriodLength(String(result.profile.average_period_length));
+        setLastPeriodEnd(result.latest_period?.end_date ?? '');
+        setAverageCycleLength(result.profile.average_cycle_length == null ? '' : String(result.profile.average_cycle_length));
+        setAveragePeriodLength(result.profile.average_period_length == null ? '' : String(result.profile.average_period_length));
+        setCycleRegularity(result.profile.cycle_regularity ?? 'unknown');
     }
 
     useEffect(() => {
@@ -90,6 +88,12 @@ export default function DashboardPage() {
         setError('');
         setNotice('');
 
+        if (lastPeriodEnd && !lastPeriodStart) {
+            setError('Please add the period start date too, or leave both dates blank.');
+            setIsSaving(false);
+            return;
+        }
+
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
         const headers = {
             Accept: 'application/json',
@@ -103,8 +107,9 @@ export default function DashboardPage() {
                 credentials: 'same-origin',
                 headers,
                 body: JSON.stringify({
-                    average_cycle_length: Number(averageCycleLength),
-                    average_period_length: Number(averagePeriodLength),
+                    average_cycle_length: averageCycleLength ? Number(averageCycleLength) : null,
+                    average_period_length: averagePeriodLength ? Number(averagePeriodLength) : null,
+                    cycle_regularity: cycleRegularity,
                     timezone,
                 }),
             });
@@ -119,12 +124,12 @@ export default function DashboardPage() {
                     method: 'POST',
                     credentials: 'same-origin',
                     headers,
-                    body: JSON.stringify({ start_date: lastPeriodStart }),
+                    body: JSON.stringify({ start_date: lastPeriodStart, end_date: lastPeriodEnd || null }),
                 });
                 const periodResult = (await periodResponse.json()) as ApiError;
                 if (!periodResponse.ok) {
                     const firstError = periodResult.errors ? Object.values(periodResult.errors)[0]?.[0] : undefined;
-                    throw new Error(firstError ?? periodResult.message ?? 'Could not save your period start date.');
+                    throw new Error(firstError ?? periodResult.message ?? 'Could not save your period dates.');
                 }
             }
 
@@ -149,9 +154,7 @@ export default function DashboardPage() {
         }
     }
 
-    if (isLoading) {
-        return <main className="dashboard-loading" aria-live="polite">Opening your space…</main>;
-    }
+    if (isLoading) return <main className="dashboard-loading" aria-live="polite">Opening your space…</main>;
 
     const estimatedDate = data?.estimated_next_period ?? null;
 
@@ -169,7 +172,7 @@ export default function DashboardPage() {
                 <div className="dashboard-intro">
                     <p className="dashboard-eyebrow">YOUR PERSONAL CYCLE SPACE</p>
                     <h1>Hello, {data?.user.name.split(' ')[0] ?? 'there'}<em>Let’s check in.</em></h1>
-                    <p>Your cycle is personal. These notes are here to help you notice your own patterns, at your own pace.</p>
+                    <p>Your cycle is personal. Share what you know, choose “I don’t know” where you’re unsure, and update your details whenever you need.</p>
                 </div>
 
                 {error && <p className="dashboard-alert" role="alert">{error}</p>}
@@ -182,7 +185,7 @@ export default function DashboardPage() {
                         <p className="dashboard-card__description">
                             {data?.latest_period
                                 ? `Your latest logged period started ${formatDate(data.latest_period.start_date)}.`
-                                : 'Add your last period start date below to begin your personal overview.'}
+                                : 'Add your last period dates below to begin your personal overview.'}
                         </p>
                         <div className="dashboard-card__footnote">{data?.latest_period ? 'Based on the start date you logged' : 'No cycle data has been added yet'}</div>
                     </article>
@@ -208,30 +211,50 @@ export default function DashboardPage() {
                 <section className="cycle-settings" aria-labelledby="cycle-settings-title">
                     <div className="cycle-settings__intro">
                         <p className="dashboard-eyebrow">START WHERE YOU ARE</p>
-                        <h2 id="cycle-settings-title">Your cycle details</h2>
-                        <p>Use what you know today. You can update these details as you learn more about your own pattern.</p>
+                        <h2 id="cycle-settings-title">Let’s get to know your cycle</h2>
+                        <p>Tell us what you remember about your most recent period and your usual pattern. If you’re unsure, “I don’t know” is a perfectly good answer.</p>
                     </div>
                     <form className="cycle-settings__form" onSubmit={handleSave}>
-                        <label>
-                            Last period start date
-                            <input type="date" value={lastPeriodStart} max={localDateInputValue()} onChange={(event) => setLastPeriodStart(event.target.value)} />
-                            <span className="field-hint">Leave blank if you’re not ready to log one.</span>
-                        </label>
                         <div className="cycle-settings__number-fields">
                             <label>
-                                Average cycle length
-                                <span className="number-input-wrap"><input type="number" min={21} max={45} value={averageCycleLength} onChange={(event) => setAverageCycleLength(event.target.value)} required /><span>days</span></span>
+                                When did your last period start?
+                                <input type="date" value={lastPeriodStart} max={localDateInputValue()} onChange={(event) => setLastPeriodStart(event.target.value)} />
+                                <span className="field-hint">Leave blank if you don’t remember.</span>
                             </label>
                             <label>
-                                Average period length
-                                <span className="number-input-wrap"><input type="number" min={1} max={10} value={averagePeriodLength} onChange={(event) => setAveragePeriodLength(event.target.value)} required /><span>days</span></span>
+                                When did it end?
+                                <input type="date" value={lastPeriodEnd} min={lastPeriodStart || undefined} max={localDateInputValue()} onChange={(event) => setLastPeriodEnd(event.target.value)} />
+                                <span className="field-hint">Leave blank if it hasn’t ended or you don’t remember.</span>
                             </label>
                         </div>
+
+                        <label>
+                            Is your cycle usually…
+                            <select value={cycleRegularity} onChange={(event) => setCycleRegularity(event.target.value as 'regular' | 'irregular' | 'unknown')}>
+                                <option value="regular">Regular</option>
+                                <option value="irregular">Irregular</option>
+                                <option value="unknown">I don’t know</option>
+                            </select>
+                        </label>
+
+                        <div className="cycle-settings__number-fields">
+                            <label>
+                                How many days is your usual cycle?
+                                <span className="number-input-wrap"><input type="number" min={21} max={45} value={averageCycleLength} onChange={(event) => setAverageCycleLength(event.target.value)} placeholder="I don’t know" /><span>days</span></span>
+                                <span className="field-hint">Count from the first day of one period to the first day of the next. Leave blank if unsure.</span>
+                            </label>
+                            <label>
+                                How many days does your period usually last?
+                                <span className="number-input-wrap"><input type="number" min={1} max={10} value={averagePeriodLength} onChange={(event) => setAveragePeriodLength(event.target.value)} placeholder="I don’t know" /><span>days</span></span>
+                                <span className="field-hint">Leave blank if you’re not sure yet.</span>
+                            </label>
+                        </div>
+
                         <Button type="submit" disabled={isSaving}>
                             {isSaving ? 'Saving your details…' : 'Save cycle details'}
                             <span className="button__icon" aria-hidden="true">→</span>
                         </Button>
-                        <p className="cycle-settings__privacy">Only your signed-in account can access these cycle details.</p>
+                        <p className="cycle-settings__privacy">Only your signed-in account can access these cycle details. You can change them later.</p>
                     </form>
                 </section>
 
