@@ -68,6 +68,31 @@ function sunSignForDate(value: string): string {
     if (md >= 120 && md <= 218) return 'Aquarius';
     return 'Pisces';
 }
+const WEEKLY_SIZE: Record<number, { size: string; icon: string }> = {
+    4: { size: 'poppy seed', icon: '🌱' }, 5: { size: 'sesame seed', icon: '🌱' },
+    6: { size: 'lentil', icon: '🫘' }, 7: { size: 'grape', icon: '🍇' },
+    8: { size: 'raspberry', icon: '🍓' }, 9: { size: 'cherry', icon: '🍒' },
+    10: { size: 'strawberry', icon: '🍓' }, 11: { size: 'fig', icon: '🫒' },
+    12: { size: 'plum', icon: '🟣' }, 13: { size: 'peach', icon: '🍑' },
+    14: { size: 'lemon', icon: '🍋' }, 15: { size: 'apple', icon: '🍎' },
+    16: { size: 'avocado', icon: '🥑' }, 17: { size: 'pear', icon: '🍐' },
+    18: { size: 'bell pepper', icon: '🫑' }, 19: { size: 'mango', icon: '🥭' },
+    20: { size: 'banana', icon: '🍌' }, 21: { size: 'carrot', icon: '🥕' },
+    22: { size: 'papaya', icon: '🥭' }, 23: { size: 'grapefruit', icon: '🍊' },
+    24: { size: 'ear of corn', icon: '🌽' }, 25: { size: 'cauliflower', icon: '🥦' },
+    26: { size: 'lettuce', icon: '🥬' }, 27: { size: 'cauliflower', icon: '🥦' },
+    28: { size: 'eggplant', icon: '🍆' }, 29: { size: 'butternut squash', icon: '🎃' },
+    30: { size: 'cabbage', icon: '🥬' }, 31: { size: 'coconut', icon: '🥥' },
+    32: { size: 'squash', icon: '🎃' }, 33: { size: 'pineapple', icon: '🍍' },
+    34: { size: 'cantaloupe', icon: '🍈' }, 35: { size: 'honeydew melon', icon: '🍈' },
+    36: { size: 'romaine lettuce', icon: '🥬' }, 37: { size: 'Swiss chard', icon: '🥬' },
+    38: { size: 'leek', icon: '🥬' }, 39: { size: 'mini watermelon', icon: '🍉' },
+    40: { size: 'pumpkin', icon: '🎃' },
+};
+function sizeComparison(week: number): { size: string; icon: string } | null {
+    return WEEKLY_SIZE[week] ?? null;
+}
+
 function weekFocus(week: number): { title: string; copy: string } {
     if (week <= 4) return { title: 'The earliest chapter', copy: 'These early weeks can feel quiet or full of questions. Your maternity care team can help confirm dates and explain what is typical for your situation.' };
     if (week <= 8) return { title: 'Foundations are forming', copy: 'Early development is underway. Use prenatal appointments to understand the milestones and screening options that apply to you.' };
@@ -177,7 +202,7 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
             <section className="pregnancy-overview">
                 <article className="pregnancy-week-card">
                     <div className="pregnancy-week-ring" style={{ background: 'conic-gradient(#a78bb4 ' + progress + '%, #eee4f0 0)' }}><div><strong>{week}</strong><span>WEEK</span></div></div>
-                    <div className="pregnancy-week-card__copy"><p className="pregnancy-eyebrow">YOUR PREGNANCY, RIGHT NOW</p><h2>Week {week} · {pregnancy.gestational_day_in_week} days</h2><p>{focus.title}</p><small>{focus.copy}</small></div>
+                    <div className="pregnancy-week-card__copy"><p className="pregnancy-eyebrow">YOUR PREGNANCY, RIGHT NOW</p><h2>Week {week} · {pregnancy.gestational_day_in_week} days</h2><p>{focus.title}</p><small>{focus.copy}</small>{sizeComparison(week) && <div className="pregnancy-size-comparison"><span aria-hidden="true">{sizeComparison(week)?.icon}</span><div><small>JUST-FOR-FUN SIZE COMPARISON</small><strong>About the size of a {sizeComparison(week)?.size}</strong></div></div>}</div>
                 </article>
                 <article className="pregnancy-due-card"><span aria-hidden="true">🌷</span><p className="pregnancy-eyebrow">YOUR ESTIMATED DUE DATE</p><strong>{prettyDate(pregnancy.due_date)}</strong><p>{daysCopy}</p><small>Dates are estimates, not promises. Your maternity care team may revise your due date.</small><a className="pregnancy-edit-link" href="/onboarding?journey=pregnancy">Update dates or cosmic preferences ↗</a></article>
             </section>
