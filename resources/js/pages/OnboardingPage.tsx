@@ -45,6 +45,13 @@ function dateParts(value: string): Date | null {
 function localDateString(date: Date): string {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
+function addDaysToDateString(value: string, days: number): string {
+    if (!value) return '';
+    const date = new Date(value + 'T12:00:00');
+    date.setDate(date.getDate() + days);
+    return localDateString(date);
+}
+
 function CalendarField({ label, hint, value, onChange, maxDate, minDate }: {
     label: string; hint?: string; value: string; onChange: (value: string) => void;
     maxDate?: string; minDate?: string;
@@ -160,6 +167,11 @@ export default function OnboardingPage() {
     const [wantsBabyAstrology, setWantsBabyAstrology] = useState(false);
     const pregnancyJourney = goal === 'pregnancy_support';
     const activeSteps = pregnancyJourney ? [STEPS[0], STEPS[1], { eyebrow: 'YOUR PREGNANCY JOURNEY', title: 'A little life, a whole new universe', subtitle: 'We’ll use the date you know best to estimate your stage. Your maternity care team remains your source for medical guidance.' }, STEPS[3]] : STEPS;
+    const previewDueDate = pregnancyDateSource === 'due_date' ? pregnancyDueDate : pregnancyDateSource === 'last_period_date' ? addDaysToDateString(pregnancyLastPeriodDate, 280) : addDaysToDateString(pregnancyConceptionDate, 266);
+    const previewDaysUntilDue = previewDueDate ? Math.round((new Date(previewDueDate + 'T12:00:00').getTime() - new Date(localDateString(new Date()) + 'T12:00:00').getTime()) / 86400000) : null;
+    const previewGestationalDays = previewDaysUntilDue === null ? null : Math.max(0, 280 - previewDaysUntilDue);
+    const previewWeek = previewGestationalDays === null ? null : Math.max(1, Math.floor(previewGestationalDays / 7));
+    const previewTrimester = previewWeek === null ? null : (previewWeek <= 13 ? 1 : previewWeek <= 27 ? 2 : 3);
 
     useEffect(() => {
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
@@ -365,6 +377,7 @@ export default function OnboardingPage() {
                         {pregnancyDateSource === 'due_date' && <CalendarField label="Your estimated due date" value={pregnancyDueDate} onChange={setPregnancyDueDate} hint="This is an estimate, and your care team may update it." />}
                         {pregnancyDateSource === 'last_period_date' && <CalendarField label="First day of your last period" value={pregnancyLastPeriodDate} maxDate={localDateString(new Date())} onChange={setPregnancyLastPeriodDate} hint="We use 280 days from this date as a conventional estimate." />}
                         {pregnancyDateSource === 'conception_date' && <CalendarField label="Estimated conception date" value={pregnancyConceptionDate} maxDate={localDateString(new Date())} onChange={setPregnancyConceptionDate} hint="We use 266 days from this date as a conventional estimate." />}
+                        {previewWeek !== null && previewTrimester !== null && <div className="pregnancy-stage-preview"><span aria-hidden="true">✦</span><div><small>YOUR STAGE, ESTIMATED AUTOMATICALLY</small><strong>Week {previewWeek} · Trimester {previewTrimester}</strong><small>Estimated due date: {new Date(previewDueDate + 'T12:00:00').toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</small></div></div>}
                         <label className="pregnancy-astrology-toggle"><input type="checkbox" checked={wantsBabyAstrology} onChange={event => setWantsBabyAstrology(event.target.checked)} /><span aria-hidden="true">✦</span><span><strong>Save a little Star Child sky keepsake?</strong><small>Optional astrology for fun. A due date cannot predict an exact birth chart or guarantee a zodiac sign.</small></span></label>
                         <p className="pregnancy-onboarding-safety">Pregnancy dates and week estimates can change. Crescent supports your personal journal; it does not replace prenatal care or medical advice.</p>
                     </div>}
