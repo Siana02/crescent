@@ -53,7 +53,7 @@ class DashboardController extends Controller
         }
 
         $todayCheckin = $isPregnancyJourney ? null : $user->dailyCheckins()->whereDate('log_date', $today->toDateString())->first();
-        $pregnancy = $isPregnancyJourney ? $user->pregnancy()->where('status', $isPostpartumJourney ? 'postpartum' : 'active')->first() : null;
+        $pregnancy = $isPregnancyJourney ? $user->pregnancies()->where('status', $isPostpartumJourney ? 'postpartum' : 'active')->latest()->first() : null;
         $pregnancySummary = null;
 
         if ($pregnancy) {
