@@ -10,9 +10,6 @@ class CycleProfileController extends Controller
 {
     public function update(Request $request): JsonResponse
     {
-        // Older clients may omit this optional preference; solo is the safe default.
-        $request->merge(['partner_preference' => $request->input('partner_preference', 'solo')]);
-
         $validated = $request->validate([
             'average_cycle_length' => ['nullable', 'integer', 'between:21,45'],
             'average_period_length' => ['nullable', 'integer', 'between:1,10'],
@@ -20,7 +17,7 @@ class CycleProfileController extends Controller
             'timezone' => ['required', 'string', 'timezone'],
             'display_name' => ['nullable', 'string', 'max:100'],
             'wants_astrology' => ['sometimes', 'boolean'],
-            'partner_preference' => ['required', Rule::in(['solo', 'observer', 'co_tracker'])],
+            'partner_preference' => ['sometimes', Rule::in(['solo', 'observer', 'co_tracker'])],
             'birth_date' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
             'contraception_type' => ['nullable', Rule::in(['none', 'pill', 'hormonal_iud', 'copper_iud', 'implant', 'injection', 'patch', 'ring', 'other', 'prefer_not_to_say'])],
             'primary_goal' => ['sometimes', Rule::in(['track_cycle', 'predict_moon', 'manage_symptoms', 'cosmic_cycle', 'fertility_support'])],
