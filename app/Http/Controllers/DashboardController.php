@@ -25,9 +25,20 @@ class DashboardController extends Controller
         $lastStart = $latestPeriod
             ? CarbonImmutable::parse($latestPeriod->start_date->format('Y-m-d'), $profile->timezone)->startOfDay()
             : null;
-        $estimatedNext = ($lastStart && $profile->average_cycle_length)
+        $usesHormonalContraception = in_array($profile->contraception_type, ['pill', 'hormonal_iud', 'implant', 'injection', 'patch', 'ring'], true);
+        $estimatedNext = ($lastStart && $profile->average_cycle_length && ! $usesHormonalContraception)
             ? $lastStart->addDays($profile->average_cycle_length)
             : null;
+        $fertilityWindow = null;
+
+        if ($estimatedNext && $profile->contraception_type === 'none' && $profile->cycle_regularity !== 'irregular') {
+            $estimatedOvulation = $estimatedNext->subDays(14);
+            $fertilityWindow = [
+                'ovulation_date' => $estimatedOvulation->toDateString(),
+                'start_date' => $estimatedOvulation->subDays(5)->toDateString(),
+                'end_date' => $estimatedOvulation->addDay()->toDateString(),
+            ];
+        }
         $cycleDay = $lastStart ? ((int) $lastStart->diffInDays($today) + 1) : null;
         $daysUntilEstimate = null;
 
@@ -66,6 +77,7 @@ class DashboardController extends Controller
             'cycle_day' => $cycleDay,
             'estimated_next_period' => $estimatedNext?->toDateString(),
             'days_until_estimate' => $daysUntilEstimate,
+            'fertility_window' => $fertilityWindow,
             'today_checkin' => $todayCheckin ? [
                 'log_date' => $todayCheckin->log_date->format('Y-m-d'),
                 'energy_level' => $todayCheckin->energy_level,
