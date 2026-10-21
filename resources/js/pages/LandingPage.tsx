@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Button from '../components/Button';
 
 const features = [
     {
@@ -92,9 +93,9 @@ export default function LandingPage() {
                     <span className="menu-toggle__lines" aria-hidden="true"><span /><span /><span /></span>
                 </button>
 
-                <a className="header-link" href="#get-started" onClick={() => setIsMenuOpen(false)}>
-                    Your journey <span aria-hidden="true">↗</span>
-                </a>
+                <Button href="#get-started" variant="outline" className="header-link" onClick={() => setIsMenuOpen(false)}>
+                    Your journey <span className="button__icon" aria-hidden="true">↗</span>
+                </Button>
             </header>
 
             <main>
@@ -118,12 +119,12 @@ export default function LandingPage() {
                         </p>
 
                         <div className="hero-actions" id="get-started">
-                            <a className="button button--primary" href="#how-it-works">
-                                Explore Crescent <span aria-hidden="true">→</span>
-                            </a>
-                            <a className="button button--quiet" href="#our-promise">
+                            <Button href="#how-it-works" variant="primary">
+                                Explore Crescent <span className="button__icon" aria-hidden="true">→</span>
+                            </Button>
+                            <Button href="#our-promise" variant="quiet">
                                 Get to know us
-                            </a>
+                            </Button>
                         </div>
 
                         <div className="hero-footnote">
@@ -213,7 +214,7 @@ export default function LandingPage() {
                     <p className="closing-cta__overline">THERE IS NO ONE WAY TO BE YOU</p>
                     <h2>Begin wherever <em>you are.</em></h2>
                     <p>Make a little space for noticing, learning, and caring for yourself.</p>
-                    <a className="button button--light" href="#home">Come as you are <span aria-hidden="true">→</span></a>
+                    <Button href="#home" variant="light" className="closing-cta__button">Come as you are <span className="button__icon" aria-hidden="true">→</span></Button>
                 </section>
             </main>
 
