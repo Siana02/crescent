@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CycleProfileController;
+use App\Http\Controllers\DailyCheckinController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PeriodLogController;
 use Illuminate\Support\Facades\Route;
@@ -19,4 +20,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/dashboard', [DashboardController::class, 'show']);
     Route::put('/api/cycle-profile', [CycleProfileController::class, 'update']);
     Route::post('/api/periods', [PeriodLogController::class, 'store']);
+    Route::post('/api/daily-checkins', [DailyCheckinController::class, 'store'])->middleware('throttle:30,1');
 });
