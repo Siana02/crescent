@@ -5,6 +5,8 @@ use App\Http\Controllers\CycleProfileController;
 use App\Http\Controllers\DailyCheckinController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PeriodLogController;
+use App\Http\Controllers\RelationshipController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome');
