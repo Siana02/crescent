@@ -24,7 +24,11 @@ class DashboardController extends Controller
         $activeJourney = $profile->active_journey ?? 'cycle';
         $isPregnancyJourney = in_array($activeJourney, ['pregnancy', 'postpartum'], true);
         $isPostpartumJourney = $activeJourney === 'postpartum';
-        $latestPeriod = $isPregnancyJourney ? null : $user->periodLogs()->orderByDesc('start_date')->first();
+        $periodQuery = $user->periodLogs();
+        if ($profile->cycle_tracking_started_at) {
+            $periodQuery->whereDate('start_date', '>=', $profile->cycle_tracking_started_at->format('Y-m-d'));
+        }
+        $latestPeriod = $isPregnancyJourney ? null : $periodQuery->orderByDesc('start_date')->first();
         $today = CarbonImmutable::today($profile->timezone);
         $lastStart = $latestPeriod
             ? CarbonImmutable::parse($latestPeriod->start_date->format('Y-m-d'), $profile->timezone)->startOfDay()
@@ -130,6 +134,7 @@ class DashboardController extends Controller
                 'wants_astrology' => $profile->wants_astrology,
                 'partner_preference' => $profile->partner_preference,
                 'active_journey' => $profile->active_journey ?? 'cycle',
+                'cycle_tracking_started_at' => $profile->cycle_tracking_started_at?->format('Y-m-d'),
             ],
             'latest_period' => $latestPeriod ? [
                 'start_date' => $latestPeriod->start_date->format('Y-m-d'),
