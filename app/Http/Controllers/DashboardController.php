@@ -64,7 +64,7 @@ class DashboardController extends Controller
             $dueDate = CarbonImmutable::parse($pregnancy->due_date->format('Y-m-d'), $profile->timezone)->startOfDay();
             $daysUntilDue = $today->diffInDays($dueDate, false);
             $gestationalDays = max(0, 280 - $daysUntilDue);
-            $gestationalWeek = max(1, (int) floor($gestationalDays / 7) + 1);
+            $gestationalWeek = max(1, (int) floor($gestationalDays / 7));
             $trimester = $gestationalWeek <= 13 ? 1 : ($gestationalWeek <= 27 ? 2 : 3);
             $todayPregnancyCheckin = $isPostpartumJourney ? null : $pregnancy->checkins()->whereDate('log_date', $today->toDateString())->first();
             $postpartumLogsToday = $isPostpartumJourney ? $pregnancy->postpartumLogs()->whereDate('log_date', $today->toDateString())->latest()->get()->map(fn ($log) => ['id' => $log->id, 'log_date' => $log->log_date->format('Y-m-d'), 'category' => $log->category, 'notes' => $log->notes])->values() : collect();
@@ -77,7 +77,7 @@ class DashboardController extends Controller
                 'wants_baby_astrology' => (bool) $pregnancy->wants_baby_astrology,
                 'status' => $pregnancy->status,
                 'gestational_week' => $gestationalWeek,
-                'gestational_day_in_week' => ($gestationalDays % 7) + 1,
+                'gestational_day_in_week' => $gestationalDays % 7,
                 'gestational_days' => $gestationalDays,
                 'trimester' => $trimester,
                 'days_until_due' => $daysUntilDue,
