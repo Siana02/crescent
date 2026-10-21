@@ -229,7 +229,7 @@ export default function DashboardPage() {
                         <div className="moon-phase-display"><span className="moon-phase-display__symbol" aria-hidden="true">{moon.symbol}</span><div><p className="moon-phase-display__name">{moon.name}</p><p className="moon-phase-display__caption">Approximate lunar phase</p></div></div>
                         <p className="dashboard-card__description">A small invitation to pause, look up, and notice how you feel — without needing the sky to explain it.</p>
                         <p className="dashboard-card__footnote">Lunar phases are for cosmic curiosity, not cycle prediction.</p>
-                    </article>
+                    </article>}
                 </section>
 
                 {data?.profile.wants_astrology && <section className="cosmic-note">
@@ -247,7 +247,7 @@ export default function DashboardPage() {
                         {moonArchetype && <div className="archetype-note"><span aria-hidden="true">☾</span><div><strong>Your moon-cycle archetype: {moonArchetype}</strong><p>Your last logged period began under an approximate {periodMoon?.name.toLowerCase()} moon. Some spiritual traditions give these phases symbolic names; treat this as a playful reflection, not a personality label or a biological pattern.</p></div></div>}
                         {sunElement && <div className="element-note"><span className="element-note__symbol" aria-hidden="true">{sunElement === 'Fire' ? '♨' : sunElement === 'Earth' ? '❋' : sunElement === 'Air' ? '〰' : '≈'}</span><div><strong>Your elemental reflection · {sunElement}</strong><p>{sunElement === 'Fire' ? 'What would it feel like to channel your spark into one thing that matters today?' : sunElement === 'Earth' ? 'A small grounding ritual: soften your shoulders, drink some water, and choose one gentle priority.' : sunElement === 'Air' ? 'Give your thoughts a little room to move. A journal page or fresh-air pause may help.' : 'Make space for softness without asking yourself to explain every feeling.'}</p></div></div>}
                     </div>
-                </section>
+                </section>}
 
                 <div className="dashboard-lower-grid">
                     <section className="checkin-panel">
@@ -311,6 +311,7 @@ export default function DashboardPage() {
                                 <label>Your Moon sign <span className="field-hint">If you already know it</span><select value={moonSign} onChange={e => setMoonSign(e.target.value)}><option value="">I don’t know / skip</option>{SIGNS.map(sign => <option key={sign}>{sign}</option>)}</select></label>
                                 <label>Your Rising sign <span className="field-hint">If you already know it</span><select value={risingSign} onChange={e => setRisingSign(e.target.value)}><option value="">I don’t know / skip</option>{SIGNS.map(sign => <option key={sign}>{sign}</option>)}</select></label>
                             </div>
+                            </>}
                             <Button type="submit" disabled={isSaving}>{isSaving ? 'Saving your space…' : needsOnboarding ? 'Save my details' : 'Save changes'} <span aria-hidden="true">✧</span></Button>
                             <p className="cycle-settings__privacy">You can leave unknown values blank. We only show a next-period estimate when there’s enough cycle information to calculate one.</p>
                         </form>
