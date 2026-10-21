@@ -11,8 +11,9 @@ return new class extends Migration
         Schema::create('cycle_profiles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
-            $table->unsignedTinyInteger('average_cycle_length')->default(28);
-            $table->unsignedTinyInteger('average_period_length')->default(5);
+            $table->unsignedTinyInteger('average_cycle_length')->nullable();
+            $table->unsignedTinyInteger('average_period_length')->nullable();
+            $table->string('cycle_regularity', 16)->default('unknown');
             $table->string('timezone', 64)->default('UTC');
             $table->timestamps();
         });
