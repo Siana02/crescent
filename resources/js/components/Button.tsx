@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react';
 
 type ButtonVariant = 'primary' | 'outline' | 'quiet' | 'light';
+type ButtonShape = 'rounded' | 'square';
 
 type ButtonProps = {
     children: ReactNode;
     href?: string;
     variant?: ButtonVariant;
+    shape?: ButtonShape;
     className?: string;
     type?: 'button' | 'submit' | 'reset';
     onClick?: () => void;
@@ -17,13 +19,14 @@ export default function Button({
     children,
     href,
     variant = 'primary',
+    shape = 'rounded',
     className = '',
     type = 'button',
     onClick,
     ariaLabel,
     disabled = false,
 }: ButtonProps) {
-    const classes = ['button', `button--${variant}`, className].filter(Boolean).join(' ');
+    const classes = ['button', `button--${variant}`, `button--shape-${shape}`, className].filter(Boolean).join(' ');
     const label = (
         <span className="button__label">
             <span className="button__label-current">{children}</span>
