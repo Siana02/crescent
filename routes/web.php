@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PeriodLogController;
 use App\Http\Controllers\PregnancyController;
 use App\Http\Controllers\RelationshipController;
+use App\Http\Controllers\SexLogController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,6 +19,9 @@ Route::post('/auth/register', [AuthController::class, 'register'])->middleware('
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/connections', fn () => view('welcome'));
+    Route::get('/profile', fn () => view('welcome'));
+    Route::get('/settings', fn () => view('welcome'));
     Route::get('/dashboard', function (Request $request) {
         if (! $request->user()->cycleProfile?->onboarding_completed) {
             return redirect('/onboarding');
@@ -38,6 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/api/cycle-profile', [CycleProfileController::class, 'update']);
     Route::post('/api/periods', [PeriodLogController::class, 'store']);
     Route::post('/api/daily-checkins', [DailyCheckinController::class, 'store'])->middleware('throttle:30,1');
+    Route::post('/api/sex-logs', [SexLogController::class, 'store'])->middleware('throttle:30,1');
     Route::put('/api/pregnancy', [PregnancyController::class, 'update']);
     Route::post('/api/pregnancy/checkins', [PregnancyController::class, 'checkin'])->middleware('throttle:30,1');
     Route::post('/api/pregnancy/postpartum', [PregnancyController::class, 'transitionPostpartum']);

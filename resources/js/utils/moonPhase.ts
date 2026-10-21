@@ -8,14 +8,15 @@ const SYNODIC_MONTH_DAYS = 29.530588853;
 const KNOWN_NEW_MOON_UTC = Date.UTC(2000, 0, 6, 18, 14);
 
 const phases = [
-    { name: 'New moon', symbol: '🌑', threshold: 0.03 },
-    { name: 'Waxing crescent', symbol: '🌒', threshold: 0.22 },
-    { name: 'First quarter', symbol: '🌓', threshold: 0.28 },
-    { name: 'Waxing gibbous', symbol: '🌔', threshold: 0.47 },
-    { name: 'Full moon', symbol: '🌕', threshold: 0.53 },
-    { name: 'Waning gibbous', symbol: '🌖', threshold: 0.72 },
-    { name: 'Last quarter', symbol: '🌗', threshold: 0.78 },
-    { name: 'Waning crescent', symbol: '🌘', threshold: 0.97 },
+    // Boundaries sit halfway between the eight principal phase points.
+    { name: 'New moon', symbol: '🌑', threshold: 0.0625 },
+    { name: 'Waxing crescent', symbol: '🌒', threshold: 0.1875 },
+    { name: 'First quarter', symbol: '🌓', threshold: 0.3125 },
+    { name: 'Waxing gibbous', symbol: '🌔', threshold: 0.4375 },
+    { name: 'Full moon', symbol: '🌕', threshold: 0.5625 },
+    { name: 'Waning gibbous', symbol: '🌖', threshold: 0.6875 },
+    { name: 'Last quarter', symbol: '🌗', threshold: 0.8125 },
+    { name: 'Waning crescent', symbol: '🌘', threshold: 0.9375 },
     { name: 'New moon', symbol: '🌑', threshold: 1 },
 ];
 

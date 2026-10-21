@@ -33,6 +33,15 @@ class DashboardController extends Controller
         $lastStart = $latestPeriod
             ? CarbonImmutable::parse($latestPeriod->start_date->format('Y-m-d'), $profile->timezone)->startOfDay()
             : null;
+        $periodHistory = $isPregnancyJourney ? collect() : (clone $periodQuery)
+            ->reorder('start_date')
+            ->whereDate('start_date', '>=', $today->subMonths(6)->toDateString())
+            ->get()
+            ->map(fn ($period) => [
+                'start_date' => $period->start_date->format('Y-m-d'),
+                'end_date' => $period->end_date?->format('Y-m-d'),
+            ])
+            ->values();
         $usesHormonalContraception = in_array($profile->contraception_type, ['pill', 'hormonal_iud', 'implant', 'injection', 'patch', 'ring'], true);
         $estimatedNext = ($lastStart && $profile->average_cycle_length && ! $usesHormonalContraception)
             ? $lastStart->addDays($profile->average_cycle_length)
@@ -140,6 +149,7 @@ class DashboardController extends Controller
                 'start_date' => $latestPeriod->start_date->format('Y-m-d'),
                 'end_date' => $latestPeriod->end_date?->format('Y-m-d'),
             ] : null,
+            'period_history' => $periodHistory,
             'cycle_day' => $cycleDay,
             'estimated_next_period' => $estimatedNext?->toDateString(),
             'days_until_estimate' => $daysUntilEstimate,

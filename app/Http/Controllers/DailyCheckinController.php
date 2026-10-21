@@ -10,8 +10,15 @@ use Illuminate\Validation\Rule;
 class DailyCheckinController extends Controller
 {
     private const SYMPTOMS = [
-        'cramps', 'bloating', 'headache', 'tender_breasts', 'acne',
-        'fatigue', 'radiant_skin', 'backache', 'nausea',
+        'cramps', 'bloating', 'headache', 'tender_breasts', 'breast_tenderness', 'breast_swelling', 'acne',
+        'fatigue', 'radiant_skin', 'backache', 'lower_back_pain', 'pelvic_pain', 'one_sided_pain', 'leg_pain',
+        'painful_bowel_movement', 'painful_urination', 'migraine', 'dizziness', 'joint_pain', 'muscle_aches',
+        'light_sensitivity', 'water_retention', 'oily_skin', 'dry_skin', 'hair_changes', 'nausea', 'constipation',
+        'diarrhea', 'gas', 'appetite_increase', 'appetite_decrease', 'food_cravings', 'watery_discharge',
+        'creamy_discharge', 'eggwhite_discharge', 'sticky_discharge', 'dryness', 'itching', 'unusual_odor',
+        'spotting', 'heavy_bleeding', 'low_energy', 'high_energy', 'insomnia', 'sleepiness', 'anxiety',
+        'irritability', 'low_mood', 'mood_swings', 'brain_fog', 'difficulty_concentrating', 'libido_increase',
+        'libido_decrease',
     ];
 
     public function store(Request $request): JsonResponse
@@ -23,7 +30,7 @@ class DailyCheckinController extends Controller
             'log_date' => ['sometimes', 'date_format:Y-m-d', 'before_or_equal:'.$today],
             'energy_level' => ['nullable', Rule::in(['low', 'balanced', 'high', 'peak'])],
             'mood' => ['nullable', Rule::in(['calm', 'irritated', 'intuitive', 'anxious', 'happy', 'tender', 'focused', 'overwhelmed'])],
-            'symptoms' => ['sometimes', 'array', 'max:9'],
+            'symptoms' => ['sometimes', 'array', 'max:60'],
             'symptoms.*' => ['string', Rule::in(self::SYMPTOMS)],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);

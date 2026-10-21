@@ -39,6 +39,11 @@ class User extends Authenticatable
         return $this->hasMany(DailyCheckin::class);
     }
 
+    public function sexLogs(): HasMany
+    {
+        return $this->hasMany(SexLog::class);
+    }
+
     public function initiatedRelationships(): HasMany
     {
         return $this->hasMany(Relationship::class, 'user_one_id');
