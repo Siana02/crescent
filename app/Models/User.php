@@ -24,9 +24,9 @@ class User extends Authenticatable
         return $this->hasOne(CycleProfile::class);
     }
 
-    public function pregnancy(): HasOne
+    public function pregnancies(): HasMany
     {
-        return $this->hasOne(Pregnancy::class);
+        return $this->hasMany(Pregnancy::class);
     }
 
     public function periodLogs(): HasMany
