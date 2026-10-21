@@ -8,26 +8,34 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('cycle_profiles', function (Blueprint $table) {
-            $table->date('birth_date')->nullable();
-            $table->string('contraception_type', 32)->nullable();
-            $table->string('primary_goal', 32)->default('track_cycle');
-            $table->time('birth_time')->nullable();
-            $table->string('birth_place', 160)->nullable();
-            $table->string('sun_sign', 16)->nullable();
-            $table->string('moon_sign', 16)->nullable();
-            $table->string('rising_sign', 16)->nullable();
-            $table->boolean('onboarding_completed')->default(false);
-        });
+        // These optional personalization columns are also present in the original
+        // cycle_profiles creation migration. Check individually so this migration
+        // remains safe for fresh databases and databases created from older schemas.
+        $columns = [
+            'birth_date' => fn (Blueprint $table) => $table->date('birth_date')->nullable(),
+            'contraception_type' => fn (Blueprint $table) => $table->string('contraception_type', 32)->nullable(),
+            'primary_goal' => fn (Blueprint $table) => $table->string('primary_goal', 32)->default('track_cycle'),
+            'birth_time' => fn (Blueprint $table) => $table->time('birth_time')->nullable(),
+            'birth_place' => fn (Blueprint $table) => $table->string('birth_place', 160)->nullable(),
+            'sun_sign' => fn (Blueprint $table) => $table->string('sun_sign', 16)->nullable(),
+            'moon_sign' => fn (Blueprint $table) => $table->string('moon_sign', 16)->nullable(),
+            'rising_sign' => fn (Blueprint $table) => $table->string('rising_sign', 16)->nullable(),
+            'onboarding_completed' => fn (Blueprint $table) => $table->boolean('onboarding_completed')->default(false),
+        ];
+
+        foreach ($columns as $name => $addColumn) {
+            if (!Schema::hasColumn('cycle_profiles', $name)) {
+                Schema::table('cycle_profiles', function (Blueprint $table) use ($addColumn) {
+                    $addColumn($table);
+                });
+            }
+        }
     }
 
     public function down(): void
     {
-        Schema::table('cycle_profiles', function (Blueprint $table) {
-            $table->dropColumn([
-                'birth_date', 'contraception_type', 'primary_goal', 'birth_time',
-                'birth_place', 'sun_sign', 'moon_sign', 'rising_sign', 'onboarding_completed',
-            ]);
-        });
+        // Intentionally leave these columns in place: some are defined by the
+        // original create-table migration, so dropping them here could remove
+        // schema owned by that earlier migration.
     }
 };
