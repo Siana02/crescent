@@ -28,7 +28,9 @@ class DashboardController extends Controller
         $lastStart = $latestPeriod
             ? CarbonImmutable::parse($latestPeriod->start_date->format('Y-m-d'), $profile->timezone)->startOfDay()
             : null;
-        $estimatedNext = $lastStart?->addDays($profile->average_cycle_length);
+        $estimatedNext = ($lastStart && $profile->average_cycle_length)
+            ? $lastStart->addDays($profile->average_cycle_length)
+            : null;
 
         $cycleDay = $lastStart ? ((int) $lastStart->diffInDays($today) + 1) : null;
         $daysUntilEstimate = null;
@@ -44,6 +46,7 @@ class DashboardController extends Controller
             'profile' => [
                 'average_cycle_length' => $profile->average_cycle_length,
                 'average_period_length' => $profile->average_period_length,
+                'cycle_regularity' => $profile->cycle_regularity,
                 'timezone' => $profile->timezone,
             ],
             'latest_period' => $latestPeriod ? [
