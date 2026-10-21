@@ -49,6 +49,28 @@ class DashboardController extends Controller
         }
 
         $todayCheckin = $user->dailyCheckins()->whereDate('log_date', $today->toDateString())->first();
+        $relationships = Relationship::with(['initiator.cycleProfile', 'companion.cycleProfile'])
+            ->where(function ($query) use ($user) {
+                $query->where('user_one_id', $user->id)->orWhere('user_two_id', $user->id);
+            })
+            ->latest()
+            ->get()
+            ->map(function (Relationship $relationship) use ($user) {
+                $isInitiator = $relationship->user_one_id === $user->id;
+                $companion = $isInitiator ? $relationship->companion : $relationship->initiator;
+
+                return [
+                    'id' => $relationship->id,
+                    'relationship_type' => $relationship->relationship_type,
+                    'status' => $relationship->status,
+                    'invite_code' => $isInitiator && $relationship->status === 'pending' ? $relationship->invite_code : null,
+                    'companion_name' => $relationship->status === 'accepted'
+                        ? ($companion?->cycleProfile?->display_name ?: $companion?->name)
+                        : null,
+                    'sharing_enabled' => (bool) ($relationship->sharing_preferences['cycle_details'] ?? false),
+                ];
+            })
+            ->values();
 
         return response()->json([
             'user' => ['name' => $user->name, 'email' => $user->email],
@@ -78,6 +100,7 @@ class DashboardController extends Controller
             'estimated_next_period' => $estimatedNext?->toDateString(),
             'days_until_estimate' => $daysUntilEstimate,
             'fertility_window' => $fertilityWindow,
+            'relationships' => $relationships,
             'today_checkin' => $todayCheckin ? [
                 'log_date' => $todayCheckin->log_date->format('Y-m-d'),
                 'energy_level' => $todayCheckin->energy_level,
