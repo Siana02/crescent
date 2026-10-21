@@ -383,10 +383,14 @@ class AstrologyController extends Controller
             return;
         }
         $key = Str::lower($label);
+        $degree = data_get($details, 'degree', data_get($details, 'position.degree', data_get($details, 'degree_in_sign', data_get($details, 'degreeInSign'))));
+        if (! is_numeric($degree) && is_numeric(data_get($details, 'longitude'))) {
+            $degree = fmod((float) data_get($details, 'longitude'), 30.0);
+        }
         $placements[$key] = [
             'name' => $label,
             'sign' => $signName,
-            'degree' => data_get($details, 'degree', data_get($details, 'position.degree', data_get($details, 'degree_in_sign', data_get($details, 'degreeInSign')))),
+            'degree' => $degree,
             'house' => data_get($details, 'house', data_get($details, 'house_number')),
             'retrograde' => (bool) data_get($details, 'retrograde', data_get($details, 'is_retrograde', data_get($details, 'isRetrograde', data_get($details, 'is_retro', false)))),
         ];
