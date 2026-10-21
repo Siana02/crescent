@@ -152,4 +152,20 @@ class PregnancyController extends Controller
             ],
         ], 201);
     }
+
+    public function returnToCycle(Request $request): JsonResponse
+    {
+        $request->user()->pregnancy()->where('status', 'postpartum')->firstOrFail();
+        $profile = $request->user()->cycleProfile()->firstOrCreate([], [
+            'timezone' => config('app.timezone', 'UTC'),
+        ]);
+        $profile->update([
+            'active_journey' => 'cycle',
+            'primary_goal' => 'track_cycle',
+            'average_cycle_length' => null,
+            'average_period_length' => null,
+        ]);
+
+        return response()->json(['message' => 'Cycle tracking is ready whenever you are. Your pregnancy and postpartum notes remain saved.']);
+    }
 }
