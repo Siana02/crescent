@@ -5,6 +5,7 @@ use App\Http\Controllers\CycleProfileController;
 use App\Http\Controllers\DailyCheckinController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PeriodLogController;
+use App\Http\Controllers\PregnancyController;
 use App\Http\Controllers\RelationshipController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -25,7 +26,8 @@ Route::middleware('auth')->group(function () {
         return view('welcome');
     })->name('dashboard');
     Route::get('/onboarding', function (Request $request) {
-        if ($request->user()->cycleProfile?->onboarding_completed) {
+        $isPregnancySetup = $request->query('journey') === 'pregnancy';
+        if ($request->user()->cycleProfile?->onboarding_completed && ! $isPregnancySetup) {
             return redirect('/dashboard');
         }
 
@@ -36,6 +38,11 @@ Route::middleware('auth')->group(function () {
     Route::put('/api/cycle-profile', [CycleProfileController::class, 'update']);
     Route::post('/api/periods', [PeriodLogController::class, 'store']);
     Route::post('/api/daily-checkins', [DailyCheckinController::class, 'store'])->middleware('throttle:30,1');
+    Route::put('/api/pregnancy', [PregnancyController::class, 'update']);
+    Route::post('/api/pregnancy/checkins', [PregnancyController::class, 'checkin'])->middleware('throttle:30,1');
+    Route::post('/api/pregnancy/postpartum', [PregnancyController::class, 'transitionPostpartum']);
+    Route::post('/api/pregnancy/postpartum-checkins', [PregnancyController::class, 'postpartumCheckin'])->middleware('throttle:30,1');
+    Route::post('/api/pregnancy/return-to-cycle', [PregnancyController::class, 'returnToCycle']);
     Route::post('/api/relationships/invite', [RelationshipController::class, 'invite'])->middleware('throttle:10,1');
     Route::post('/api/relationships/accept', [RelationshipController::class, 'accept'])->middleware('throttle:10,1');
 });

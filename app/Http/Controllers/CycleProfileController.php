@@ -20,7 +20,8 @@ class CycleProfileController extends Controller
             'partner_preference' => ['sometimes', Rule::in(['solo', 'observer', 'co_tracker'])],
             'birth_date' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
             'contraception_type' => ['nullable', Rule::in(['none', 'pill', 'hormonal_iud', 'copper_iud', 'implant', 'injection', 'patch', 'ring', 'other', 'prefer_not_to_say'])],
-            'primary_goal' => ['sometimes', Rule::in(['track_cycle', 'predict_moon', 'manage_symptoms', 'cosmic_cycle', 'fertility_support'])],
+            'primary_goal' => ['sometimes', Rule::in(['track_cycle', 'predict_moon', 'manage_symptoms', 'cosmic_cycle', 'fertility_support', 'trying_to_conceive', 'pregnancy_support', 'postpartum_support'])],
+            'active_journey' => ['sometimes', Rule::in(['cycle', 'fertility', 'pregnancy', 'postpartum'])],
             'birth_time' => ['nullable', 'date_format:H:i'],
             'birth_place' => ['nullable', 'string', 'max:160'],
             'moon_sign' => ['nullable', Rule::in(['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'])],
@@ -52,6 +53,7 @@ class CycleProfileController extends Controller
                 'display_name' => $profile->display_name,
                 'wants_astrology' => $profile->wants_astrology,
                 'partner_preference' => $profile->partner_preference,
+                'active_journey' => $profile->active_journey ?? 'cycle',
             ],
         ]);
     }

@@ -2,3 +2,24 @@
 @media(max-width:520px){.fertility-note{padding:19px}.fertility-note__dates{display:grid;grid-template-columns:1fr}}
 
 .relationship-hub{display:grid;grid-template-columns:.85fr 1.15fr;gap:25px;margin-top:22px;padding:25px;border:1px solid #e7d8e9;border-radius:17px;background:radial-gradient(ellipse at 100% 0,#f2e7f5,transparent 55%),#fffdfb}.relationship-hub h2{margin:7px 0 0;font-family:var(--serif);font-size:27px;font-weight:400;color:#5b4c61}.relationship-hub p:not(.dashboard-eyebrow){color:#8b7c90;font-size:10px;line-height:1.7}.relationship-hub__list{display:grid;gap:10px}.relationship-hub__item{display:flex;align-items:flex-start;gap:12px;padding:13px;border:1px solid #e8dce9;border-radius:12px;background:#fffafc}.relationship-hub__icon{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border-radius:50%;background:#f2e7f3;font-size:19px}.relationship-hub__item strong,.relationship-hub__item small{display:block}.relationship-hub__item strong{color:#5b4c61;font-size:10px}.relationship-hub__item small{margin-top:5px;color:#97879c;font-size:9px;line-height:1.6}.relationship-hub__item b{color:#84658f;letter-spacing:.08em}@media(max-width:800px){.relationship-hub{grid-template-columns:1fr}}
+
+
+.relationship-hub__intro{max-width:680px}
+.relationship-invite-form{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:18px 0 12px}
+.relationship-invite-form label{display:grid;gap:7px;min-width:min(100%,260px);flex:1;color:#715b7a;font-size:11px;font-weight:700}
+.relationship-invite-form select{min-height:42px;padding:10px 12px;border:1px solid #e2d5e8;border-radius:11px;background:#fffafd;color:#584461;font:inherit}
+.relationship-invite-form .button{min-height:42px}
+.relationship-new-code{display:grid;justify-items:start;gap:7px;margin:14px 0;padding:17px 20px;border:1px solid #e2cfe4;border-radius:16px;background:linear-gradient(120deg,#fff8fc,#f6eff9)}
+.relationship-new-code>span{color:#9b7ba5;font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.relationship-new-code>strong{color:#684c76;font-family:var(--serif,Georgia,serif);font-size:29px;letter-spacing:.18em}
+.relationship-new-code>button{padding:7px 13px;border:1px solid #d8c5dd;border-radius:99px;background:#fff;color:#745a7e;font-size:10px;cursor:pointer}
+.relationship-new-code>small{color:#97889c;font-size:9px;line-height:1.6}
+@media(max-width:560px){.relationship-invite-form{align-items:stretch;flex-direction:column}.relationship-invite-form label{width:100%}.relationship-new-code{width:100%}}
+
+
+.journey-switch-card{display:grid;grid-template-columns:40px minmax(0,1fr) auto;align-items:center;gap:15px;margin:18px 0 4px;padding:18px 20px;border:1px dashed #dfcce4;border-radius:15px;background:linear-gradient(115deg,#fffafd,#f8f0fa)}
+.journey-switch-card>span{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:#f1e5f5;font-size:21px}
+.journey-switch-card h2{margin:4px 0;color:#654f6d;font-family:var(--serif,Georgia,serif);font-size:21px;font-weight:400}
+.journey-switch-card p:not(.dashboard-eyebrow){max-width:700px;margin:4px 0 0;color:#93829a;font-size:9px;line-height:1.75}
+.journey-switch-card .button{white-space:nowrap}
+@media(max-width:760px){.journey-switch-card{grid-template-columns:40px minmax(0,1fr)}.journey-switch-card .button{grid-column:1/-1;width:100%}}

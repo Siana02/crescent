@@ -1,10 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import Button from '../components/Button';
+import PregnancyDashboard from './PregnancyDashboard';
+import PostpartumDashboard from './PostpartumDashboard';
 import { getMoonPhase } from '../utils/moonPhase';
 import '../styles/personalization.css';
 
 type Sign = 'Aries' | 'Taurus' | 'Gemini' | 'Cancer' | 'Leo' | 'Virgo' | 'Libra' | 'Scorpio' | 'Sagittarius' | 'Capricorn' | 'Aquarius' | 'Pisces';
-type Goal = 'track_cycle' | 'predict_moon' | 'manage_symptoms' | 'cosmic_cycle' | 'fertility_support';
+type Goal = 'track_cycle' | 'predict_moon' | 'manage_symptoms' | 'cosmic_cycle' | 'fertility_support' | 'trying_to_conceive' | 'pregnancy_support' | 'postpartum_support';
 type Regularity = 'regular' | 'irregular' | 'unknown';
 type DashboardData = {
     user: { name: string; email: string };
@@ -14,13 +16,14 @@ type DashboardData = {
         contraception_type: string | null; primary_goal: Goal; birth_time: string | null;
         birth_place: string | null; sun_sign: Sign | null; moon_sign: Sign | null;
         rising_sign: Sign | null; onboarding_completed: boolean;
-        display_name: string | null; wants_astrology: boolean; partner_preference: 'solo' | 'observer' | 'co_tracker';
+        display_name: string | null; wants_astrology: boolean; partner_preference: 'solo' | 'observer' | 'co_tracker'; active_journey: 'cycle' | 'fertility' | 'pregnancy' | 'postpartum';
     };
     latest_period: { start_date: string; end_date: string | null } | null;
     cycle_day: number | null; estimated_next_period: string | null; days_until_estimate: number | null;
     fertility_window: { ovulation_date: string; start_date: string; end_date: string } | null;
     relationships?: { id: number; relationship_type: 'observer' | 'co_tracker'; status: 'pending' | 'accepted' | 'revoked'; invite_code: string | null; companion_name: string | null; sharing_enabled: boolean }[];
     today_checkin: { log_date: string; energy_level: string | null; mood: string | null; symptoms: string[]; notes: string | null } | null;
+    pregnancy: { due_date: string; last_period_date: string | null; conception_date: string | null; due_date_source: string; wants_baby_astrology: boolean; status: string; gestational_week: number; gestational_day_in_week: number; gestational_days: number; trimester: number; days_until_due: number; today_checkin: { log_date: string; symptoms: string[]; mood: string | null; energy_level: string | null; notes: string | null } | null; postpartum_logs_today: { id: number; log_date: string; category: string; notes: string }[] } | null;
 };
 type ApiError = { message?: string; errors?: Record<string, string[]>; profile?: DashboardData['profile'] };
 const SIGNS: Sign[] = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
@@ -78,6 +81,9 @@ export default function DashboardPage() {
     const [error, setError] = useState('');
     const [notice, setNotice] = useState('');
     const [checkinNotice, setCheckinNotice] = useState('');
+    const [inviteType, setInviteType] = useState<'observer' | 'co_tracker'>('observer');
+    const [isInviting, setIsInviting] = useState(false);
+    const [newInviteCode, setNewInviteCode] = useState('');
     const moon = getMoonPhase();
     const periodMoon = data?.latest_period ? getMoonPhase(new Date(data.latest_period.start_date + 'T12:00:00')) : null;
     const moonArchetype = periodMoon?.name === 'New moon' ? 'White Moon' : periodMoon?.name === 'Full moon' ? 'Red Moon' : ['First quarter', 'Last quarter'].includes(periodMoon?.name ?? '') ? 'Quarter Moon' : periodMoon ? 'Crescent / Gibbous Moon' : null;
@@ -175,6 +181,26 @@ export default function DashboardPage() {
         finally { setIsCheckingIn(false); }
     }
 
+
+    async function handleInviteCompanion(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        setIsInviting(true); setError(''); setNotice(''); setNewInviteCode('');
+        try {
+            const response = await fetch('/api/relationships/invite', {
+                method: 'POST', credentials: 'same-origin',
+                headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken() },
+                body: JSON.stringify({ relationship_type: inviteType }),
+            });
+            const result = (await response.json()) as { invite_code?: string; message?: string; errors?: Record<string, string[]> };
+            if (!response.ok) throw new Error(firstError(result, 'We could not create your Cosmic Sync Code.'));
+            setNewInviteCode(result.invite_code ?? '');
+            setNotice('Your invitation is ready. Share the code whenever your companion is ready. ✨');
+            await loadDashboard();
+        } catch (e) {
+            setError(e instanceof Error ? e.message : 'We could not create your invitation.');
+        } finally { setIsInviting(false); }
+    }
+
     async function handleLogout() {
         try {
             await fetch('/auth/logout', { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrfToken() } });
@@ -182,6 +208,8 @@ export default function DashboardPage() {
     }
 
     if (isLoading) return <main className="dashboard-loading" aria-live="polite">Opening your little universe…</main>;
+    if (data?.profile.active_journey === 'pregnancy') return <PregnancyDashboard data={data} onLogout={handleLogout} onRefresh={loadDashboard} />;
+    if (data?.profile.active_journey === 'postpartum') return <PostpartumDashboard data={data} onLogout={handleLogout} onRefresh={loadDashboard} />;
     const estimatedDate = data?.estimated_next_period ?? null;
     const usesHormonalContraception = ['pill', 'hormonal_iud', 'implant', 'injection', 'patch', 'ring'].includes(data?.profile.contraception_type ?? '');
     const firstName = data?.profile.display_name?.trim() || data?.user.name.split(' ')[0] || 'there';
@@ -192,6 +220,9 @@ export default function DashboardPage() {
         manage_symptoms: 'Your daily check-ins can help you notice your own patterns and bring useful notes to a care appointment if you choose.',
         cosmic_cycle: 'Your cycle and the cosmos, side by side — with astrology always on your terms.',
         fertility_support: 'Cycle awareness and gentle estimates to support your fertility journey, without treating predictions as guarantees.',
+        trying_to_conceive: 'A fertility-focused space for cycle history, estimates and questions to discuss with your care team.',
+        pregnancy_support: 'Your pregnancy journey has its own dedicated space for week estimates, wellbeing notes and milestones.',
+        postpartum_support: 'A gentle space for recovery and your family’s changing rhythm.',
     };
 
     return (
@@ -210,11 +241,16 @@ export default function DashboardPage() {
                     <h1>Hello, {firstName}<em>Let’s check in.</em></h1>
                     <p>{goalCopy[data?.profile.primary_goal ?? 'track_cycle']}</p>
                 </div>
+                <section className="journey-switch-card">
+                    <span aria-hidden="true">🌷</span>
+                    <div><p className="dashboard-eyebrow">YOUR LIFE CAN CHANGE</p><h2>Has your journey changed?</h2><p>If you’re pregnant now, Crescent can move with you into a dedicated pregnancy space. Your existing cycle history stays saved, and period and fertility predictions will stop in the pregnancy journey.</p></div>
+                    <Button variant="outline" onClick={() => window.location.assign('/onboarding?journey=pregnancy')}>I’m currently pregnant ✧</Button>
+                </section>
 
                 {error && <p className="dashboard-alert" role="alert">{error}</p>}
                 {notice && <p className="dashboard-notice" role="status">{notice}</p>}
 
-                {!!data?.relationships?.length && <section className="relationship-hub"><div><p className="dashboard-eyebrow">YOUR RELATIONSHIP HUB ✧</p><h2>A little connection, on your terms</h2><p>Invitations do not share cycle details automatically. Sharing stays off until you choose otherwise.</p></div><div className="relationship-hub__list">{data.relationships.map(relationship => <article key={relationship.id} className="relationship-hub__item"><span className="relationship-hub__icon" aria-hidden="true">{relationship.relationship_type === 'co_tracker' ? '🌷' : '💌'}</span><div><strong>{relationship.status === 'pending' ? 'Invitation waiting' : relationship.status === 'accepted' ? `Connected with ${relationship.companion_name ?? 'your companion'}` : 'Connection ended'}</strong><small>{relationship.relationship_type === 'co_tracker' ? 'Co-cycling companion' : 'Observer companion'} · {relationship.sharing_enabled ? 'Cycle details shared' : 'Cycle details private'}</small>{relationship.invite_code && <small>Cosmic Sync Code: <b>{relationship.invite_code}</b></small>}</div></article>)}</div></section>}
+                <section className="relationship-hub"><div className="relationship-hub__intro"><p className="dashboard-eyebrow">YOUR RELATIONSHIP HUB ✧</p><h2>A little connection, on your terms</h2><p>Started solo? That can change whenever you’re ready. Invite a companion now or later. Cycle details are never shared automatically.</p></div><form className="relationship-invite-form" onSubmit={handleInviteCompanion}><label>Who would you like to invite?<select value={inviteType} onChange={event => setInviteType(event.target.value as 'observer' | 'co_tracker')}><option value="observer">A partner or observer</option><option value="co_tracker">A co-cycling companion</option></select></label><Button type="submit" disabled={isInviting}>{isInviting ? 'Preparing your invitation…' : 'Create a Cosmic Sync Code ✧'}</Button></form>{newInviteCode && <div className="relationship-new-code"><span>Your new Cosmic Sync Code</span><strong>{newInviteCode}</strong><button type="button" onClick={() => navigator.clipboard?.writeText(newInviteCode)}>Copy code</button><small>It expires in seven days. Your companion can join when they’re ready.</small></div>}{!!data?.relationships?.length && <div className="relationship-hub__list">{data.relationships.map(relationship => <article key={relationship.id} className="relationship-hub__item"><span className="relationship-hub__icon" aria-hidden="true">{relationship.relationship_type === 'co_tracker' ? '🌷' : '💌'}</span><div><strong>{relationship.status === 'pending' ? 'Invitation waiting' : relationship.status === 'accepted' ? `Connected with ${relationship.companion_name ?? 'your companion'}` : 'Connection ended'}</strong><small>{relationship.relationship_type === 'co_tracker' ? 'Co-cycling companion' : 'Observer companion'} · {relationship.sharing_enabled ? 'Cycle details shared' : 'Cycle details private'}</small>{relationship.invite_code && <small>Cosmic Sync Code: <b>{relationship.invite_code}</b></small>}</div></article>)}</div>}</section>
 
                 <section className="dashboard-cards" aria-label="Your cycle overview">
                     <article className="dashboard-card dashboard-card--cycle">
@@ -307,7 +343,7 @@ export default function DashboardPage() {
                             <div className="form-subheading">Your Crescent experience</div>
                             <label>Display name <span className="field-hint">Your chosen name for your dashboard.</span><input type="text" maxLength={100} value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Your name or nickname" /></label>
                             <label>What brings you here?
-                                <select value={goal} onChange={e => { const next = e.target.value as Goal; setGoal(next); if (next === 'cosmic_cycle') setWantsAstrology(true); }}><option value="track_cycle">Track my cycle and understand my patterns</option><option value="cosmic_cycle">Cycle tracking + astrology</option><option value="fertility_support">Fertility awareness</option><option value="predict_moon">Explore moon phases and cosmic rituals</option><option value="manage_symptoms">Keep track of symptoms and how I feel</option></select>
+                                <select value={goal} onChange={e => { const next = e.target.value as Goal; setGoal(next); if (next === 'cosmic_cycle') setWantsAstrology(true); }}><option value="track_cycle">Track my cycle and understand my patterns</option><option value="cosmic_cycle">Cycle tracking + astrology</option><option value="fertility_support">Fertility awareness</option><option value="trying_to_conceive">Trying to conceive</option><option value="predict_moon">Explore moon phases and cosmic rituals</option><option value="manage_symptoms">Keep track of symptoms and how I feel</option></select>
                             </label>
                             <label className="astrology-preference"><input type="checkbox" checked={wantsAstrology} onChange={e => { const enabled = e.target.checked; setWantsAstrology(enabled); if (!enabled && goal === 'cosmic_cycle') setGoal('track_cycle'); }} /><span><strong>Include astrology and lunar features</strong><small>Optional — turn this on whenever you want the cosmic extras.</small></span></label>
                             {wantsAstrology && <>
