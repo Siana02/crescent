@@ -27,6 +27,18 @@ class PeriodLogController extends Controller
             ],
         );
 
+        // A period logged soon after returning from postpartum can have started
+        // shortly before the user switched journeys. Keep older pregnancy-era
+        // history out of the current-cycle overview while allowing recent logs.
+        $profile = $request->user()->cycleProfile;
+        if ($profile?->active_journey === 'cycle' && $profile->cycle_tracking_started_at) {
+            $loggedStart = CarbonImmutable::parse($validated['start_date'], $timezone);
+            $trackingStart = CarbonImmutable::parse($profile->cycle_tracking_started_at->format('Y-m-d'), $timezone);
+            if ($loggedStart->greaterThanOrEqualTo(CarbonImmutable::today($timezone)->subDays(60)) && $loggedStart->lessThan($trackingStart)) {
+                $profile->update(['cycle_tracking_started_at' => $validated['start_date']]);
+            }
+        }
+
         return response()->json([
             'period' => [
                 'start_date' => $period->start_date->format('Y-m-d'),
