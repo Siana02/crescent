@@ -64,3 +64,68 @@
 @media(max-width:900px){.cosmic-event-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cosmic-house-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:620px){.cosmic-event-grid,.cosmic-meaning-grid{grid-template-columns:1fr}.cosmic-event-card{min-height:0}.cosmic-house-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.cosmic-house-card{padding:13px}.cosmic-house-card h3{font-size:18px}.cosmic-house-card>strong{font-size:9px}.cosmic-house-card>p{font-size:9px}.cosmic-guide-stamp{width:42px;height:42px;flex-basis:42px;font-size:22px}.cosmic-guide-mantra{gap:9px;padding:15px 10px}.cosmic-guide-mantra>span{font-size:15px}}
 @media(prefers-reduced-motion:reduce){.cosmic-house-card{transition:none}.cosmic-house-card:hover{transform:none}}
+
+/* Cosmic Atelier v2 — daily personal transits and playful sky cards */
+.cosmic-big-three-card{position:relative;overflow:hidden;min-height:205px;padding:23px 20px!important;border:1px solid rgba(200,166,215,.36)!important;border-radius:24px!important;background:linear-gradient(145deg,#fff1f7,#fffdfd)!important;box-shadow:0 12px 30px rgba(113,78,132,.07)!important;transition:transform .2s ease,box-shadow .2s ease}
+.cosmic-big-three-card:after{content:"";position:absolute;right:-28px;top:-38px;width:125px;height:125px;border:1px solid rgba(191,137,185,.25);border-radius:50%;box-shadow:0 0 0 12px rgba(191,137,185,.06),0 0 0 25px rgba(191,137,185,.04);pointer-events:none}
+.cosmic-big-three-card:hover{transform:translateY(-4px);box-shadow:0 17px 35px rgba(113,78,132,.12)!important}
+.cosmic-big-three-card--moon{background:linear-gradient(145deg,#f0eaff,#fffdfd 80%)!important}
+.cosmic-big-three-card--rising{background:linear-gradient(145deg,#fff4d8,#fffdfd 80%)!important}
+.cosmic-big-three-card .cosmic-insight-card__icon{position:relative;z-index:1;display:grid;place-items:center;width:48px;height:48px;border:1px solid rgba(255,255,255,.9);border-radius:17px;background:rgba(255,255,255,.75);color:#a16eaa;font-size:25px;box-shadow:0 6px 18px rgba(108,75,127,.08)}
+.cosmic-big-three-card__label{position:relative;z-index:1;margin:17px 0 5px!important;color:#a37ba7!important;font-size:9px!important;font-weight:800!important;letter-spacing:.15em;text-transform:uppercase}
+.cosmic-big-three-card h3{position:relative;z-index:1;margin:0!important;font-family:var(--serif,Georgia,serif)!important;font-size:clamp(25px,3vw,34px)!important;font-weight:400!important;color:#60456d!important}
+.cosmic-big-three-card small,.cosmic-big-three-card .cosmic-fineprint{position:relative;z-index:1;display:block;margin-top:7px;color:#96829d!important;font-size:10px!important}
+.cosmic-weather-section{background:radial-gradient(ellipse at 100% 0,rgba(237,216,246,.45),transparent 36%),linear-gradient(140deg,#fffdfd,#fff8fc)!important}
+.cosmic-weather-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:22px}
+.cosmic-weather-card{position:relative;display:flex;flex-direction:column;min-width:0;min-height:300px;overflow:hidden;padding:21px;border:1px solid rgba(202,174,216,.34);border-radius:23px;background:#fff;box-shadow:0 9px 24px rgba(113,78,132,.06);transition:transform .2s ease,box-shadow .2s ease}
+.cosmic-weather-card:hover{transform:translateY(-4px);box-shadow:0 16px 30px rgba(113,78,132,.11)}
+.cosmic-weather-card:after{content:"";position:absolute;right:-28px;bottom:-42px;width:120px;height:120px;border:1px solid rgba(188,133,182,.18);border-radius:50%;box-shadow:0 0 0 13px rgba(188,133,182,.05),0 0 0 27px rgba(188,133,182,.03);pointer-events:none}
+.cosmic-weather-card--moon{background:linear-gradient(150deg,#f1eaff,#fffdfd 72%)}
+.cosmic-weather-card--now{background:linear-gradient(150deg,#fff0f6,#fffdfd 72%)}
+.cosmic-weather-card--week{background:linear-gradient(150deg,#fff4d8,#fffdfd 72%)}
+.cosmic-weather-card__ornament{display:grid;place-items:center;width:48px;height:48px;margin-bottom:17px;border:1px solid rgba(255,255,255,.9);border-radius:17px;background:rgba(255,255,255,.75);color:#a576ad;font-size:28px;box-shadow:0 6px 18px rgba(108,75,127,.06)}
+.cosmic-weather-card .cosmic-eyebrow{font-size:8px}
+.cosmic-weather-card h3{margin:7px 0 10px;font-family:var(--serif,Georgia,serif);font-size:24px;line-height:1.15;font-weight:400;color:#654a71}
+.cosmic-weather-card>p:not(.cosmic-eyebrow){margin:0;color:#907d97;font-size:11px;line-height:1.85}
+.cosmic-weather-card__chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.cosmic-weather-card__chips span{padding:6px 8px;border:1px solid rgba(190,147,198,.25);border-radius:99px;background:rgba(255,255,255,.7);color:#896d92;font-size:9px;font-weight:650}
+.cosmic-weather-card__footer{position:relative;z-index:1;margin-top:auto;padding-top:22px;color:#ad8bb0;font-size:8px;font-weight:800;letter-spacing:.12em}
+.cosmic-transit-story{background:radial-gradient(ellipse at 0 0,rgba(255,228,242,.65),transparent 40%),linear-gradient(145deg,#fffdfd,#fff9fc)!important}
+.cosmic-transit-story__lead{display:flex;gap:15px;align-items:flex-start;margin-top:22px;padding:22px;border:1px solid #ecd8ed;border-radius:22px;background:linear-gradient(130deg,rgba(255,239,247,.92),rgba(245,239,255,.8))}
+.cosmic-transit-story__spark{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;border-radius:15px;background:#fff;color:#b57daf;font-size:24px;box-shadow:0 6px 18px rgba(108,75,127,.08)}
+.cosmic-transit-story__lead .cosmic-eyebrow{margin-bottom:8px}
+.cosmic-transit-story__lead p:last-child{margin:0;color:#70577b;font-family:var(--serif,Georgia,serif);font-size:clamp(16px,2vw,20px);line-height:1.65}
+.cosmic-transit-story__chapters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:13px}
+.cosmic-transit-story__chapters article{display:flex;gap:12px;padding:17px;border:1px solid #f0e4f0;border-radius:17px;background:rgba(255,255,255,.78)}
+.cosmic-transit-story__chapters article>span{color:#bc8bb8;font-family:var(--serif,Georgia,serif);font-size:21px}
+.cosmic-transit-story__chapters p{margin:0;color:#907d97;font-size:11px;line-height:1.8}
+.cosmic-personal-aspects{margin-top:25px;padding-top:22px;border-top:1px solid #efdfef}
+.cosmic-personal-aspects__heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
+.cosmic-personal-aspects__heading h3{margin:5px 0 0;color:#654a71;font-family:var(--serif,Georgia,serif);font-size:25px;font-weight:400}
+.cosmic-personal-aspects__heading>span{display:grid;place-items:center;width:45px;height:45px;border-radius:15px;background:#f3e9ff;color:#9d7bb4;font-size:23px}
+.cosmic-aspect-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.cosmic-aspect-card{min-width:0;padding:18px;border:1px solid #ebdcec;border-radius:19px;background:linear-gradient(145deg,#fff,#fff8fd)}
+.cosmic-aspect-card:nth-child(3n+2){background:linear-gradient(145deg,#f4efff,#fff)}
+.cosmic-aspect-card:nth-child(3n){background:linear-gradient(145deg,#fff5df,#fff)}
+.cosmic-aspect-card__top{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#92799c;font-size:10px;font-weight:700}
+.cosmic-aspect-card__top small{flex-shrink:0;color:#ae8eb2;font-size:9px}
+.cosmic-aspect-card h4{margin:13px 0 7px;color:#654a71;font-family:var(--serif,Georgia,serif);font-size:21px;font-weight:400}
+.cosmic-aspect-card>p{margin:0;color:#907d97;font-size:11px;line-height:1.8}
+.cosmic-aspect-card__prompt{display:grid;gap:5px;margin-top:13px;padding:11px 12px;border-radius:13px;background:rgba(255,255,255,.7)}
+.cosmic-aspect-card__prompt strong{color:#a47ca7;font-size:9px;text-transform:uppercase;letter-spacing:.09em}
+.cosmic-aspect-card__prompt span{color:#806b89;font-size:10px;line-height:1.7}
+.cosmic-aspect-empty{display:flex;gap:13px;padding:18px;border:1px dashed #dec8e4;border-radius:18px;background:rgba(255,247,252,.7)}
+.cosmic-aspect-empty>span{color:#b184b6;font-size:25px}
+.cosmic-aspect-empty strong{color:#77577f;font-size:12px}
+.cosmic-aspect-empty p{margin:6px 0 0;color:#927f98;font-size:10px;line-height:1.8}
+.cosmic-event-card__more{position:relative;z-index:2;display:inline-block;align-self:flex-start;margin-top:12px;color:#9b6f9d;font-size:10px;font-weight:750;text-decoration:none}
+.cosmic-event-card__more:hover{text-decoration:underline}
+@media(max-width:900px){.cosmic-weather-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cosmic-weather-card:last-child{grid-column:1/-1}}
+@media(max-width:620px){.cosmic-weather-grid,.cosmic-aspect-grid,.cosmic-transit-story__chapters{grid-template-columns:1fr}.cosmic-weather-card{min-height:0}.cosmic-weather-card:last-child{grid-column:auto}.cosmic-transit-story__lead{padding:16px;gap:10px}.cosmic-transit-story__spark{width:36px;height:36px;flex-basis:36px}.cosmic-big-three-card{min-height:175px;padding:18px!important}}
+@media(prefers-reduced-motion:reduce){.cosmic-big-three-card,.cosmic-weather-card{transition:none}.cosmic-big-three-card:hover,.cosmic-weather-card:hover{transform:none}}
+
+#personal-transits{scroll-margin-top:24px}
+
+.cosmic-event-card__reflection{position:relative;z-index:1;margin-top:12px;padding:11px 12px;border-left:2px solid #d5b3d8;border-radius:0 12px 12px 0;background:rgba(255,255,255,.62)}
+.cosmic-event-card__reflection strong{display:block;margin-bottom:4px;color:#a178a6;font-size:8px;letter-spacing:.1em;text-transform:uppercase}
+.cosmic-event-card__reflection p{margin:0;color:#89758f;font-size:10px;line-height:1.75}

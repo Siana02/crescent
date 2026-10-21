@@ -157,7 +157,7 @@ class AstrologyController extends Controller
             return response()->json(['message' => 'Add your birthday in Profile & settings to see your Sun-sign reading.'], 422);
         }
 
-        return $this->cachedGet('cosmyday:content:daily:'.$sign, now()->addHours(24), '/content/daily/'.$sign);
+        return $this->cachedGet('cosmyday:content:daily:'.$sign.':'.now()->format('Ymd'), now()->addDay()->startOfDay(), '/content/daily/'.$sign);
     }
 
     public function events(Request $request): JsonResponse
@@ -178,7 +178,17 @@ class AstrologyController extends Controller
 
     public function transit(): JsonResponse
     {
-        return $this->cachedGet('cosmyday:content:transit', now()->addHours(24), '/content/transit');
+        return $this->cachedGet('cosmyday:content:transit:'.now()->format('Ymd'), now()->addDay()->startOfDay(), '/content/transit');
+    }
+
+    public function moon(): JsonResponse
+    {
+        return $this->cachedGet('cosmyday:content:moon:'.now()->format('Ymd'), now()->addDay()->startOfDay(), '/content/moon');
+    }
+
+    public function weekAhead(): JsonResponse
+    {
+        return $this->cachedGet('cosmyday:content:week-ahead:'.now()->format('Ymd'), now()->addDay()->startOfDay(), '/content/week-ahead');
     }
 
     private function cachedGet(string $key, \DateTimeInterface $expiresAt, string $path, array $query = []): JsonResponse
@@ -373,10 +383,14 @@ class AstrologyController extends Controller
             return;
         }
         $key = Str::lower($label);
+        $degree = data_get($details, 'degree', data_get($details, 'position.degree', data_get($details, 'degree_in_sign', data_get($details, 'degreeInSign'))));
+        if (! is_numeric($degree) && is_numeric(data_get($details, 'longitude'))) {
+            $degree = fmod((float) data_get($details, 'longitude'), 30.0);
+        }
         $placements[$key] = [
             'name' => $label,
             'sign' => $signName,
-            'degree' => data_get($details, 'degree', data_get($details, 'position.degree', data_get($details, 'degree_in_sign', data_get($details, 'degreeInSign')))),
+            'degree' => $degree,
             'house' => data_get($details, 'house', data_get($details, 'house_number')),
             'retrograde' => (bool) data_get($details, 'retrograde', data_get($details, 'is_retrograde', data_get($details, 'isRetrograde', data_get($details, 'is_retro', false)))),
         ];
