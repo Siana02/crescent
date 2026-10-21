@@ -79,6 +79,65 @@ class CycleDashboardTest extends TestCase
             ->assertJsonPath('estimated_next_period', null);
     }
 
+    public function test_user_can_save_onboarding_and_sun_sign_is_derived_from_birth_date(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->putJson('/api/cycle-profile', [
+                'average_cycle_length' => null,
+                'average_period_length' => null,
+                'cycle_regularity' => 'unknown',
+                'timezone' => 'Africa/Nairobi',
+                'birth_date' => '1998-07-25',
+                'birth_time' => null,
+                'birth_place' => 'Nairobi, Kenya',
+                'contraception_type' => 'prefer_not_to_say',
+                'primary_goal' => 'predict_moon',
+                'moon_sign' => null,
+                'rising_sign' => null,
+                'onboarding_completed' => true,
+            ])
+            ->assertOk()
+            ->assertJsonPath('profile.sun_sign', 'Leo')
+            ->assertJsonPath('profile.birth_place', 'Nairobi, Kenya')
+            ->assertJsonPath('profile.primary_goal', 'predict_moon')
+            ->assertJsonPath('profile.onboarding_completed', true);
+    }
+
+    public function test_user_can_save_a_private_daily_vibe_checkin(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->postJson('/api/daily-checkins', [
+                'energy_level' => 'balanced',
+                'mood' => 'calm',
+                'symptoms' => ['cramps', 'fatigue'],
+                'notes' => 'Taking it slowly today.',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('checkin.energy_level', 'balanced')
+            ->assertJsonPath('checkin.mood', 'calm')
+            ->assertJsonPath('checkin.symptoms.0', 'cramps');
+
+        $this->assertDatabaseHas('daily_checkins', [
+            'user_id' => $user->id,
+            'energy_level' => 'balanced',
+            'mood' => 'calm',
+            'notes' => 'Taking it slowly today.',
+        ]);
+
+        $this->getJson('/api/dashboard')
+            ->assertOk()
+            ->assertJsonPath('today_checkin.energy_level', 'balanced');
+    }
+
+    public function test_daily_checkin_requires_authentication(): void
+    {
+        $this->postJson('/api/daily-checkins', ['mood' => 'calm'])->assertUnauthorized();
+    }
+
     public function test_registration_creates_a_signed_in_account(): void
     {
         $this->postJson('/auth/register', [
