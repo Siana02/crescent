@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable([
     'user_one_id', 'user_two_id', 'relationship_type', 'status', 'invite_code',
-    'sharing_preferences', 'accepted_at',
+    'sharing_preferences', 'accepted_at', 'expires_at',
 ])]
 class Relationship extends Model
 {
@@ -18,6 +18,7 @@ class Relationship extends Model
         return [
             'sharing_preferences' => 'array',
             'accepted_at' => 'datetime',
+            'expires_at' => 'datetime',
         ];
     }
 
