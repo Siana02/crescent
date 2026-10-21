@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['user_id', 'average_cycle_length', 'average_period_length', 'timezone'])]
+#[Fillable(['user_id', 'average_cycle_length', 'average_period_length', 'cycle_regularity', 'timezone'])]
 class CycleProfile extends Model
 {
     public function user(): BelongsTo
