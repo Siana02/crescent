@@ -15,3 +15,11 @@
 .relationship-new-code>button{padding:7px 13px;border:1px solid #d8c5dd;border-radius:99px;background:#fff;color:#745a7e;font-size:10px;cursor:pointer}
 .relationship-new-code>small{color:#97889c;font-size:9px;line-height:1.6}
 @media(max-width:560px){.relationship-invite-form{align-items:stretch;flex-direction:column}.relationship-invite-form label{width:100%}.relationship-new-code{width:100%}}
+
+
+.journey-switch-card{display:grid;grid-template-columns:40px minmax(0,1fr) auto;align-items:center;gap:15px;margin:18px 0 4px;padding:18px 20px;border:1px dashed #dfcce4;border-radius:15px;background:linear-gradient(115deg,#fffafd,#f8f0fa)}
+.journey-switch-card>span{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:#f1e5f5;font-size:21px}
+.journey-switch-card h2{margin:4px 0;color:#654f6d;font-family:var(--serif,Georgia,serif);font-size:21px;font-weight:400}
+.journey-switch-card p:not(.dashboard-eyebrow){max-width:700px;margin:4px 0 0;color:#93829a;font-size:9px;line-height:1.75}
+.journey-switch-card .button{white-space:nowrap}
+@media(max-width:760px){.journey-switch-card{grid-template-columns:40px minmax(0,1fr)}.journey-switch-card .button{grid-column:1/-1;width:100%}}
