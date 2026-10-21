@@ -134,7 +134,7 @@ const CONTRACEPTION_CHOICES = [
 export default function OnboardingPage() {
     const [step, setStep] = useState(0);
     const [displayName, setDisplayName] = useState('');
-    const [goal, setGoal] = useState<Goal>('track_cycle');
+    const [goal, setGoal] = useState<Goal>(() => new URLSearchParams(window.location.search).get('journey') === 'pregnancy' ? 'pregnancy_support' : 'track_cycle');
     const [wantsAstrology, setWantsAstrology] = useState(false);
     const [birthDate, setBirthDate] = useState('');
     const [birthTime, setBirthTime] = useState('');
@@ -181,7 +181,7 @@ export default function OnboardingPage() {
                 latest_period?: { start_date: string; end_date: string | null } | null;
             };
             setDisplayName(profile.profile?.display_name || profile.user?.name || '');
-            if (profile.profile?.primary_goal) setGoal(profile.profile.primary_goal);
+            if (new URLSearchParams(window.location.search).get('journey') === 'pregnancy') setGoal('pregnancy_support');\n            else if (profile.profile?.primary_goal) setGoal(profile.profile.primary_goal);
             if (profile.profile?.wants_astrology) setWantsAstrology(true);
             setBirthDate(profile.profile?.birth_date ?? '');
             setBirthTime(profile.profile?.birth_time?.slice(0, 5) ?? '');
