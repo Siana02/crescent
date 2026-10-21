@@ -42,6 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/pregnancy/checkins', [PregnancyController::class, 'checkin'])->middleware('throttle:30,1');
     Route::post('/api/pregnancy/postpartum', [PregnancyController::class, 'transitionPostpartum']);
     Route::post('/api/pregnancy/postpartum-checkins', [PregnancyController::class, 'postpartumCheckin'])->middleware('throttle:30,1');
+    Route::post('/api/pregnancy/return-to-cycle', [PregnancyController::class, 'returnToCycle']);
     Route::post('/api/relationships/invite', [RelationshipController::class, 'invite'])->middleware('throttle:10,1');
     Route::post('/api/relationships/accept', [RelationshipController::class, 'accept'])->middleware('throttle:10,1');
 });
