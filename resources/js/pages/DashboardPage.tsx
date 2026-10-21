@@ -73,6 +73,11 @@ export default function DashboardPage() {
     const [notice, setNotice] = useState('');
     const [checkinNotice, setCheckinNotice] = useState('');
     const moon = getMoonPhase();
+    const periodMoon = data?.latest_period ? getMoonPhase(new Date(data.latest_period.start_date + 'T12:00:00')) : null;
+    const moonArchetype = periodMoon?.name === 'New moon' ? 'White Moon' : periodMoon?.name === 'Full moon' ? 'Red Moon' : ['First quarter', 'Last quarter'].includes(periodMoon?.name ?? '') ? 'Quarter Moon' : periodMoon ? 'Crescent / Gibbous Moon' : null;
+    const sunElement = data?.profile.sun_sign
+        ? (['Aries', 'Leo', 'Sagittarius'].includes(data.profile.sun_sign) ? 'Fire' : ['Taurus', 'Virgo', 'Capricorn'].includes(data.profile.sun_sign) ? 'Earth' : ['Gemini', 'Libra', 'Aquarius'].includes(data.profile.sun_sign) ? 'Air' : 'Water')
+        : null;
 
     async function loadDashboard() {
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
@@ -231,6 +236,8 @@ export default function DashboardPage() {
                             <span>☾ Moon: {data?.profile.moon_sign ?? 'Not set'}</span>
                             <span>↗ Rising: {data?.profile.rising_sign ?? 'Not set'}</span>
                         </div>
+                        {moonArchetype && <div className="archetype-note"><span aria-hidden="true">☾</span><div><strong>Your moon-cycle archetype: {moonArchetype}</strong><p>Your last logged period began under an approximate {periodMoon?.name.toLowerCase()} moon. Some spiritual traditions give these phases symbolic names; treat this as a playful reflection, not a personality label or a biological pattern.</p></div></div>}
+                        {sunElement && <div className="element-note"><span className="element-note__symbol" aria-hidden="true">{sunElement === 'Fire' ? '♨' : sunElement === 'Earth' ? '❋' : sunElement === 'Air' ? '〰' : '≈'}</span><div><strong>Your elemental reflection · {sunElement}</strong><p>{sunElement === 'Fire' ? 'What would it feel like to channel your spark into one thing that matters today?' : sunElement === 'Earth' ? 'A small grounding ritual: soften your shoulders, drink some water, and choose one gentle priority.' : sunElement === 'Air' ? 'Give your thoughts a little room to move. A journal page or fresh-air pause may help.' : 'Make space for softness without asking yourself to explain every feeling.'}</p></div></div>}
                     </div>
                 </section>
 
