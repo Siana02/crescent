@@ -22,9 +22,6 @@ const CATEGORIES = [
 function csrfToken(): string {
     return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
 }
-function prettyDate(value: string): string {
-    return new Intl.DateTimeFormat(undefined, { month: 'long', day: 'numeric', year: 'numeric' }).format(new Date(value + 'T12:00:00'));
-}
 
 export default function PostpartumDashboard({ data, onLogout, onRefresh }: Props) {
     const [category, setCategory] = useState('parent_wellbeing');
