@@ -3,7 +3,7 @@ import Button from '../components/Button';
 import { getMoonPhase } from '../utils/moonPhase';
 
 type Sign = 'Aries' | 'Taurus' | 'Gemini' | 'Cancer' | 'Leo' | 'Virgo' | 'Libra' | 'Scorpio' | 'Sagittarius' | 'Capricorn' | 'Aquarius' | 'Pisces';
-type Goal = 'track_cycle' | 'predict_moon' | 'manage_symptoms';
+type Goal = 'track_cycle' | 'predict_moon' | 'manage_symptoms' | 'cosmic_cycle' | 'fertility_support';
 type Regularity = 'regular' | 'irregular' | 'unknown';
 type DashboardData = {
     user: { name: string; email: string };
@@ -13,6 +13,7 @@ type DashboardData = {
         contraception_type: string | null; primary_goal: Goal; birth_time: string | null;
         birth_place: string | null; sun_sign: Sign | null; moon_sign: Sign | null;
         rising_sign: Sign | null; onboarding_completed: boolean;
+        display_name: string | null; wants_astrology: boolean; partner_preference: 'solo' | 'observer' | 'co_tracker';
     };
     latest_period: { start_date: string; end_date: string | null } | null;
     cycle_day: number | null; estimated_next_period: string | null; days_until_estimate: number | null;
@@ -128,7 +129,7 @@ export default function DashboardPage() {
                     average_cycle_length: averageCycleLength ? Number(averageCycleLength) : null,
                     average_period_length: averagePeriodLength ? Number(averagePeriodLength) : null,
                     cycle_regularity: cycleRegularity, timezone,
-                    birth_date: birthDate || null, contraception_type: contraception || null, primary_goal: goal,
+                    birth_date: birthDate || null, contraception_type: contraception || null, primary_goal: goal,\n                    wants_astrology: data?.profile.wants_astrology ?? false, display_name: data?.profile.display_name ?? null,
                     birth_time: birthTime || null, birth_place: birthPlace.trim() || null,
                     moon_sign: moonSign || null, rising_sign: risingSign || null, onboarding_completed: true,
                 }),
@@ -174,12 +175,14 @@ export default function DashboardPage() {
 
     if (isLoading) return <main className="dashboard-loading" aria-live="polite">Opening your little universe…</main>;
     const estimatedDate = data?.estimated_next_period ?? null;
-    const firstName = data?.user.name.split(' ')[0] ?? 'there';
+    const firstName = data?.profile.display_name?.trim() || data?.user.name.split(' ')[0] || 'there';
     const needsOnboarding = !data?.profile.onboarding_completed;
     const goalCopy: Record<Goal, string> = {
         track_cycle: 'A gentle place to notice patterns, learn your rhythm, and keep the details in one private place.',
         predict_moon: 'Your sky notes and cycle estimates live side by side here — as reflection, not a rulebook.',
         manage_symptoms: 'Your daily check-ins can help you notice your own patterns and bring useful notes to a care appointment if you choose.',
+        cosmic_cycle: 'Your cycle and the cosmos, side by side — with astrology always on your terms.',
+        fertility_support: 'Cycle awareness and gentle estimates to support your fertility journey, without treating predictions as guarantees.',
     };
 
     return (
@@ -194,7 +197,7 @@ export default function DashboardPage() {
 
             <main className="dashboard-main">
                 <div className="dashboard-intro">
-                    <p className="dashboard-eyebrow">YOUR PERSONAL CYCLE SPACE · A LITTLE COSMIC, A LOT YOU</p>
+                    <p className="dashboard-eyebrow">YOUR PERSONAL CYCLE SPACE · MADE FOR YOU</p>
                     <h1>Hello, {firstName}<em>Let’s check in.</em></h1>
                     <p>{goalCopy[data?.profile.primary_goal ?? 'track_cycle']}</p>
                 </div>
@@ -202,7 +205,7 @@ export default function DashboardPage() {
                 {error && <p className="dashboard-alert" role="alert">{error}</p>}
                 {notice && <p className="dashboard-notice" role="status">{notice}</p>}
 
-                <section className="dashboard-cards" aria-label="Your cycle and lunar overview">
+                <section className="dashboard-cards" aria-label="Your cycle overview">
                     <article className="dashboard-card dashboard-card--cycle">
                         <p className="dashboard-card__eyebrow"><span aria-hidden="true">♡</span> YOUR CYCLE</p>
                         <p className="dashboard-card__metric">{data?.cycle_day ? `Day ${data.cycle_day}` : 'Your story starts here'}</p>
@@ -216,7 +219,7 @@ export default function DashboardPage() {
                         {estimatedDate && <div className="cycle-countdown" aria-label="Estimated cycle progress"><span style={{width: `${Math.max(0, Math.min(100, 100 - Math.max(0, data?.days_until_estimate ?? 0) / Math.max(1, data?.profile.average_cycle_length ?? 28) * 100))}%`}} /></div>}
                         <p className="dashboard-card__footnote">An estimate based on the information you’ve logged, not a guarantee.</p>
                     </article>
-                    <article className="dashboard-card dashboard-card--moon">
+                    {data?.profile.wants_astrology && <article className="dashboard-card dashboard-card--moon">
                         <p className="dashboard-card__eyebrow"><span aria-hidden="true">☾</span> TONIGHT’S SKY NOTE</p>
                         <div className="moon-phase-display"><span className="moon-phase-display__symbol" aria-hidden="true">{moon.symbol}</span><div><p className="moon-phase-display__name">{moon.name}</p><p className="moon-phase-display__caption">Approximate lunar phase</p></div></div>
                         <p className="dashboard-card__description">A small invitation to pause, look up, and notice how you feel — without needing the sky to explain it.</p>
@@ -224,7 +227,7 @@ export default function DashboardPage() {
                     </article>
                 </section>
 
-                <section className="cosmic-note">
+                {data?.profile.wants_astrology && <section className="cosmic-note">
                     <div className="cosmic-note__star" aria-hidden="true">✧</div>
                     <div><p className="dashboard-card__eyebrow">A NOTE FROM THE COSMOS</p>
                         <h2>{data?.profile.sun_sign ? `A little ${data.profile.sun_sign} energy` : 'Make room for your own kind of magic'}</h2>
