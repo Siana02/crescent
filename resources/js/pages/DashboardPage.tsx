@@ -19,6 +19,7 @@ type DashboardData = {
     latest_period: { start_date: string; end_date: string | null } | null;
     cycle_day: number | null; estimated_next_period: string | null; days_until_estimate: number | null;
     fertility_window: { ovulation_date: string; start_date: string; end_date: string } | null;
+    relationships?: { id: number; relationship_type: 'observer' | 'co_tracker'; status: 'pending' | 'accepted' | 'revoked'; invite_code: string | null; companion_name: string | null; sharing_enabled: boolean }[];
     today_checkin: { log_date: string; energy_level: string | null; mood: string | null; symptoms: string[]; notes: string | null } | null;
 };
 type ApiError = { message?: string; errors?: Record<string, string[]>; profile?: DashboardData['profile'] };
@@ -212,6 +213,8 @@ export default function DashboardPage() {
 
                 {error && <p className="dashboard-alert" role="alert">{error}</p>}
                 {notice && <p className="dashboard-notice" role="status">{notice}</p>}
+
+                {!!data?.relationships?.length && <section className="relationship-hub"><div><p className="dashboard-eyebrow">YOUR RELATIONSHIP HUB ✧</p><h2>A little connection, on your terms</h2><p>Invitations do not share cycle details automatically. Sharing stays off until you choose otherwise.</p></div><div className="relationship-hub__list">{data.relationships.map(relationship => <article key={relationship.id} className="relationship-hub__item"><span className="relationship-hub__icon" aria-hidden="true">{relationship.relationship_type === 'co_tracker' ? '🌷' : '💌'}</span><div><strong>{relationship.status === 'pending' ? 'Invitation waiting' : relationship.status === 'accepted' ? `Connected with ${relationship.companion_name ?? 'your companion'}` : 'Connection ended'}</strong><small>{relationship.relationship_type === 'co_tracker' ? 'Co-cycling companion' : 'Observer companion'} · {relationship.sharing_enabled ? 'Cycle details shared' : 'Cycle details private'}</small>{relationship.invite_code && <small>Cosmic Sync Code: <b>{relationship.invite_code}</b></small>}</div></article>)}</div></section>}
 
                 <section className="dashboard-cards" aria-label="Your cycle overview">
                     <article className="dashboard-card dashboard-card--cycle">
