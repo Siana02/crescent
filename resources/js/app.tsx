@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage';
 import OnboardingPage from './pages/OnboardingPage';
 import ConnectionsPage from './pages/ConnectionsPage';
 import ProfileSettingsPage from './pages/ProfileSettingsPage';
+import AstrologyPage from './pages/AstrologyPage';
 import './styles/app.css';
 
 const mount = document.getElementById('app');
@@ -15,7 +16,9 @@ if (!mount) {
 }
 
 const path = window.location.pathname;
-const page = path === '/connections'
+const page = path === '/astrology'
+    ? <AstrologyPage />
+    : path === '/connections'
     ? <ConnectionsPage />
     : path === '/profile' || path === '/settings'
         ? <ProfileSettingsPage />
