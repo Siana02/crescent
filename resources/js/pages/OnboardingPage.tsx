@@ -67,7 +67,6 @@ function CalendarField({ label, hint, value, onChange, maxDate, minDate }: {
             if (selected) setViewMonth(new Date(selected.getFullYear(), selected.getMonth(), 1));
         }
     }, [value]);
-    const monthName = viewMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
     const offset = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1).getDay();
     const dayCount = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 0).getDate();
     const today = localDateString(new Date());
