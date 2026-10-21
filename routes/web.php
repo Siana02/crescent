@@ -46,6 +46,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/astrology/horoscope', [AstrologyController::class, 'daily'])->middleware('throttle:30,1');
     Route::get('/api/astrology/events', [AstrologyController::class, 'events'])->middleware('throttle:30,1');
     Route::get('/api/astrology/transit', [AstrologyController::class, 'transit'])->middleware('throttle:30,1');
+    Route::get('/api/astrology/moon', [AstrologyController::class, 'moon'])->middleware('throttle:30,1');
+    Route::get('/api/astrology/week-ahead', [AstrologyController::class, 'weekAhead'])->middleware('throttle:30,1');
     Route::put('/api/cycle-profile', [CycleProfileController::class, 'update']);
     Route::post('/api/periods', [PeriodLogController::class, 'store']);
     Route::post('/api/daily-checkins', [DailyCheckinController::class, 'store'])->middleware('throttle:30,1');
