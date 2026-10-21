@@ -114,7 +114,7 @@ class PregnancyController extends Controller
 
     public function transitionPostpartum(Request $request): JsonResponse
     {
-        $pregnancy = $request->user()->pregnancy()->where('status', 'active')->firstOrFail();
+        $pregnancy = $request->user()->pregnancies()->where('status', 'active')->latest()->firstOrFail();
         $pregnancy->update(['status' => 'postpartum']);
 
         $profile = $request->user()->cycleProfile()->firstOrCreate([], [
@@ -161,7 +161,7 @@ class PregnancyController extends Controller
 
     public function returnToCycle(Request $request): JsonResponse
     {
-        $request->user()->pregnancy()->where('status', 'postpartum')->firstOrFail();
+        $request->user()->pregnancies()->where('status', 'postpartum')->latest()->firstOrFail();
         $profile = $request->user()->cycleProfile()->firstOrCreate([], [
             'timezone' => config('app.timezone', 'UTC'),
         ]);
