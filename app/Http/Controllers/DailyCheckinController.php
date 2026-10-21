@@ -18,18 +18,24 @@ class DailyCheckinController extends Controller
         'creamy_discharge', 'eggwhite_discharge', 'sticky_discharge', 'dryness', 'itching', 'unusual_odor',
         'spotting', 'heavy_bleeding', 'low_energy', 'high_energy', 'insomnia', 'sleepiness', 'anxiety',
         'irritability', 'low_mood', 'mood_swings', 'brain_fog', 'difficulty_concentrating', 'libido_increase',
-        'libido_decrease',
+        'libido_decrease', 'sweet_cravings', 'savoury_cravings', 'overwhelmed', 'moody',
     ];
 
     public function store(Request $request): JsonResponse
     {
+        $moodInput = $request->input('mood');
+        if (is_string($moodInput)) {
+            $request->merge(['mood' => trim($moodInput) !== '' ? [$moodInput] : null]);
+        }
+
         $profile = $request->user()->cycleProfile()->firstOrCreate([]);
         $today = CarbonImmutable::today($profile->timezone ?: 'UTC')->toDateString();
 
         $validated = $request->validate([
             'log_date' => ['sometimes', 'date_format:Y-m-d', 'before_or_equal:'.$today],
             'energy_level' => ['nullable', Rule::in(['low', 'balanced', 'high', 'peak'])],
-            'mood' => ['nullable', Rule::in(['calm', 'irritated', 'intuitive', 'anxious', 'happy', 'tender', 'focused', 'overwhelmed'])],
+            'mood' => ['nullable', 'array', 'max:12'],
+            'mood.*' => ['string', Rule::in(['calm', 'irritated', 'intuitive', 'anxious', 'happy', 'tender', 'focused', 'overwhelmed', 'moody', 'zen', 'playful', 'sensitive'])],
             'symptoms' => ['sometimes', 'array', 'max:60'],
             'symptoms.*' => ['string', Rule::in(self::SYMPTOMS)],
             'notes' => ['nullable', 'string', 'max:1000'],
@@ -43,7 +49,7 @@ class DailyCheckinController extends Controller
             ['log_date' => $validated['log_date'] ?? $today],
             [
                 'energy_level' => $validated['energy_level'] ?? null,
-                'mood' => $validated['mood'] ?? null,
+                'mood' => ! empty($validated['mood']) ? implode(',', $validated['mood']) : null,
                 'symptoms' => $validated['symptoms'] ?? [],
                 'notes' => $validated['notes'] ?? null,
             ],
@@ -53,7 +59,7 @@ class DailyCheckinController extends Controller
             'checkin' => [
                 'log_date' => $checkin->log_date->format('Y-m-d'),
                 'energy_level' => $checkin->energy_level,
-                'mood' => $checkin->mood,
+                'mood' => $checkin->mood ? explode(',', $checkin->mood) : [],
                 'symptoms' => $checkin->symptoms ?? [],
                 'notes' => $checkin->notes,
             ],

@@ -161,7 +161,7 @@ class DashboardController extends Controller
             'today_checkin' => $todayCheckin ? [
                 'log_date' => $todayCheckin->log_date->format('Y-m-d'),
                 'energy_level' => $todayCheckin->energy_level,
-                'mood' => $todayCheckin->mood,
+                'mood' => $todayCheckin->mood ? explode(',', $todayCheckin->mood) : [],
                 'symptoms' => $todayCheckin->symptoms ?? [],
                 'notes' => $todayCheckin->notes,
             ] : null,
