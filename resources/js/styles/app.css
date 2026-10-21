@@ -782,3 +782,9 @@ a:focus-visible { outline: 3px solid #b88bbd; outline-offset: 4px; }
     .choice-chip, .symptom-option, .cycle-countdown span { transition: none; }
     .choice-chip:hover, .symptom-option:hover { transform: none; }
 }
+
+.dashboard-lower-grid > .cycle-settings { grid-template-columns: 1fr; gap: 24px; }
+.archetype-note, .element-note { display: flex; align-items: flex-start; gap: 12px; margin-top: 16px; padding: 13px 15px; border: 1px solid #e5d8e8; border-radius: 12px; background: #fffaf7a8; }
+.archetype-note > span, .element-note__symbol { flex: 0 0 auto; color: #9978a0; font-size: 22px; }
+.archetype-note strong, .element-note strong { color: #6e5877; font-size: 10px; }
+.archetype-note p, .element-note p { margin: 5px 0 0 !important; color: #8a7b8d !important; font-size: 10px !important; line-height: 1.7 !important; }
