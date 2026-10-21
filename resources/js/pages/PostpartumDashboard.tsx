@@ -35,6 +35,7 @@ export default function PostpartumDashboard({ data, onLogout, onRefresh }: Props
     const [inviteType, setInviteType] = useState<'observer' | 'co_tracker'>('observer');
     const [inviteCode, setInviteCode] = useState('');
     const [isInviting, setIsInviting] = useState(false);
+    const [isReturning, setIsReturning] = useState(false);
     const firstName = data.profile.display_name?.trim() || data.user.name.split(' ')[0] || 'there';
     const logs = data.pregnancy?.postpartum_logs_today ?? [];
 
@@ -71,6 +72,23 @@ export default function PostpartumDashboard({ data, onLogout, onRefresh }: Props
         } catch (e) {
             setError(e instanceof Error ? e.message : 'We could not create an invitation.');
         } finally { setIsInviting(false); }
+    }
+
+    async function returnToCycle() {
+        if (!window.confirm('Return to cycle tracking now? Your pregnancy and postpartum notes will remain saved, and Crescent will not estimate a new cycle until you add new period information.')) return;
+        setError(''); setIsReturning(true);
+        try {
+            const response = await fetch('/api/pregnancy/return-to-cycle', {
+                method: 'POST', credentials: 'same-origin',
+                headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrfToken() },
+            });
+            const result = await response.json() as { message?: string };
+            if (!response.ok) throw new Error(result.message || 'We could not change your journey just yet.');
+            window.location.assign('/dashboard');
+        } catch (e) {
+            setError(e instanceof Error ? e.message : 'We could not change your journey just yet.');
+            setIsReturning(false);
+        }
     }
 
     return <div className="pregnancy-shell postpartum-shell">
@@ -113,6 +131,10 @@ export default function PostpartumDashboard({ data, onLogout, onRefresh }: Props
                 {inviteCode && <div className="pregnancy-invite-code"><small>Your invitation code</small><strong>{inviteCode}</strong><button type="button" onClick={() => navigator.clipboard?.writeText(inviteCode)}>Copy code</button><span>Expires in seven days. Your details stay private until you choose to share.</span></div>}
             </section>
 
+            <section className="pregnancy-transition postpartum-return">
+                <div><p className="pregnancy-eyebrow">WHEN YOU FEEL READY</p><h2>Return to cycle tracking on your terms</h2><p>There is no automatic switch back after birth. When you feel ready, you can return to cycle tracking; your pregnancy and postpartum notes stay saved, and we won’t assume your old cycle length still applies.</p></div>
+                <Button type="button" variant="outline" disabled={isReturning} onClick={returnToCycle}>{isReturning ? 'Preparing your cycle space…' : 'I’m ready to return to cycle tracking'}</Button>
+            </section>
             <p className="pregnancy-medical-note">Crescent is a personal journal, not medical care. For concerns about your recovery or your baby’s health, contact your healthcare professional or local emergency service.</p>
         </main>
         <footer className="pregnancy-footer"><span>crescent. · your rhythm, your rules</span><a href="/">Back to the beginning ↑</a></footer>
