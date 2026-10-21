@@ -67,10 +67,12 @@ function CalendarField({ label, hint, value, onChange, maxDate, minDate }: {
             if (selected) setViewMonth(new Date(selected.getFullYear(), selected.getMonth(), 1));
         }
     }, [value]);
-    const monthName = viewMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
     const offset = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1).getDay();
     const dayCount = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 0).getDate();
     const today = localDateString(new Date());
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({ length: currentYear - 1899 + 5 }, (_, index) => currentYear + 5 - index);
+    const months = Array.from({ length: 12 }, (_, index) => new Date(2000, index, 1).toLocaleDateString(undefined, { month: 'long' }));
     const days = Array.from({ length: offset + dayCount }, (_, index) => index < offset ? null : index - offset + 1);
     return <div className="onboarding-calendar-field">
         <span className="onboarding-calendar-label">{label}</span>
@@ -83,7 +85,17 @@ function CalendarField({ label, hint, value, onChange, maxDate, minDate }: {
         {open && <div className="onboarding-calendar-popover">
             <div className="onboarding-calendar-heading">
                 <button type="button" aria-label="Previous month" onClick={() => setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() - 1, 1))}>‹</button>
-                <div><small>YOUR CYCLE, YOUR TIME</small><strong>{monthName}</strong></div>
+                <div className="onboarding-calendar-heading__pickers">
+                    <small>YOUR CYCLE, YOUR TIME</small>
+                    <div className="onboarding-calendar-heading__selects">
+                        <select aria-label="Choose month" value={viewMonth.getMonth()} onChange={event => setViewMonth(new Date(viewMonth.getFullYear(), Number(event.target.value), 1))}>
+                            {months.map((month, index) => <option key={month} value={index}>{month}</option>)}
+                        </select>
+                        <select aria-label="Choose year" value={viewMonth.getFullYear()} onChange={event => setViewMonth(new Date(Number(event.target.value), viewMonth.getMonth(), 1))}>
+                            {years.map(year => <option key={year} value={year}>{year}</option>)}
+                        </select>
+                    </div>
+                </div>
                 <button type="button" aria-label="Next month" onClick={() => setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1))}>›</button>
             </div>
             <div className="onboarding-calendar-weekdays">{['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => <span key={day + index}>{day}</span>)}</div>
@@ -253,7 +265,7 @@ export default function OnboardingPage() {
                     average_period_length: !pregnancyJourney && periodStart && periodEnd ? Math.round((new Date(`${periodEnd}T12:00:00`).getTime() - new Date(`${periodStart}T12:00:00`).getTime()) / 86400000) + 1 : null,
                     cycle_regularity: pregnancyJourney ? 'unknown' : regularity,
                     contraception_type: pregnancyJourney ? 'prefer_not_to_say' : contraception,
-                    partner_preference,
+                    partner_preference: partnerPreference,
                     timezone,
                     onboarding_completed: !pregnancyJourney,
                 }),
@@ -383,7 +395,22 @@ export default function OnboardingPage() {
                     </div>}
                     {step === 2 && !pregnancyJourney && <div className="onboarding-fields">
                         <div className="onboarding-cycle-calendar"><div className="onboarding-cycle-calendar__intro"><span>✿ YOUR RECENT RHYTHM</span><p>Think of the last bleed you remember. We’ll place it on your personal moon calendar.</p></div><div className="onboarding-date-grid"><CalendarField label="The first day" hint="When did your period begin?" value={periodStart} maxDate={localDateString(new Date())} onChange={value => { setPeriodStart(value); if (periodEnd && value && periodEnd < value) setPeriodEnd(""); }} /><CalendarField label="The last day" hint="When did your bleeding finish?" value={periodEnd} maxDate={localDateString(new Date())} minDate={periodStart || undefined} onChange={setPeriodEnd} /></div><div className="onboarding-cycle-whisper"><span aria-hidden="true">☾</span><p>No pressure to remember perfectly. If you’re unsure, leave the dates blank and begin logging from today.</p></div></div>
-                        <section className="onboarding-cycle-length"><div className="onboarding-cycle-length__top"><div><span>✧ YOUR CYCLE’S TEMPO</span><p>About how many days from one period’s first day to the next?</p></div><div className="onboarding-cycle-length__number"><strong>{cycleLengthUnknown ? '？' : cycleLength}</strong><small>{cycleLengthUnknown ? 'still a mystery' : 'days'}</small></div></div><input aria-label="Usual cycle length in days" type="range" min={21} max={45} step={1} value={cycleLength} disabled={cycleLengthUnknown} onChange={event => { setCycleLength(event.target.value); setCycleLengthUnknown(false); }} /><div className="onboarding-cycle-length__scale"><span>21 days</span><span>45 days</span></div><button type="button" className={cycleLengthUnknown ? 'onboarding-unknown-chip is-selected' : 'onboarding-unknown-chip'} aria-pressed={cycleLengthUnknown} onClick={() => setCycleLengthUnknown(current => !current)}><span aria-hidden="true">☁</span> I don’t know yet</button></section>
+                        <section className="onboarding-cycle-length">
+                        <div className="onboarding-cycle-length__top">
+                            <div><span>✧ YOUR CYCLE’S TEMPO</span><p>About how many days from one period’s first day to the next?</p></div>
+                            <div className="onboarding-cycle-length__number"><strong>{cycleLengthUnknown ? '？' : cycleLength}</strong><small>{cycleLengthUnknown ? 'still a mystery' : 'days'}</small></div>
+                        </div>
+                        <div className="onboarding-cycle-length__stepper" aria-label="Adjust cycle length">
+                            <button type="button" aria-label="Decrease cycle length" disabled={cycleLengthUnknown || Number(cycleLength) <= 21} onClick={() => setCycleLength(String(Math.max(21, Number(cycleLength) - 1)))}>−</button>
+                            <input aria-label="Usual cycle length in days" type="range" min={21} max={45} step={1} value={cycleLength} disabled={cycleLengthUnknown} onInput={event => { setCycleLength(event.currentTarget.value); setCycleLengthUnknown(false); }} onChange={event => { setCycleLength(event.currentTarget.value); setCycleLengthUnknown(false); }} />
+                            <button type="button" aria-label="Increase cycle length" disabled={cycleLengthUnknown || Number(cycleLength) >= 45} onClick={() => setCycleLength(String(Math.min(45, Number(cycleLength) + 1)))}>+</button>
+                        </div>
+                        <div className="onboarding-cycle-length__scale"><span>21 days</span><span>45 days</span></div>
+                        <div className="onboarding-cycle-length__presets" aria-label="Common cycle lengths">
+                            {[21, 24, 26, 28, 30, 32, 35, 40, 45].map(days => <button type="button" key={days} className={!cycleLengthUnknown && Number(cycleLength) === days ? 'is-selected' : ''} aria-pressed={!cycleLengthUnknown && Number(cycleLength) === days} onClick={() => { setCycleLength(String(days)); setCycleLengthUnknown(false); }}>{days}</button>)}
+                        </div>
+                        <button type="button" className={cycleLengthUnknown ? 'onboarding-unknown-chip is-selected' : 'onboarding-unknown-chip'} aria-pressed={cycleLengthUnknown} onClick={() => setCycleLengthUnknown(current => !current)}><span aria-hidden="true">☁</span> I don’t know yet</button>
+                    </section>
                         <fieldset className="onboarding-regularity"><legend>Does your cycle keep a steady rhythm?</legend><div className="onboarding-regularity__choices">{[{value:'regular' as Regularity,icon:'🌙',title:'Mostly steady',detail:'It tends to arrive around the same time.'},{value:'irregular' as Regularity,icon:'🌦️',title:'A little unpredictable',detail:'The timing often changes.'},{value:'unknown' as Regularity,icon:'🌱',title:'I’m still learning',detail:'I’m not sure yet.'}].map(choice => <button type="button" key={choice.value} aria-pressed={regularity === choice.value} className={regularity === choice.value ? 'onboarding-regularity-card is-selected' : 'onboarding-regularity-card'} onClick={() => setRegularity(choice.value)}><span aria-hidden="true">{choice.icon}</span><strong>{choice.title}</strong><small>{choice.detail}</small></button>)}</div></fieldset>
                         <fieldset className="onboarding-contraception"><legend>Are you using contraception?</legend><p>Choose the little card that feels right. This helps Crescent care for your cycle estimates thoughtfully.</p><div className="onboarding-contraception__grid">{CONTRACEPTION_CHOICES.map(choice => <button type="button" key={choice.value} aria-pressed={contraception === choice.value} className={`onboarding-contraception-card ${contraception === choice.value ? 'is-selected' : ''}`} onClick={() => setContraception(choice.value)}><span aria-hidden="true">{choice.icon}</span><strong>{choice.title}</strong><small>{choice.detail}</small><i aria-hidden="true">{contraception === choice.value ? '✦' : '○'}</i></button>)}</div></fieldset>
                         {['pill', 'patch', 'ring', 'implant', 'injection', 'hormonal_iud'].includes(contraception) && <p className="onboarding-safety-note">♡ Hormonal contraception can change or suppress ovulation. Crescent will focus on logging bleeding and daily wellbeing rather than assuming a natural ovulation pattern.</p>}
