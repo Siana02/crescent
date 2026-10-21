@@ -105,4 +105,51 @@ class PregnancyController extends Controller
             ],
         ], 201);
     }
+
+    public function transitionPostpartum(Request $request): JsonResponse
+    {
+        $pregnancy = $request->user()->pregnancy()->where('status', 'active')->firstOrFail();
+        $pregnancy->update(['status' => 'postpartum']);
+
+        $profile = $request->user()->cycleProfile()->firstOrCreate([], [
+            'timezone' => config('app.timezone', 'UTC'),
+        ]);
+        $profile->update([
+            'active_journey' => 'postpartum',
+            'primary_goal' => 'postpartum_support',
+            'average_cycle_length' => null,
+            'average_period_length' => null,
+        ]);
+
+        return response()->json(['message' => 'Your postpartum and newborn space is ready. Your pregnancy history remains saved.']);
+    }
+
+    public function postpartumCheckin(Request $request): JsonResponse
+    {
+        $pregnancy = $request->user()->pregnancy()->where('status', 'postpartum')->firstOrFail();
+        $timezone = $request->user()->cycleProfile?->timezone ?: config('app.timezone', 'UTC');
+        $today = CarbonImmutable::today($timezone)->toDateString();
+
+        $validated = $request->validate([
+            'log_date' => ['sometimes', 'date_format:Y-m-d', 'before_or_equal:'.$today],
+            'category' => ['required', Rule::in(['feeding', 'sleep', 'diaper', 'parent_wellbeing', 'note'])],
+            'notes' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $log = $pregnancy->postpartumLogs()->create([
+            'log_date' => $validated['log_date'] ?? $today,
+            'category' => $validated['category'],
+            'notes' => $validated['notes'],
+        ]);
+
+        return response()->json([
+            'message' => 'Your postpartum note has been saved in your private journal.',
+            'log' => [
+                'id' => $log->id,
+                'log_date' => $log->log_date->format('Y-m-d'),
+                'category' => $log->category,
+                'notes' => $log->notes,
+            ],
+        ], 201);
+    }
 }
