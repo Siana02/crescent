@@ -208,7 +208,7 @@ export default function OnboardingPage() {
                         <ChoiceCard selected={goal === 'cosmic_cycle'} icon="🌙" title="Syncing my cycle with the cosmos" description="Cycle tracking with astrology and lunar notes." onClick={() => chooseGoal('cosmic_cycle')} />
                         <ChoiceCard selected={goal === 'fertility_support'} icon="🌸" title="Planning a pregnancy / fertility" description="Cycle awareness and estimated fertile windows." onClick={() => chooseGoal('fertility_support')} />
                         <ChoiceCard selected={goal === 'manage_symptoms'} icon="🪷" title="Managing symptoms & moods" description="Gentle daily check-ins and personal patterns." onClick={() => chooseGoal('manage_symptoms')} />
-                        <label className="onboarding-toggle"><input type="checkbox" checked={wantsAstrology} onChange={event => setWantsAstrology(event.target.checked)} /><span className="onboarding-toggle__visual"></span><span><strong>Add a little astrology?</strong><small>Optional, even if you chose another goal.</small></span></label>
+                        <label className="onboarding-toggle"><input type="checkbox" checked={wantsAstrology} onChange={event => { const enabled = event.target.checked; setWantsAstrology(enabled); if (!enabled && goal === 'cosmic_cycle') setGoal('track_cycle'); }} /><span className="onboarding-toggle__visual"></span><span><strong>Add a little astrology?</strong><small>Optional, even if you chose another goal.</small></span></label>
                     </div>}
                     {step === 1 && <div className="onboarding-fields">
                         <Field label="What should we call you?" hint="Your display name can be an aesthetic nickname.">
@@ -221,7 +221,7 @@ export default function OnboardingPage() {
                             <div className="onboarding-optional-title">✧ A little more cosmic (all optional)</div>
                             <Field label="What time were you born?" hint="Skip this if you don't know your exact time.">
                                 <input type="time" value={birthTime} disabled={birthTimeUnknown} onChange={event => setBirthTime(event.target.value)} />
-                                <label className="onboarding-inline-check"><input type="checkbox" checked={birthTimeUnknown} onChange={event => setBirthTimeUnknown(event.target.checked)} /> I don't know my exact time</label>
+                                <span className="onboarding-inline-check"><input type="checkbox" checked={birthTimeUnknown} onChange={event => setBirthTimeUnknown(event.target.checked)} /> I don't know my exact time</span>
                             </Field>
                             <Field label="Where were you born?" hint="City and country help with chart calculations later.">
                                 <input value={birthPlace} onChange={event => setBirthPlace(event.target.value)} maxLength={160} placeholder="e.g. Nairobi, Kenya" />
