@@ -26,7 +26,8 @@ Route::middleware('auth')->group(function () {
         return view('welcome');
     })->name('dashboard');
     Route::get('/onboarding', function (Request $request) {
-        if ($request->user()->cycleProfile?->onboarding_completed) {
+        $isPregnancySetup = $request->query('journey') === 'pregnancy';
+        if ($request->user()->cycleProfile?->onboarding_completed && ! $isPregnancySetup) {
             return redirect('/dashboard');
         }
 
