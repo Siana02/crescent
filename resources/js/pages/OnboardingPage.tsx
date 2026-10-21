@@ -309,9 +309,7 @@ export default function OnboardingPage() {
                         <Field label="What should we call you?" hint="Your display name can be an aesthetic nickname.">
                             <input value={displayName} onChange={event => setDisplayName(event.target.value)} maxLength={100} placeholder="Your name or chosen nickname" autoComplete="nickname" />
                         </Field>
-                        <Field label="When is your birthday?" hint="Optional. We only use it for personalisation you choose.">
-                            <CalendarField label="" value={birthDate} maxDate={localDateString(new Date())} onChange={setBirthDate} hint="Your birthday helps us celebrate your solar season." />
-                        </Field>
+                        <CalendarField label="When is your birthday?" value={birthDate} maxDate={localDateString(new Date())} onChange={setBirthDate} hint="Optional. Your birthday helps us celebrate your solar season." />
                         {wantsAstrology && <>
                             <div className="onboarding-optional-title">✧ A little more cosmic (all optional)</div>
                             <Field label="What time were you born?" hint="Skip this if you don't know your exact time.">
