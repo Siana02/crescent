@@ -91,6 +91,7 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
     const [inviteType, setInviteType] = useState<'observer' | 'co_tracker'>('observer');
     const [inviteCode, setInviteCode] = useState('');
     const [isInviting, setIsInviting] = useState(false);
+    const [isTransitioning, setIsTransitioning] = useState(false);
     const firstName = data.profile.display_name?.trim() || data.user.name.split(' ')[0] || 'there';
 
     async function saveCheckin(event: FormEvent<HTMLFormElement>) {
@@ -129,6 +130,23 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
         } catch (e) {
             setError(e instanceof Error ? e.message : 'We could not create an invitation.');
         } finally { setIsInviting(false); }
+    }
+
+    async function transitionToPostpartum() {
+        if (!window.confirm('Open your postpartum and newborn journal? Your pregnancy history will stay saved, and Crescent will stop showing pregnancy-stage estimates.')) return;
+        setError(''); setIsTransitioning(true);
+        try {
+            const response = await fetch('/api/pregnancy/postpartum', {
+                method: 'POST', credentials: 'same-origin',
+                headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrfToken() },
+            });
+            const result = await response.json() as { message?: string };
+            if (!response.ok) throw new Error(result.message || 'We could not open your postpartum space.');
+            window.location.assign('/dashboard');
+        } catch (e) {
+            setError(e instanceof Error ? e.message : 'We could not open your postpartum space.');
+            setIsTransitioning(false);
+        }
     }
 
     if (!pregnancy) return <main className="pregnancy-empty"><div className="pregnancy-empty__moon">☾</div><p className="pregnancy-eyebrow">YOUR PREGNANCY JOURNEY</p><h1>Your space is almost ready</h1><p>We couldn’t find a saved pregnancy date. Return to onboarding to finish setting up your pregnancy journey.</p><Button onClick={() => window.location.assign('/onboarding')}>Finish my setup ✧</Button></main>;
@@ -196,6 +214,10 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
                 {inviteCode && <div className="pregnancy-invite-code"><small>Your invitation code</small><strong>{inviteCode}</strong><button type="button" onClick={() => navigator.clipboard?.writeText(inviteCode)}>Copy code</button><span>Expires in seven days. Your details stay private until you choose to share.</span></div>}
             </section>
 
+            <section className="pregnancy-transition">
+                <div><p className="pregnancy-eyebrow">WHEN YOUR CHAPTER CHANGES</p><h2>Make room for the next little universe</h2><p>When your baby has arrived, you can choose to move into a postpartum and newborn journal. Crescent will never switch you automatically, and your pregnancy history will stay saved.</p></div>
+                <Button type="button" variant="outline" disabled={isTransitioning} onClick={transitionToPostpartum}>{isTransitioning ? 'Preparing your next chapter…' : 'My baby has arrived · open postpartum space'}</Button>
+            </section>
             <p className="pregnancy-medical-note">Crescent is a personal journal, not a medical device or a substitute for prenatal care. Symptom logs do not assess risk or diagnose conditions. If a symptom worries you or feels urgent, contact your maternity care team or local emergency service.</p>
         </main>
         <footer className="pregnancy-footer"><span>crescent. · one week, one moment, one breath at a time</span><a href="/">Back to the beginning ↑</a></footer>
