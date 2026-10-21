@@ -116,3 +116,27 @@
 .onboarding-regularity-card small{color:#a092a5;font-size:8px;line-height:1.5}
 @media(max-width:520px){.onboarding-cycle-length{padding:12px}.onboarding-cycle-length__number{flex-basis:58px;width:58px;height:58px}.onboarding-regularity__choices{grid-template-columns:1fr}.onboarding-regularity-card{grid-template-columns:28px 1fr;min-height:0;align-items:center}.onboarding-regularity-card>span{grid-row:span 2}.onboarding-regularity-card small{grid-column:2}}
 @media(prefers-reduced-motion:reduce){.onboarding-regularity-card{transition:none}.onboarding-regularity-card:hover{transform:none}}
+
+
+/* The pregnancy fork has its own soft, date-led visual language. */
+.pregnancy-onboarding-fields{gap:15px}
+.pregnancy-onboarding-orbit{display:grid;justify-items:center;gap:7px;padding:20px 17px;border:1px solid #e6d6eb;border-radius:18px;background:radial-gradient(circle at 50% 0,#f0e5f7,transparent 65%),linear-gradient(145deg,#fffafd,#fff8f7);text-align:center}
+.pregnancy-onboarding-orbit>span{display:grid;place-items:center;width:48px;height:48px;border:1px solid #e0cce7;border-radius:50%;background:#fff9fe;color:#a184b1;font-size:27px;box-shadow:0 0 0 7px #f5edf7}
+.pregnancy-onboarding-orbit>strong{margin-top:7px;color:#8f719b;font-size:9px;letter-spacing:.13em}
+.pregnancy-onboarding-orbit>small{max-width:330px;color:#9c8ba2;font-size:9px;line-height:1.65}
+.pregnancy-date-source-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pregnancy-date-source{display:grid;align-content:start;justify-items:start;gap:7px;min-width:0;min-height:126px;padding:11px;border:1px solid #eaddea;border-radius:14px;background:#fffdfd;color:#5f4c68;text-align:left;cursor:pointer;transition:transform .18s,border-color .18s,background .18s,box-shadow .18s}
+.pregnancy-date-source:hover{transform:translateY(-2px);border-color:#c6a8d1}
+.pregnancy-date-source.is-selected{border-color:#a98bb6;background:linear-gradient(145deg,#f3e8f7,#fff6f8);box-shadow:0 6px 18px #9d7baa18}
+.pregnancy-date-source>span{font-size:22px}
+.pregnancy-date-source>strong{font-size:9px;line-height:1.45}
+.pregnancy-date-source>small{color:#9b8aa1;font-size:8px;line-height:1.55}
+.pregnancy-astrology-toggle{display:grid;grid-template-columns:18px 20px minmax(0,1fr);align-items:start;gap:9px;padding:13px;border:1px dashed #d9c5e4;border-radius:13px;background:#fcf7fd;cursor:pointer}
+.pregnancy-astrology-toggle>input{margin:3px 0 0;accent-color:#9a7aa8}
+.pregnancy-astrology-toggle>span:nth-of-type(1){color:#a283b0;font-size:17px}
+.pregnancy-astrology-toggle strong,.pregnancy-astrology-toggle small{display:block}
+.pregnancy-astrology-toggle strong{color:#6c5576;font-size:10px}
+.pregnancy-astrology-toggle small{margin-top:4px;color:#9a8a9f;font-size:8px;line-height:1.65}
+.pregnancy-onboarding-safety{margin:0;padding:10px 12px;border-radius:11px;background:#f7f2f8;color:#95879b;font-size:9px;line-height:1.7}
+@media(max-width:520px){.pregnancy-date-source-grid{grid-template-columns:1fr}.pregnancy-date-source{grid-template-columns:28px minmax(0,1fr);min-height:0;align-items:center;column-gap:8px;padding:10px}.pregnancy-date-source>span{grid-row:span 2}.pregnancy-date-source>small{grid-column:2}}
+@media(prefers-reduced-motion:reduce){.pregnancy-date-source{transition:none}.pregnancy-date-source:hover{transform:none}}
