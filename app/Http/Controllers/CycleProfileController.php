@@ -15,9 +15,12 @@ class CycleProfileController extends Controller
             'average_period_length' => ['nullable', 'integer', 'between:1,10'],
             'cycle_regularity' => ['required', 'in:regular,irregular,unknown'],
             'timezone' => ['required', 'string', 'timezone'],
+            'display_name' => ['nullable', 'string', 'max:100'],
+            'wants_astrology' => ['sometimes', 'boolean'],
+            'partner_preference' => ['sometimes', Rule::in(['solo', 'observer', 'co_tracker'])],
             'birth_date' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
             'contraception_type' => ['nullable', Rule::in(['none', 'pill', 'hormonal_iud', 'copper_iud', 'implant', 'injection', 'patch', 'ring', 'other', 'prefer_not_to_say'])],
-            'primary_goal' => ['sometimes', Rule::in(['track_cycle', 'predict_moon', 'manage_symptoms'])],
+            'primary_goal' => ['sometimes', Rule::in(['track_cycle', 'predict_moon', 'manage_symptoms', 'cosmic_cycle', 'fertility_support'])],
             'birth_time' => ['nullable', 'date_format:H:i'],
             'birth_place' => ['nullable', 'string', 'max:160'],
             'moon_sign' => ['nullable', Rule::in(['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'])],
@@ -46,6 +49,9 @@ class CycleProfileController extends Controller
                 'moon_sign' => $profile->moon_sign,
                 'rising_sign' => $profile->rising_sign,
                 'onboarding_completed' => $profile->onboarding_completed,
+                'display_name' => $profile->display_name,
+                'wants_astrology' => $profile->wants_astrology,
+                'partner_preference' => $profile->partner_preference,
             ],
         ]);
     }
