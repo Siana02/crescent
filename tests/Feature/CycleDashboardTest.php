@@ -12,6 +12,8 @@ class CycleDashboardTest extends TestCase
 
     public function test_dashboard_page_route_exists_and_requires_authentication(): void
     {
+        $this->withoutVite();
+
         $this->get('/dashboard')->assertRedirect('/login');
 
         $user = User::factory()->create();
