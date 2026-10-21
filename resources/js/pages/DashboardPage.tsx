@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import Button from '../components/Button';
 import { getMoonPhase } from '../utils/moonPhase';
+import '../styles/personalization.css';
 
 type Sign = 'Aries' | 'Taurus' | 'Gemini' | 'Cancer' | 'Leo' | 'Virgo' | 'Libra' | 'Scorpio' | 'Sagittarius' | 'Capricorn' | 'Aquarius' | 'Pisces';
 type Goal = 'track_cycle' | 'predict_moon' | 'manage_symptoms' | 'cosmic_cycle' | 'fertility_support';
@@ -17,6 +18,7 @@ type DashboardData = {
     };
     latest_period: { start_date: string; end_date: string | null } | null;
     cycle_day: number | null; estimated_next_period: string | null; days_until_estimate: number | null;
+    fertility_window: { ovulation_date: string; start_date: string; end_date: string } | null;
     today_checkin: { log_date: string; energy_level: string | null; mood: string | null; symptoms: string[]; notes: string | null } | null;
 };
 type ApiError = { message?: string; errors?: Record<string, string[]>; profile?: DashboardData['profile'] };
@@ -180,6 +182,7 @@ export default function DashboardPage() {
 
     if (isLoading) return <main className="dashboard-loading" aria-live="polite">Opening your little universe…</main>;
     const estimatedDate = data?.estimated_next_period ?? null;
+    const usesHormonalContraception = ['pill', 'hormonal_iud', 'implant', 'injection', 'patch', 'ring'].includes(data?.profile.contraception_type ?? '');
     const firstName = data?.profile.display_name?.trim() || data?.user.name.split(' ')[0] || 'there';
     const needsOnboarding = !data?.profile.onboarding_completed;
     const goalCopy: Record<Goal, string> = {
@@ -218,11 +221,11 @@ export default function DashboardPage() {
                         <p className="dashboard-card__footnote">Your cycle is personal; estimates can vary from month to month.</p>
                     </article>
                     <article className="dashboard-card dashboard-card--estimate">
-                        <p className="dashboard-card__eyebrow"><span aria-hidden="true">✧</span> NEXT PERIOD ESTIMATE</p>
+                        <p className="dashboard-card__eyebrow"><span aria-hidden="true">✧</span> {usesHormonalContraception ? 'NEXT BLEED ESTIMATE' : 'NEXT PERIOD ESTIMATE'}</p>
                         <p className="dashboard-card__metric dashboard-card__metric--date">{formatDate(estimatedDate)}</p>
                         <p className="dashboard-card__description">{estimateCaption(data?.days_until_estimate ?? null)}</p>
                         {estimatedDate && <div className="cycle-countdown" aria-label="Estimated cycle progress"><span style={{width: `${Math.max(0, Math.min(100, 100 - Math.max(0, data?.days_until_estimate ?? 0) / Math.max(1, data?.profile.average_cycle_length ?? 28) * 100))}%`}} /></div>}
-                        <p className="dashboard-card__footnote">An estimate based on the information you’ve logged, not a guarantee.</p>
+                        <p className="dashboard-card__footnote">{usesHormonalContraception ? 'Bleeding can change on hormonal contraception, so a natural-cycle estimate is not shown.' : 'An estimate based on the information you’ve logged, not a guarantee.'}</p>
                     </article>
                     {data?.profile.wants_astrology && <article className="dashboard-card dashboard-card--moon">
                         <p className="dashboard-card__eyebrow"><span aria-hidden="true">☾</span> TONIGHT’S SKY NOTE</p>
@@ -231,6 +234,10 @@ export default function DashboardPage() {
                         <p className="dashboard-card__footnote">Lunar phases are for cosmic curiosity, not cycle prediction.</p>
                     </article>}
                 </section>
+
+                {usesHormonalContraception && <p className="hormonal-note">♡ Hormonal contraception can suppress or change ovulation. Crescent focuses on bleeding logs and daily wellbeing here, rather than assuming a natural ovulation pattern.</p>}
+
+                {data?.fertility_window && !usesHormonalContraception && <section className="fertility-note"><p className="dashboard-eyebrow">YOUR ESTIMATED FERTILE WINDOW</p><h2>A gentle cycle-awareness note</h2><div className="fertility-note__dates"><span>Window: {formatDate(data.fertility_window.start_date)} – {formatDate(data.fertility_window.end_date)}</span><span>Estimated ovulation: {formatDate(data.fertility_window.ovulation_date)}</span></div><p className="fertility-note__warning">These dates are estimates, not “safe days” or reliable contraception. Ovulation can shift, especially with irregular cycles. Use a reliable contraceptive method if avoiding pregnancy is important.</p></section>}
 
                 {data?.profile.wants_astrology && <section className="cosmic-note">
                     <div className="cosmic-note__star" aria-hidden="true">✧</div>
