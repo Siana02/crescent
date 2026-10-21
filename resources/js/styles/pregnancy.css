@@ -1,0 +1,94 @@
+.pregnancy-shell{min-height:100vh;background:radial-gradient(ellipse at 8% 0,#f3e9f7 0,transparent 34%),radial-gradient(ellipse at 95% 12%,#fcebf0 0,transparent 29%),#fffafc;color:#5e4b66}
+.pregnancy-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px clamp(18px,5vw,68px);border-bottom:1px solid #f0e5f0;background:#fffafdcc}
+.pregnancy-brand{display:flex;align-items:center;gap:8px;color:#5e4b66;text-decoration:none;font-family:var(--serif,Georgia,serif);font-size:25px}
+.pregnancy-brand>span:first-child{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#f1e6f5;color:#9a7daa;font-size:23px}
+.pregnancy-brand>span:last-child{color:#c59ab6}
+.pregnancy-header__actions{display:flex;align-items:center;gap:15px}
+.pregnancy-header__actions>span{color:#98879e;font-size:10px}
+.pregnancy-main{width:min(1040px,calc(100% - 36px));margin:0 auto;padding:34px 0 42px}
+.pregnancy-hero{position:relative;overflow:hidden;padding:clamp(26px,5vw,50px);border:1px solid #e9d8eb;border-radius:24px;background:radial-gradient(ellipse at 88% 0,#f0e4f7 0,transparent 45%),radial-gradient(ellipse at 0 100%,#fff0f3 0,transparent 42%),linear-gradient(135deg,#fffdfd,#fcf6fc);box-shadow:0 16px 44px #80658a0b}
+.pregnancy-hero__sparkles{position:absolute;inset:0;pointer-events:none;color:#b89ac5}
+.pregnancy-hero__sparkles span{position:absolute;font-size:19px}
+.pregnancy-hero__sparkles span:nth-child(1){top:24px;right:11%;font-size:25px}
+.pregnancy-hero__sparkles span:nth-child(2){top:72px;right:5%}
+.pregnancy-hero__sparkles span:nth-child(3){top:23%;right:19%;font-size:29px}
+.pregnancy-hero__sparkles span:nth-child(4){bottom:25px;right:8%;font-size:23px;color:#d3a6b9}
+.pregnancy-eyebrow{margin:0;color:#a07fa9;font-size:9px;font-weight:850;letter-spacing:.15em;line-height:1.6}
+.pregnancy-hero h1{position:relative;margin:13px 0 12px;font-family:var(--serif,Georgia,serif);font-size:clamp(34px,5vw,56px);font-weight:400;line-height:1.12;letter-spacing:-.035em}
+.pregnancy-hero h1 em{display:block;margin-top:6px;color:#a282b0;font-weight:400}
+.pregnancy-hero__copy{max-width:590px;color:#8d7b94;font-size:12px;line-height:1.9}
+.pregnancy-hero__chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.pregnancy-hero__chips span{padding:9px 12px;border:1px solid #e6d6e9;border-radius:99px;background:#fffafc;color:#8d7398;font-size:9px}
+.pregnancy-overview{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;margin-top:17px}
+.pregnancy-week-card,.pregnancy-due-card{display:flex;align-items:center;gap:22px;min-width:0;padding:23px;border:1px solid #ebddec;border-radius:18px;background:#fffdfd}
+.pregnancy-week-ring{display:grid;place-items:center;flex:0 0 112px;width:112px;height:112px;padding:7px;border-radius:50%}
+.pregnancy-week-ring>div{display:grid;align-content:center;justify-items:center;width:100%;height:100%;border:1px solid #eee1ef;border-radius:50%;background:#fffafd}
+.pregnancy-week-ring strong{color:#7f628b;font-family:var(--serif,Georgia,serif);font-size:36px;font-weight:400;line-height:1.1}
+.pregnancy-week-ring span{margin-top:3px;color:#a78cae;font-size:8px;font-weight:800;letter-spacing:.16em}
+.pregnancy-week-card__copy h2{margin:6px 0;color:#5e4b66;font-family:var(--serif,Georgia,serif);font-size:22px;font-weight:400}
+.pregnancy-week-card__copy>p:not(.pregnancy-eyebrow){margin:4px 0;color:#8e7297;font-size:11px;font-weight:700}
+.pregnancy-week-card__copy>small{display:block;max-width:420px;margin-top:7px;color:#98889e;font-size:9px;line-height:1.7}
+.pregnancy-due-card{display:grid;align-content:center;gap:7px;background:linear-gradient(145deg,#fff9fb,#f8f0fa)}
+.pregnancy-due-card>span{font-size:26px}
+.pregnancy-due-card>strong{color:#745780;font-family:var(--serif,Georgia,serif);font-size:21px;font-weight:400;line-height:1.3}
+.pregnancy-due-card>p:not(.pregnancy-eyebrow){margin:0;color:#a17fa9;font-size:10px}
+.pregnancy-due-card>small{color:#9a8aa0;font-size:8px;line-height:1.7}
+.pregnancy-week-guide{display:flex;align-items:center;justify-content:space-between;gap:22px;margin-top:15px;padding:23px 25px;border:1px solid #eadbea;border-radius:17px;background:linear-gradient(115deg,#f9f2fa,#fffafc)}
+.pregnancy-week-guide h2,.pregnancy-cosmos h2,.pregnancy-companion h2{margin:7px 0;color:#654f6d;font-family:var(--serif,Georgia,serif);font-size:25px;font-weight:400;line-height:1.25}
+.pregnancy-week-guide p:not(.pregnancy-eyebrow){max-width:680px;margin:0;color:#8d7b94;font-size:10px;line-height:1.8}
+.pregnancy-week-guide__seal{display:grid;justify-items:center;gap:5px;flex:0 0 112px;width:112px;height:112px;align-content:center;border:1px solid #e3cfe7;border-radius:50%;background:#fffafd;text-align:center}
+.pregnancy-week-guide__seal>span{color:#ae8cbb;font-size:22px}
+.pregnancy-week-guide__seal strong{color:#9a7da5;font-size:8px;letter-spacing:.1em}
+.pregnancy-week-guide__seal small{color:#b09db5;font-size:8px}
+.pregnancy-cosmos{margin-top:16px;padding:25px;border:1px solid #e6d7e9;border-radius:18px;background:radial-gradient(ellipse at 100% 0,#f0e5f6,transparent 52%),#fffdfd}
+.pregnancy-cosmos__intro>p:not(.pregnancy-eyebrow){max-width:650px;color:#96869c;font-size:10px;line-height:1.7}
+.pregnancy-cosmos__cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-top:17px}
+.pregnancy-cosmos__cards article{display:grid;justify-items:start;gap:7px;padding:16px;border:1px solid #eaddec;border-radius:14px;background:#fffafd}
+.pregnancy-cosmos__icon{color:#9a7eaa;font-family:var(--serif,Georgia,serif);font-size:23px}
+.pregnancy-cosmos__cards small{color:#9d8ca3;font-size:9px;line-height:1.6}
+.pregnancy-cosmos__cards strong{color:#755981;font-family:var(--serif,Georgia,serif);font-size:19px;font-weight:400}
+.pregnancy-cosmos__disclaimer{margin:14px 0 0;color:#a091a5;font-size:8px;line-height:1.7}
+.pregnancy-checkin-section{margin-top:26px}
+.pregnancy-section-heading{margin-bottom:14px}
+.pregnancy-section-heading h2{margin:7px 0;color:#654f6d;font-family:var(--serif,Georgia,serif);font-size:29px;font-weight:400}
+.pregnancy-section-heading>p:not(.pregnancy-eyebrow){color:#97869d;font-size:10px;line-height:1.7}
+.pregnancy-checkin{display:grid;gap:16px;padding:23px;border:1px solid #eadbea;border-radius:18px;background:#fffdfd}
+.pregnancy-checkin fieldset{min-width:0;margin:0;padding:0;border:0}
+.pregnancy-checkin legend{margin-bottom:10px;color:#6b5573;font-size:11px;font-weight:800}
+.pregnancy-checkin legend small{display:block;margin-top:4px;color:#a292a8;font-size:9px;font-weight:400}
+.pregnancy-symptom-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pregnancy-symptom{position:relative;display:flex;align-items:center;gap:8px;min-width:0;min-height:49px;padding:10px;border:1px solid #eee2ef;border-radius:12px;background:#fffafd;color:#796681;text-align:left;cursor:pointer;transition:border-color .16s,background .16s}
+.pregnancy-symptom>span{font-size:18px}
+.pregnancy-symptom strong{flex:1;font-size:9px;font-weight:600;line-height:1.4}
+.pregnancy-symptom i{color:#b39abb;font-size:12px;font-style:normal}
+.pregnancy-symptom.is-selected{border-color:#b99cc5;background:#f3eaf6;color:#765a83}
+.pregnancy-mood-row,.pregnancy-energy-row{display:flex;flex-wrap:wrap;gap:7px}
+.pregnancy-mood,.pregnancy-energy{padding:9px 12px;border:1px solid #e9dce9;border-radius:99px;background:#fffafd;color:#8c7b92;font-size:9px;cursor:pointer}
+.pregnancy-mood{text-transform:capitalize}
+.pregnancy-mood.is-selected,.pregnancy-energy.is-selected{border-color:#b89ac5;background:#f1e6f5;color:#785b86}
+.pregnancy-notes{display:grid;gap:7px;color:#6b5573;font-size:10px;font-weight:800}
+.pregnancy-notes small{color:#a092a5;font-size:9px;font-weight:400}
+.pregnancy-notes textarea{width:100%;box-sizing:border-box;padding:12px;border:1px solid #e9dce9;border-radius:12px;background:#fffafd;color:#5e4b66;font:inherit;font-size:10px;line-height:1.7;resize:vertical}
+.pregnancy-alert,.pregnancy-notice{margin:0;padding:10px 12px;border-radius:10px;font-size:10px;line-height:1.6}
+.pregnancy-alert{background:#fff0f1;color:#9d5362}
+.pregnancy-notice{background:#f1eaf5;color:#785e84}
+.pregnancy-companion{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:18px;padding:24px;border:1px solid #e8d9eb;border-radius:18px;background:linear-gradient(125deg,#fffafd,#f8f0fa)}
+.pregnancy-companion>div>p:not(.pregnancy-eyebrow){color:#93829a;font-size:10px;line-height:1.8}
+.pregnancy-companion form{display:grid;align-content:center;gap:12px}
+.pregnancy-companion form label{display:grid;gap:7px;color:#7a6483;font-size:10px;font-weight:700}
+.pregnancy-companion select{min-height:40px;padding:9px 11px;border:1px solid #e4d5e8;border-radius:10px;background:#fffafd;color:#66516e;font:inherit}
+.pregnancy-invite-code{grid-column:1/-1;display:grid;justify-items:start;gap:7px;padding:15px;border:1px solid #e3d0e7;border-radius:13px;background:#fffafd}
+.pregnancy-invite-code small{color:#a184ac;font-size:9px}
+.pregnancy-invite-code strong{color:#755681;font-family:var(--serif,Georgia,serif);font-size:26px;letter-spacing:.16em}
+.pregnancy-invite-code button{padding:7px 12px;border:1px solid #dfd0e4;border-radius:99px;background:white;color:#785d84;font-size:9px;cursor:pointer}
+.pregnancy-invite-code span{color:#9e8ea4;font-size:8px;line-height:1.6}
+.pregnancy-medical-note{margin:19px 0 0;padding:12px 14px;border-radius:11px;background:#f6f0f7;color:#998a9f;font-size:9px;line-height:1.8}
+.pregnancy-footer{display:flex;justify-content:space-between;gap:12px;padding:20px clamp(18px,5vw,68px);border-top:1px solid #eee3ef;color:#a08fa6;font-size:9px}
+.pregnancy-footer a{color:#8d7398;text-decoration:none}
+.pregnancy-empty{display:grid;justify-items:center;align-content:center;min-height:80vh;padding:30px;text-align:center;background:#fffafd;color:#654f6d}
+.pregnancy-empty__moon{display:grid;place-items:center;width:70px;height:70px;border:1px solid #e5d5e9;border-radius:50%;background:#f5edf7;color:#a083af;font-size:38px}
+.pregnancy-empty h1{font-family:var(--serif,Georgia,serif);font-size:35px;font-weight:400}
+.pregnancy-empty>p:not(.pregnancy-eyebrow){max-width:430px;color:#96869c;font-size:11px;line-height:1.8}
+@media(max-width:760px){.pregnancy-overview{grid-template-columns:1fr}.pregnancy-companion{grid-template-columns:1fr}.pregnancy-week-card{align-items:flex-start}.pregnancy-symptom-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.pregnancy-header{align-items:flex-start;padding:16px}.pregnancy-header__actions{gap:8px}.pregnancy-header__actions>span{display:none}.pregnancy-main{width:calc(100% - 24px);padding-top:18px}.pregnancy-hero{padding:24px 19px}.pregnancy-hero__sparkles span:nth-child(3){right:8%}.pregnancy-hero h1{font-size:37px}.pregnancy-week-card{display:grid;justify-items:center;padding:19px;text-align:center}.pregnancy-week-ring{width:100px;height:100px;flex-basis:100px}.pregnancy-week-card__copy small{display:block}.pregnancy-due-card{padding:19px}.pregnancy-week-guide{align-items:flex-start;padding:18px;flex-direction:column}.pregnancy-week-guide__seal{align-self:center}.pregnancy-cosmos,.pregnancy-checkin{padding:17px}.pregnancy-cosmos__cards{grid-template-columns:1fr}.pregnancy-symptom-grid{grid-template-columns:1fr 1fr}.pregnancy-symptom{align-items:flex-start;gap:6px;padding:9px 7px}.pregnancy-symptom>span{font-size:16px}.pregnancy-symptom strong{font-size:8px}.pregnancy-companion{padding:18px}.pregnancy-footer{flex-direction:column}}
+@media(prefers-reduced-motion:reduce){.pregnancy-symptom{transition:none}}
