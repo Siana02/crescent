@@ -1,0 +1,120 @@
+import { useState, type FormEvent } from 'react';
+import Button from '../components/Button';
+
+type AuthMode = 'login' | 'register';
+
+type AuthPageProps = {
+    mode: AuthMode;
+};
+
+type AuthResponse = {
+    message?: string;
+    errors?: Record<string, string[]>;
+};
+
+function csrfToken(): string {
+    return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
+}
+
+export default function AuthPage({ mode }: AuthPageProps) {
+    const isRegister = mode === 'register';
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [passwordConfirmation, setPasswordConfirmation] = useState('');
+    const [error, setError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        setError('');
+        setIsSubmitting(true);
+
+        try {
+            const response = await fetch(`/auth/${mode}`, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken(),
+                },
+                body: JSON.stringify({
+                    ...(isRegister ? { name, password_confirmation: passwordConfirmation } : {}),
+                    email,
+                    password,
+                }),
+            });
+            const data = (await response.json()) as AuthResponse;
+
+            if (!response.ok) {
+                const firstValidationError = data.errors ? Object.values(data.errors)[0]?.[0] : undefined;
+                setError(firstValidationError ?? data.message ?? 'We could not complete that request. Please try again.');
+                return;
+            }
+
+            window.location.assign('/dashboard');
+        } catch {
+            setError('We could not reach Crescent. Check your connection and try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    }
+
+    return (
+        <main className="auth-shell">
+            <a className="auth-back-link" href="/">← Back to Crescent</a>
+            <section className="auth-card" aria-labelledby="auth-title">
+                <div className="auth-card__art" aria-hidden="true">
+                    <span className="auth-card__moon">☾</span>
+                    <span className="auth-card__spark auth-card__spark--one">✦</span>
+                    <span className="auth-card__spark auth-card__spark--two">✧</span>
+                    <p>A softer space to understand your own rhythm.</p>
+                </div>
+                <div className="auth-card__form">
+                    <a className="auth-brand" href="/">☾ <span>crescent.</span></a>
+                    <p className="auth-eyebrow">{isRegister ? 'YOUR SPACE, YOUR PACE' : 'WELCOME BACK'}</p>
+                    <h1 id="auth-title">{isRegister ? 'Begin with you.' : 'Good to see you.'}</h1>
+                    <p className="auth-description">
+                        {isRegister
+                            ? 'Create a private account to start keeping track of your cycle.'
+                            : 'Sign in to return to your personal cycle space.'}
+                    </p>
+
+                    <form className="auth-form" onSubmit={handleSubmit}>
+                        {isRegister && (
+                            <label>
+                                Your name
+                                <input autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} required maxLength={100} />
+                            </label>
+                        )}
+                        <label>
+                            Email address
+                            <input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={255} />
+                        </label>
+                        <label>
+                            Password
+                            <input type="password" autoComplete={isRegister ? 'new-password' : 'current-password'} value={password} onChange={(event) => setPassword(event.target.value)} required minLength={8} />
+                        </label>
+                        {isRegister && (
+                            <label>
+                                Confirm password
+                                <input type="password" autoComplete="new-password" value={passwordConfirmation} onChange={(event) => setPasswordConfirmation(event.target.value)} required minLength={8} />
+                            </label>
+                        )}
+                        {error && <p className="auth-error" role="alert">{error}</p>}
+                        <Button type="submit" className="auth-submit" disabled={isSubmitting}>
+                            {isSubmitting ? 'One moment…' : isRegister ? 'Create your account' : 'Sign in'}
+                            <span className="button__icon" aria-hidden="true">→</span>
+                        </Button>
+                    </form>
+                    <p className="auth-switch">
+                        {isRegister ? 'Already have a space here?' : 'New to Crescent?'}{' '}
+                        <a href={isRegister ? '/login' : '/register'}>{isRegister ? 'Sign in' : 'Create an account'}</a>
+                    </p>
+                    <p className="auth-privacy">Your cycle details belong to you. Keep your password private, and sign out on shared devices.</p>
+                </div>
+            </section>
+        </main>
+    );
+}
