@@ -21,7 +21,9 @@ class DashboardController extends Controller
             $profile->update(['timezone' => $validated['timezone']]);
         }
 
-        $isPregnancyJourney = ($profile->active_journey ?? 'cycle') === 'pregnancy';
+        $activeJourney = $profile->active_journey ?? 'cycle';
+        $isPregnancyJourney = in_array($activeJourney, ['pregnancy', 'postpartum'], true);
+        $isPostpartumJourney = $activeJourney === 'postpartum';
         $latestPeriod = $isPregnancyJourney ? null : $user->periodLogs()->orderByDesc('start_date')->first();
         $today = CarbonImmutable::today($profile->timezone);
         $lastStart = $latestPeriod
@@ -51,7 +53,7 @@ class DashboardController extends Controller
         }
 
         $todayCheckin = $isPregnancyJourney ? null : $user->dailyCheckins()->whereDate('log_date', $today->toDateString())->first();
-        $pregnancy = $isPregnancyJourney ? $user->pregnancy()->where('status', 'active')->first() : null;
+        $pregnancy = $isPregnancyJourney ? $user->pregnancy()->where('status', $isPostpartumJourney ? 'postpartum' : 'active')->first() : null;
         $pregnancySummary = null;
 
         if ($pregnancy) {
@@ -60,7 +62,8 @@ class DashboardController extends Controller
             $gestationalDays = max(0, 280 - $daysUntilDue);
             $gestationalWeek = max(1, (int) floor($gestationalDays / 7) + 1);
             $trimester = $gestationalWeek <= 13 ? 1 : ($gestationalWeek <= 27 ? 2 : 3);
-            $todayPregnancyCheckin = $pregnancy->checkins()->whereDate('log_date', $today->toDateString())->first();
+            $todayPregnancyCheckin = $isPostpartumJourney ? null : $pregnancy->checkins()->whereDate('log_date', $today->toDateString())->first();
+            $postpartumLogsToday = $isPostpartumJourney ? $pregnancy->postpartumLogs()->whereDate('log_date', $today->toDateString())->latest()->get()->map(fn ($log) => ['id' => $log->id, 'log_date' => $log->log_date->format('Y-m-d'), 'category' => $log->category, 'notes' => $log->notes])->values() : collect();
 
             $pregnancySummary = [
                 'due_date' => $pregnancy->due_date->format('Y-m-d'),
@@ -74,6 +77,7 @@ class DashboardController extends Controller
                 'gestational_days' => $gestationalDays,
                 'trimester' => $trimester,
                 'days_until_due' => $daysUntilDue,
+                'postpartum_logs_today' => $postpartumLogsToday,
                 'today_checkin' => $todayPregnancyCheckin ? [
                     'log_date' => $todayPregnancyCheckin->log_date->format('Y-m-d'),
                     'symptoms' => $todayPregnancyCheckin->symptoms ?? [],
