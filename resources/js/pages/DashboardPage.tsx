@@ -161,7 +161,7 @@ export default function DashboardPage() {
                 <a className="dashboard-brand" href="/" aria-label="Crescent home"><span className="dashboard-brand__moon" aria-hidden="true">☾</span><span className="dashboard-brand__word">crescent<span>.</span></span></a>
                 <div className="dashboard-header__actions">
                     <span className="dashboard-greeting">A little space for {data?.user.name.split(' ')[0] ?? 'you'}</span>
-                    <button className="dashboard-logout" type="button" onClick={handleLogout}>Sign out</button>
+                    <Button variant="outline" className="dashboard-logout" onClick={handleLogout}>Sign out</Button>
                 </div>
             </header>
 
