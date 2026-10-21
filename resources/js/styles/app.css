@@ -723,3 +723,7 @@ a:focus-visible { outline: 3px solid #b88bbd; outline-offset: 4px; }
     .dashboard-logout { transition: none; }
     .dashboard-logout:hover, .dashboard-logout:focus-visible { transform: none; }
 }
+
+.dashboard-brand__moon { color: #86668d; }
+.dashboard-brand__word { color: var(--ink); font-size: 22px; font-weight: 700; letter-spacing: -1.2px; }
+.dashboard-brand__word > span { color: #bc8c9c; }
