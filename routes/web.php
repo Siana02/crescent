@@ -37,6 +37,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/api/cycle-profile', [CycleProfileController::class, 'update']);
     Route::post('/api/periods', [PeriodLogController::class, 'store']);
     Route::post('/api/daily-checkins', [DailyCheckinController::class, 'store'])->middleware('throttle:30,1');\n    Route::put('/api/pregnancy', [PregnancyController::class, 'update']);\n    Route::post('/api/pregnancy/checkins', [PregnancyController::class, 'checkin'])->middleware('throttle:30,1');
+    Route::post('/api/pregnancy/postpartum', [PregnancyController::class, 'transitionPostpartum']);
+    Route::post('/api/pregnancy/postpartum-checkins', [PregnancyController::class, 'postpartumCheckin'])->middleware('throttle:30,1');
     Route::post('/api/relationships/invite', [RelationshipController::class, 'invite'])->middleware('throttle:10,1');
     Route::post('/api/relationships/accept', [RelationshipController::class, 'accept'])->middleware('throttle:10,1');
 });
