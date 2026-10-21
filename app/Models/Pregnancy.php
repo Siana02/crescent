@@ -18,6 +18,11 @@ class Pregnancy extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function postpartumLogs(): HasMany
+    {
+        return $this->hasMany(PostpartumLog::class);
+    }
+
     public function checkins(): HasMany
     {
         return $this->hasMany(PregnancyCheckin::class);
