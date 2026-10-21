@@ -539,3 +539,32 @@ a:focus-visible { outline: 3px solid #b88bbd; outline-offset: 4px; }
         transform: none;
     }
 }
+
+
+/* Fine-tune legacy landing-page selectors to preserve the shared button styles. */
+.button--quiet {
+    padding-left: 22px;
+    padding-right: 22px;
+}
+.button--quiet .button__label-current,
+.button--quiet .button__label-next,
+.header-link .button__icon {
+    color: inherit;
+}
+.header-link span {
+    margin-left: 0;
+}
+.menu-toggle {
+    border-radius: 50%;
+    transition: transform .22s ease, background-color .22s ease, color .22s ease, border-color .22s ease;
+}
+.menu-toggle:hover,
+.menu-toggle:focus-visible {
+    transform: scale(1.035);
+    border-color: var(--plum-dark);
+    background: var(--plum-dark);
+    color: #fffdfb;
+}
+.menu-toggle:active {
+    transform: scale(1.015);
+}
