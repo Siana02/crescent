@@ -1,10 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import Button from '../components/Button';
+import PregnancyDashboard from './PregnancyDashboard';
 import { getMoonPhase } from '../utils/moonPhase';
 import '../styles/personalization.css';
 
 type Sign = 'Aries' | 'Taurus' | 'Gemini' | 'Cancer' | 'Leo' | 'Virgo' | 'Libra' | 'Scorpio' | 'Sagittarius' | 'Capricorn' | 'Aquarius' | 'Pisces';
-type Goal = 'track_cycle' | 'predict_moon' | 'manage_symptoms' | 'cosmic_cycle' | 'fertility_support';
+type Goal = 'track_cycle' | 'predict_moon' | 'manage_symptoms' | 'cosmic_cycle' | 'fertility_support' | 'trying_to_conceive' | 'pregnancy_support' | 'postpartum_support';
 type Regularity = 'regular' | 'irregular' | 'unknown';
 type DashboardData = {
     user: { name: string; email: string };
@@ -14,13 +15,14 @@ type DashboardData = {
         contraception_type: string | null; primary_goal: Goal; birth_time: string | null;
         birth_place: string | null; sun_sign: Sign | null; moon_sign: Sign | null;
         rising_sign: Sign | null; onboarding_completed: boolean;
-        display_name: string | null; wants_astrology: boolean; partner_preference: 'solo' | 'observer' | 'co_tracker';
+        display_name: string | null; wants_astrology: boolean; partner_preference: 'solo' | 'observer' | 'co_tracker'; active_journey: 'cycle' | 'fertility' | 'pregnancy' | 'postpartum';
     };
     latest_period: { start_date: string; end_date: string | null } | null;
     cycle_day: number | null; estimated_next_period: string | null; days_until_estimate: number | null;
     fertility_window: { ovulation_date: string; start_date: string; end_date: string } | null;
     relationships?: { id: number; relationship_type: 'observer' | 'co_tracker'; status: 'pending' | 'accepted' | 'revoked'; invite_code: string | null; companion_name: string | null; sharing_enabled: boolean }[];
     today_checkin: { log_date: string; energy_level: string | null; mood: string | null; symptoms: string[]; notes: string | null } | null;
+    pregnancy: { due_date: string; last_period_date: string | null; conception_date: string | null; due_date_source: string; wants_baby_astrology: boolean; status: string; gestational_week: number; gestational_day_in_week: number; gestational_days: number; trimester: number; days_until_due: number; today_checkin: { log_date: string; symptoms: string[]; mood: string | null; energy_level: string | null; notes: string | null } | null } | null;
 };
 type ApiError = { message?: string; errors?: Record<string, string[]>; profile?: DashboardData['profile'] };
 const SIGNS: Sign[] = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
@@ -201,6 +203,7 @@ export default function DashboardPage() {
     }
 
     if (isLoading) return <main className="dashboard-loading" aria-live="polite">Opening your little universe…</main>;
+    if (data?.profile.active_journey === 'pregnancy') return <PregnancyDashboard data={data} onLogout={handleLogout} onRefresh={loadDashboard} />;
     const estimatedDate = data?.estimated_next_period ?? null;
     const usesHormonalContraception = ['pill', 'hormonal_iud', 'implant', 'injection', 'patch', 'ring'].includes(data?.profile.contraception_type ?? '');
     const firstName = data?.profile.display_name?.trim() || data?.user.name.split(' ')[0] || 'there';
@@ -211,6 +214,9 @@ export default function DashboardPage() {
         manage_symptoms: 'Your daily check-ins can help you notice your own patterns and bring useful notes to a care appointment if you choose.',
         cosmic_cycle: 'Your cycle and the cosmos, side by side — with astrology always on your terms.',
         fertility_support: 'Cycle awareness and gentle estimates to support your fertility journey, without treating predictions as guarantees.',
+        trying_to_conceive: 'A fertility-focused space for cycle history, estimates and questions to discuss with your care team.',
+        pregnancy_support: 'Your pregnancy journey has its own dedicated space for week estimates, wellbeing notes and milestones.',
+        postpartum_support: 'A gentle space for recovery and your family’s changing rhythm.',
     };
 
     return (
