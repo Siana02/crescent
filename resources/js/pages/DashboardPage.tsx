@@ -80,7 +80,10 @@ export default function DashboardPage() {
     const [isCheckingIn, setIsCheckingIn] = useState(false);
     const [error, setError] = useState('');
     const [notice, setNotice] = useState('');
-    const [checkinNotice, setCheckinNotice] = useState('');\n    const [inviteType, setInviteType] = useState<'observer' | 'co_tracker'>('observer');\n    const [isInviting, setIsInviting] = useState(false);\n    const [newInviteCode, setNewInviteCode] = useState('');
+    const [checkinNotice, setCheckinNotice] = useState('');
+    const [inviteType, setInviteType] = useState<'observer' | 'co_tracker'>('observer');
+    const [isInviting, setIsInviting] = useState(false);
+    const [newInviteCode, setNewInviteCode] = useState('');
     const moon = getMoonPhase();
     const periodMoon = data?.latest_period ? getMoonPhase(new Date(data.latest_period.start_date + 'T12:00:00')) : null;
     const moonArchetype = periodMoon?.name === 'New moon' ? 'White Moon' : periodMoon?.name === 'Full moon' ? 'Red Moon' : ['First quarter', 'Last quarter'].includes(periodMoon?.name ?? '') ? 'Quarter Moon' : periodMoon ? 'Crescent / Gibbous Moon' : null;
@@ -197,7 +200,8 @@ export default function DashboardPage() {
             setError(e instanceof Error ? e.message : 'We could not create your invitation.');
         } finally { setIsInviting(false); }
     }
-\n    async function handleLogout() {
+
+    async function handleLogout() {
         try {
             await fetch('/auth/logout', { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrfToken() } });
         } finally { window.location.assign('/'); }
