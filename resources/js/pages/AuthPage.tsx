@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import Button from '../components/Button';
+import '../styles/auth-cosmic.css';
 
 type AuthMode = 'login' | 'register';
 
@@ -69,7 +70,7 @@ export default function AuthPage({ mode }: AuthPageProps) {
                     <span className="auth-card__moon">☾</span>
                     <span className="auth-card__spark auth-card__spark--one">✦</span>
                     <span className="auth-card__spark auth-card__spark--two">✧</span>
-                    <p>A softer space to understand your own rhythm.</p>
+                    <p>A softer space to understand your own rhythm, under a sky full of possibility.</p>
                 </div>
                 <div className="auth-card__form">
                     <a className="auth-brand" href="/">☾ <span>crescent.</span></a>
@@ -77,8 +78,8 @@ export default function AuthPage({ mode }: AuthPageProps) {
                     <h1 id="auth-title">{isRegister ? 'Begin with you.' : 'Good to see you.'}</h1>
                     <p className="auth-description">
                         {isRegister
-                            ? 'Create a private account to start keeping track of your cycle.'
-                            : 'Sign in to return to your personal cycle space.'}
+                            ? 'Create your private little universe. We’ll personalise it together in just a few steps.'
+                            : 'Come back to your own little corner of the cosmos.'}
                     </p>
 
                     <form className="auth-form" onSubmit={handleSubmit}>
