@@ -106,6 +106,46 @@ class AstrologyController extends Controller
         }
     }
 
+    public function sky(): JsonResponse
+    {
+        $moment = now('UTC');
+        $key = 'cosmyday:sky:'.$moment->format('YmdH');
+
+        try {
+            $chart = Cache::remember($key, now()->addHour(), function () use ($moment) {
+                $response = $this->client()->post(self::BASE_URL.'/natal', [
+                    'year' => (int) $moment->format('Y'),
+                    'month' => (int) $moment->format('n'),
+                    'day' => (int) $moment->format('j'),
+                    'hour' => (int) $moment->format('G'),
+                    'minute' => (int) $moment->format('i'),
+                    'lat' => 0.0,
+                    'lon' => 0.0,
+                ]);
+                if (! $response->successful()) {
+                    throw new \RuntimeException('The current sky could not be calculated right now.');
+                }
+                return $response->json();
+            });
+
+            $placements = array_values(array_filter(
+                $this->normalisePlacements($chart),
+                fn (array $placement) => ! in_array(Str::lower($placement['name']), ['ascendant', 'rising', 'asc'], true)
+            ));
+
+            return response()->json([
+                'placements' => $placements,
+                'calculated_at' => $moment->toIso8601String(),
+                'source' => 'CosmyDay',
+                'source_url' => 'https://cosmyday.com',
+                'note' => 'Planetary sign positions are calculated for the current UTC moment. House cusps and Ascendant are intentionally omitted from this global sky view.',
+            ]);
+        } catch (\Throwable $exception) {
+            report($exception);
+            return response()->json(['message' => 'The current sky is temporarily unavailable. Please try again soon.'], 503);
+        }
+    }
+
     public function daily(Request $request): JsonResponse
     {
         $sign = Str::lower((string) $request->user()->cycleProfile?->sun_sign);
