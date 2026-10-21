@@ -23,6 +23,12 @@ class CycleDashboardTest extends TestCase
             ->assertJsonPath('profile.average_cycle_length', null)
             ->assertJsonPath('profile.average_period_length', null)
             ->assertJsonPath('profile.cycle_regularity', 'unknown')
+            ->assertJsonPath('profile.primary_goal', 'track_cycle')
+            ->assertJsonPath('profile.birth_date', null)
+            ->assertJsonPath('profile.sun_sign', null)
+            ->assertJsonPath('profile.moon_sign', null)
+            ->assertJsonPath('profile.rising_sign', null)
+            ->assertJsonPath('profile.onboarding_completed', false)
             ->assertJsonPath('latest_period', null);
     }
 
