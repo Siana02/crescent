@@ -10,6 +10,9 @@ class CycleProfileController extends Controller
 {
     public function update(Request $request): JsonResponse
     {
+        // Older clients may omit this optional preference; solo is the safe default.
+        $request->merge(['partner_preference' => $request->input('partner_preference', 'solo')]);
+
         $validated = $request->validate([
             'average_cycle_length' => ['nullable', 'integer', 'between:21,45'],
             'average_period_length' => ['nullable', 'integer', 'between:1,10'],
