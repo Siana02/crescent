@@ -40,6 +40,7 @@ class DashboardController extends Controller
             ->map(fn ($period) => [
                 'start_date' => $period->start_date->format('Y-m-d'),
                 'end_date' => $period->end_date?->format('Y-m-d'),
+                'flow_intensity' => $period->flow_intensity,
             ])
             ->values();
         $usesHormonalContraception = in_array($profile->contraception_type, ['pill', 'hormonal_iud', 'implant', 'injection', 'patch', 'ring'], true);
@@ -148,6 +149,7 @@ class DashboardController extends Controller
             'latest_period' => $latestPeriod ? [
                 'start_date' => $latestPeriod->start_date->format('Y-m-d'),
                 'end_date' => $latestPeriod->end_date?->format('Y-m-d'),
+                'flow_intensity' => $latestPeriod->flow_intensity,
             ] : null,
             'period_history' => $periodHistory,
             'cycle_day' => $cycleDay,

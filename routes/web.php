@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AstrologyController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CycleProfileController;
 use App\Http\Controllers\DailyCheckinController;
@@ -20,6 +21,7 @@ Route::post('/auth/login', [AuthController::class, 'login'])->middleware('thrott
 
 Route::middleware('auth')->group(function () {
     Route::get('/connections', fn () => view('welcome'));
+    Route::get('/astrology', fn () => view('welcome'));
     Route::get('/profile', fn () => view('welcome'));
     Route::get('/settings', fn () => view('welcome'));
     Route::get('/dashboard', function (Request $request) {
@@ -39,6 +41,11 @@ Route::middleware('auth')->group(function () {
     })->name('onboarding');
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/api/dashboard', [DashboardController::class, 'show']);
+    Route::get('/api/astrology/chart', [AstrologyController::class, 'chart'])->middleware('throttle:10,1');
+    Route::get('/api/astrology/sky', [AstrologyController::class, 'sky'])->middleware('throttle:30,1');
+    Route::get('/api/astrology/horoscope', [AstrologyController::class, 'daily'])->middleware('throttle:30,1');
+    Route::get('/api/astrology/events', [AstrologyController::class, 'events'])->middleware('throttle:30,1');
+    Route::get('/api/astrology/transit', [AstrologyController::class, 'transit'])->middleware('throttle:30,1');
     Route::put('/api/cycle-profile', [CycleProfileController::class, 'update']);
     Route::post('/api/periods', [PeriodLogController::class, 'store']);
     Route::post('/api/daily-checkins', [DailyCheckinController::class, 'store'])->middleware('throttle:30,1');

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['user_id', 'start_date', 'end_date', 'notes'])]
+#[Fillable(['user_id', 'start_date', 'end_date', 'flow_intensity', 'notes'])]
 class PeriodLog extends Model
 {
     public function user(): BelongsTo
