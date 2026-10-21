@@ -55,6 +55,8 @@ export default function OnboardingPage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
     const [inviteCode, setInviteCode] = useState('');
+    const [acceptCode, setAcceptCode] = useState('');
+    const [connectionNotice, setConnectionNotice] = useState('');
 
     useEffect(() => {
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
@@ -138,7 +140,15 @@ export default function OnboardingPage() {
                 const periodResult = (await periodResponse.json()) as ApiError;
                 if (!periodResponse.ok) throw new Error(firstError(periodResult, 'Your period dates could not be saved.'));
             }
-            if (partnerPreference !== 'solo') {
+            if (acceptCode.trim()) {
+                const acceptResponse = await fetch('/api/relationships/accept', {
+                    method: 'POST', credentials: 'same-origin', headers,
+                    body: JSON.stringify({ invite_code: acceptCode.trim().toUpperCase() }),
+                });
+                const acceptResult = (await acceptResponse.json()) as InviteResponse;
+                if (!acceptResponse.ok) throw new Error(firstError(acceptResult, 'That Cosmic Sync Code could not be accepted.'));
+                setConnectionNotice(acceptResult.message ?? 'Your Crescent spaces are connected. ✨');
+            } else if (partnerPreference !== 'solo') {
                 const inviteResponse = await fetch('/api/relationships/invite', {
                     method: 'POST', credentials: 'same-origin', headers,
                     body: JSON.stringify({ relationship_type: partnerPreference }),
@@ -147,7 +157,7 @@ export default function OnboardingPage() {
                 if (!inviteResponse.ok) throw new Error(firstError(inviteResult, 'Your Cosmic Sync Code could not be created.'));
                 setInviteCode(inviteResult.invite_code ?? '');
             }
-            if (partnerPreference === 'solo') window.setTimeout(() => window.location.assign('/dashboard'), 1800);
+            if (partnerPreference === 'solo' && !acceptCode.trim()) window.setTimeout(() => window.location.assign('/dashboard'), 1800);
         } catch (e) {
             setIsProcessing(false);
             setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.');
@@ -162,6 +172,7 @@ export default function OnboardingPage() {
             <p className="onboarding-eyebrow">A LITTLE COSMIC MAGIC</p>
             <h1>Gathering your little universe…</h1>
             <p>Setting up your cycle space and making room for what matters to you.</p>
+            {connectionNotice && <div className="onboarding-invite"><span>Connection made ✨</span><strong>{connectionNotice}</strong><small>Your cycle details remain private until sharing is explicitly enabled.</small><button type="button" className="onboarding-dashboard-link" onClick={() => window.location.assign('/dashboard')}>Enter my dashboard →</button></div>}
             {inviteCode && <div className="onboarding-invite"><span>Your Cosmic Sync Code</span><strong>{inviteCode}</strong><button type="button" onClick={() => navigator.clipboard?.writeText(inviteCode)}>Copy code</button><small>Share this with your companion. Your cycle details stay private until you choose to share them.</small><button type="button" className="onboarding-dashboard-link" onClick={() => window.location.assign('/dashboard')}>Enter my dashboard →</button></div>}
         </main>;
     }
@@ -251,7 +262,9 @@ export default function OnboardingPage() {
                         <ChoiceCard selected={partnerPreference === 'solo'} icon="🪷" title="No, keeping it solo for now" description="Your Crescent space is just for you." onClick={() => setPartnerPreference('solo')} />
                         <ChoiceCard selected={partnerPreference === 'observer'} icon="💌" title="Invite a partner / observer" description="They can join as a companion, with sharing off by default." onClick={() => setPartnerPreference('observer')} />
                         <ChoiceCard selected={partnerPreference === 'co_tracker'} icon="🌷" title="Invite a co-cycling partner" description="Create a connection for two people who track cycles." onClick={() => setPartnerPreference('co_tracker')} />
-                        {partnerPreference !== 'solo' && <p className="onboarding-connection-note">We’ll create a one-time shareable Cosmic Sync Code. You can decide what to share after your companion accepts.</p>}
+                        {partnerPreference !== 'solo' && <p className="onboarding-connection-note">We’ll create a shareable Cosmic Sync Code that expires in seven days. You can decide what to share after your companion accepts.</p>}
+                        <div className="onboarding-optional-title">Already have a Cosmic Sync Code?</div>
+                        <Field label="Enter your companion’s code" hint="Paste an 8-character code to connect to an existing Crescent space."><input value={acceptCode} onChange={event => setAcceptCode(event.target.value.toUpperCase().slice(0, 8))} maxLength={8} placeholder="e.g. MOONSTAR" autoCapitalize="characters" /></Field>
                     </div>}
                     {error && <p className="onboarding-error" role="alert">{error}</p>}
                     <div className="onboarding-actions">
