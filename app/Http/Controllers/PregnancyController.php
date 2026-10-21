@@ -170,6 +170,7 @@ class PregnancyController extends Controller
             'primary_goal' => 'track_cycle',
             'average_cycle_length' => null,
             'average_period_length' => null,
+            'cycle_tracking_started_at' => CarbonImmutable::today($profile->timezone ?: config('app.timezone', 'UTC'))->toDateString(),
         ]);
 
         return response()->json(['message' => 'Cycle tracking is ready whenever you are. Your pregnancy and postpartum notes remain saved.']);
