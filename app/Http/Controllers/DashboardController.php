@@ -25,7 +25,9 @@ class DashboardController extends Controller
 
         $latestPeriod = $user->periodLogs()->orderByDesc('start_date')->first();
         $today = CarbonImmutable::today($profile->timezone);
-        $lastStart = $latestPeriod ? CarbonImmutable::parse($latestPeriod->start_date) : null;
+        $lastStart = $latestPeriod
+            ? CarbonImmutable::parse($latestPeriod->start_date->format('Y-m-d'), $profile->timezone)->startOfDay()
+            : null;
         $estimatedNext = $lastStart?->addDays($profile->average_cycle_length);
 
         $cycleDay = $lastStart ? ((int) $lastStart->diffInDays($today) + 1) : null;
