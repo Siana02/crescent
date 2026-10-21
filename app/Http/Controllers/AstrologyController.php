@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
 class AstrologyController extends Controller
@@ -36,7 +37,10 @@ class AstrologyController extends Controller
 
         try {
             $location = Cache::remember($locationKey, now()->addDays(30), function () use ($profile) {
-                $response = $this->client()->get(self::BASE_URL.'/search-location', ['q' => $profile->birth_place]);
+                $response = RateLimiter::attempt('cosmyday:location-search', 1, fn () => $this->client()->get(self::BASE_URL.'/search-location', ['q' => $profile->birth_place]), 1);
+                if ($response === false) {
+                    throw new \\RuntimeException('Birthplace lookup is busy. Please try again in a moment.');
+                }
                 if (! $response->successful()) {
                     throw new \RuntimeException('CosmyDay could not find that birthplace.');
                 }
