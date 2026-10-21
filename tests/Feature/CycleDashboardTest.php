@@ -10,6 +10,18 @@ class CycleDashboardTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_dashboard_page_route_exists_and_requires_authentication(): void
+    {
+        $this->get('/dashboard')->assertRedirect('/login');
+
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertSee('id="app"', false);
+    }
+
     public function test_dashboard_data_is_private_to_authenticated_users(): void
     {
         $this->getJson('/api/dashboard')->assertUnauthorized();
