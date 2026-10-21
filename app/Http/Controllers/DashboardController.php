@@ -55,6 +55,9 @@ class DashboardController extends Controller
                 'moon_sign' => $profile->moon_sign,
                 'rising_sign' => $profile->rising_sign,
                 'onboarding_completed' => $profile->onboarding_completed,
+                'display_name' => $profile->display_name,
+                'wants_astrology' => $profile->wants_astrology,
+                'partner_preference' => $profile->partner_preference,
             ],
             'latest_period' => $latestPeriod ? [
                 'start_date' => $latestPeriod->start_date->format('Y-m-d'),
