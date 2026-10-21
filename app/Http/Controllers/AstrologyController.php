@@ -241,13 +241,31 @@ class AstrologyController extends Controller
                 foreach ($paths as $path) {
                     $value = data_get($root, $path);
                     if ($value !== null) {
-                        $this->addPlacement($placements, $name, $value);
+                        $detailKeys = $name === 'Ascendant'
+                            ? ['ascendant', 'rising', 'asc']
+                            : [Str::lower($name)];
+                        $details = [];
+                        foreach ($detailKeys as $detailKey) {
+                            $candidateDetails = data_get($root, $detailKey);
+                            if (is_array($candidateDetails)) {
+                                $details = $candidateDetails;
+                                break;
+                            }
+                            $degreeValue = data_get($root, $detailKey.'_degree')
+                                ?? data_get($root, $detailKey.'Degree')
+                                ?? data_get($root, $detailKey.'_degree_in_sign')
+                                ?? data_get($root, $detailKey.'DegreeInSign');
+                            if ($degreeValue !== null) {
+                                $details['degree'] = $degreeValue;
+                            }
+                        }
+                        $this->addPlacement($placements, $name, $value, $details);
                         break;
                     }
                 }
             }
 
-            foreach (['planets', 'placements', 'planetary_positions', 'planet_positions', 'positions', 'bodies'] as $key) {
+            foreach (['planets', 'placements', 'planetary_positions', 'planetaryPositions', 'planet_positions', 'planetPositions', 'positions', 'bodies', 'celestial_bodies', 'celestialBodies'] as $key) {
                 $candidates = data_get($root, $key);
                 if (! is_array($candidates)) {
                     continue;
@@ -278,8 +296,17 @@ class AstrologyController extends Controller
                         ?? data_get($item, 'position.sign')
                         ?? data_get($item, 'position.zodiac_sign')
                         ?? data_get($item, 'position.zodiacSign');
-                    if ($sign === null && is_numeric(data_get($item, 'longitude'))) {
-                        $sign = $this->signFromLongitude((float) data_get($item, 'longitude'));
+                    $longitude = data_get($item, 'longitude')
+                        ?? data_get($item, 'ecliptic_longitude')
+                        ?? data_get($item, 'eclipticLongitude')
+                        ?? data_get($item, 'ecliptical.lon')
+                        ?? data_get($item, 'ecliptical.longitude')
+                        ?? data_get($item, 'position.longitude')
+                        ?? data_get($item, 'position.longitude_degrees')
+                        ?? data_get($item, 'position.longitudeDegrees')
+                        ?? data_get($item, 'position.ecliptical.lon');
+                    if ($sign === null && is_numeric($longitude)) {
+                        $sign = $this->signFromLongitude((float) $longitude);
                     }
                     if ($name !== null && $sign !== null) {
                         $this->addPlacement($placements, $name, $sign, $item);
@@ -367,6 +394,7 @@ class AstrologyController extends Controller
         if (! is_string($name) || trim($name) === '') {
             return;
         }
+
         $nameLower = Str::lower(trim($name));
         if (str_contains($nameLower, 'sun')) {
             $label = 'Sun';
@@ -382,16 +410,61 @@ class AstrologyController extends Controller
         if ($signName === null) {
             return;
         }
-        $key = Str::lower($label);
-        $degree = data_get($details, 'degree', data_get($details, 'position.degree', data_get($details, 'degree_in_sign', data_get($details, 'degreeInSign'))));
-        if (! is_numeric($degree) && is_numeric(data_get($details, 'longitude'))) {
-            $degree = fmod((float) data_get($details, 'longitude'), 30.0);
+
+        // Providers use several different names/shapes for a planet's position.
+        // Prefer a sign-local degree; if only absolute ecliptic longitude is
+        // present, convert it to the degree within the zodiac sign.
+        $degree = data_get($details, 'degree')
+            ?? data_get($details, 'degrees')
+            ?? data_get($details, 'degree_in_sign')
+            ?? data_get($details, 'degreeInSign')
+            ?? data_get($details, 'degrees_in_sign')
+            ?? data_get($details, 'degreesInSign')
+            ?? data_get($details, 'position.degree')
+            ?? data_get($details, 'position.degrees')
+            ?? data_get($details, 'position.degree_in_sign')
+            ?? data_get($details, 'position.degreeInSign');
+        if (is_array($degree)) {
+            $degree = data_get($degree, 'value') ?? data_get($degree, 'degrees') ?? data_get($degree, 'degree');
         }
-        $placements[$key] = [
+
+        $longitude = data_get($details, 'longitude')
+            ?? data_get($details, 'ecliptic_longitude')
+            ?? data_get($details, 'eclipticLongitude')
+            ?? data_get($details, 'longitude_degrees')
+            ?? data_get($details, 'longitudeDegrees')
+            ?? data_get($details, 'absolute_degree')
+            ?? data_get($details, 'absoluteDegree')
+            ?? data_get($details, 'full_degree')
+            ?? data_get($details, 'fullDegree')
+            ?? data_get($details, 'ecliptical.lon')
+            ?? data_get($details, 'ecliptical.longitude')
+            ?? data_get($details, 'position.ecliptical.lon')
+            ?? data_get($details, 'position.longitude')
+            ?? data_get($details, 'position.longitude_degrees')
+            ?? data_get($details, 'position.longitudeDegrees')
+            ?? data_get($details, 'position.ecliptic_longitude');
+        if (is_array($longitude)) {
+            $longitude = data_get($longitude, 'value') ?? data_get($longitude, 'degrees') ?? data_get($longitude, 'degree');
+        }
+
+        if (! is_numeric($degree) && is_numeric($longitude)) {
+            $degree = fmod((float) $longitude + 360.0, 30.0);
+        } elseif (is_numeric($degree) && abs((float) $degree) >= 30) {
+            $degree = fmod((float) $degree + 360.0, 30.0);
+        }
+        if (is_string($degree) && preg_match('/-?\\d+(?:\\.\\d+)?/', $degree, $matches)) {
+            $degree = (float) $matches[0];
+        }
+        $degree = is_numeric($degree) && (float) $degree >= 0 && (float) $degree < 30
+            ? round((float) $degree, 2)
+            : null;
+
+        $placements[Str::lower($label)] = [
             'name' => $label,
             'sign' => $signName,
             'degree' => $degree,
-            'house' => data_get($details, 'house', data_get($details, 'house_number')),
+            'house' => data_get($details, 'house', data_get($details, 'house_number', data_get($details, 'houseNumber'))),
             'retrograde' => (bool) data_get($details, 'retrograde', data_get($details, 'is_retrograde', data_get($details, 'isRetrograde', data_get($details, 'is_retro', false)))),
         ];
     }
