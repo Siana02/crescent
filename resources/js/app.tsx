@@ -4,6 +4,8 @@ import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import DashboardPage from './pages/DashboardPage';
 import OnboardingPage from './pages/OnboardingPage';
+import ConnectionsPage from './pages/ConnectionsPage';
+import ProfileSettingsPage from './pages/ProfileSettingsPage';
 import './styles/app.css';
 
 const mount = document.getElementById('app');
@@ -13,7 +15,11 @@ if (!mount) {
 }
 
 const path = window.location.pathname;
-const page = path === '/dashboard'
+const page = path === '/connections'
+    ? <ConnectionsPage />
+    : path === '/profile' || path === '/settings'
+        ? <ProfileSettingsPage />
+        : path === '/dashboard'
     ? <DashboardPage />
     : path === '/onboarding'
         ? <OnboardingPage />
