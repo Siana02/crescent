@@ -110,7 +110,7 @@ export default function OnboardingPage() {
                 if (!inviteResponse.ok) throw new Error(firstError(inviteResult, 'Your Cosmic Sync Code could not be created.'));
                 setInviteCode(inviteResult.invite_code ?? '');
             }
-            window.setTimeout(() => window.location.assign('/dashboard'), 1800);
+            if (partnerPreference === 'solo') window.setTimeout(() => window.location.assign('/dashboard'), 1800);
         } catch (e) {
             setIsProcessing(false);
             setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.');
@@ -125,7 +125,7 @@ export default function OnboardingPage() {
             <p className="onboarding-eyebrow">A LITTLE COSMIC MAGIC</p>
             <h1>Gathering your little universe…</h1>
             <p>Setting up your cycle space and making room for what matters to you.</p>
-            {inviteCode && <div className="onboarding-invite"><span>Your Cosmic Sync Code</span><strong>{inviteCode}</strong><button type="button" onClick={() => navigator.clipboard?.writeText(inviteCode)}>Copy code</button><small>Share this with your companion. Your cycle details stay private until you choose to share them.</small></div>}
+            {inviteCode && <div className="onboarding-invite"><span>Your Cosmic Sync Code</span><strong>{inviteCode}</strong><button type="button" onClick={() => navigator.clipboard?.writeText(inviteCode)}>Copy code</button><small>Share this with your companion. Your cycle details stay private until you choose to share them.</small><button type="button" className="onboarding-dashboard-link" onClick={() => window.location.assign('/dashboard')}>Enter my dashboard →</button></div>}
         </main>;
     }
 
