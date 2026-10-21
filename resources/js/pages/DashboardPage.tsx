@@ -241,6 +241,11 @@ export default function DashboardPage() {
                     <h1>Hello, {firstName}<em>Let’s check in.</em></h1>
                     <p>{goalCopy[data?.profile.primary_goal ?? 'track_cycle']}</p>
                 </div>
+                <section className="journey-switch-card">
+                    <span aria-hidden="true">🌷</span>
+                    <div><p className="dashboard-eyebrow">YOUR LIFE CAN CHANGE</p><h2>Has your journey changed?</h2><p>If you’re pregnant now, Crescent can move with you into a dedicated pregnancy space. Your existing cycle history stays saved, and period and fertility predictions will stop in the pregnancy journey.</p></div>
+                    <Button variant="outline" onClick={() => window.location.assign('/onboarding?journey=pregnancy')}>I’m currently pregnant ✧</Button>
+                </section>
 
                 {error && <p className="dashboard-alert" role="alert">{error}</p>}
                 {notice && <p className="dashboard-notice" role="status">{notice}</p>}
