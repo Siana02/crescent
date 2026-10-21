@@ -128,3 +128,11 @@
 
 
 .pregnancy-edit-link{display:inline-block;margin-top:5px;color:#92749d;font-size:8px;text-decoration:underline;text-underline-offset:3px}
+
+
+.pregnancy-size-comparison{display:flex;align-items:center;gap:10px;margin-top:12px;padding:9px 11px;border:1px solid #eee1ef;border-radius:12px;background:#fff9fc}
+.pregnancy-size-comparison>span{font-size:25px}
+.pregnancy-size-comparison>div{display:grid;gap:4px}
+.pregnancy-size-comparison small{color:#a08aa8;font-size:7px;letter-spacing:.08em}
+.pregnancy-size-comparison strong{color:#795d86;font-family:var(--serif,Georgia,serif);font-size:13px;font-weight:400}
+@media(max-width:520px){.pregnancy-size-comparison{justify-content:center;text-align:left}}
