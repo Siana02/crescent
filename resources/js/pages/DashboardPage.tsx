@@ -57,6 +57,8 @@ export default function DashboardPage() {
     const [averagePeriodLength, setAveragePeriodLength] = useState('');
     const [cycleRegularity, setCycleRegularity] = useState<Regularity>('unknown');
     const [birthDate, setBirthDate] = useState('');
+    const [displayName, setDisplayName] = useState('');
+    const [wantsAstrology, setWantsAstrology] = useState(false);
     const [contraception, setContraception] = useState('prefer_not_to_say');
     const [goal, setGoal] = useState<Goal>('track_cycle');
     const [birthTime, setBirthTime] = useState('');
@@ -95,6 +97,8 @@ export default function DashboardPage() {
         setAveragePeriodLength(result.profile.average_period_length == null ? '' : String(result.profile.average_period_length));
         setCycleRegularity(result.profile.cycle_regularity ?? 'unknown');
         setBirthDate(result.profile.birth_date ?? '');
+        setDisplayName(result.profile.display_name ?? '');
+        setWantsAstrology(result.profile.wants_astrology ?? false);
         setContraception(result.profile.contraception_type ?? 'prefer_not_to_say');
         setGoal(result.profile.primary_goal ?? 'track_cycle');
         setBirthTime(result.profile.birth_time?.slice(0, 5) ?? '');
@@ -129,7 +133,8 @@ export default function DashboardPage() {
                     average_cycle_length: averageCycleLength ? Number(averageCycleLength) : null,
                     average_period_length: averagePeriodLength ? Number(averagePeriodLength) : null,
                     cycle_regularity: cycleRegularity, timezone,
-                    birth_date: birthDate || null, contraception_type: contraception || null, primary_goal: goal,\n                    wants_astrology: data?.profile.wants_astrology ?? false, display_name: data?.profile.display_name ?? null,
+                    birth_date: birthDate || null, contraception_type: contraception || null, primary_goal: goal,
+                    wants_astrology: wantsAstrology, display_name: displayName.trim() || null,
                     birth_time: birthTime || null, birth_place: birthPlace.trim() || null,
                     moon_sign: moonSign || null, rising_sign: risingSign || null, onboarding_completed: true,
                 }),
@@ -290,9 +295,12 @@ export default function DashboardPage() {
                                 <select value={contraception} onChange={e => setContraception(e.target.value)}><option value="prefer_not_to_say">Prefer not to say / not sure</option><option value="none">None</option><option value="pill">Pill</option><option value="hormonal_iud">Hormonal IUD</option><option value="copper_iud">Copper IUD</option><option value="implant">Implant</option><option value="injection">Injection</option><option value="patch">Patch</option><option value="ring">Vaginal ring</option><option value="other">Other</option></select>
                             </label>
                             <div className="form-subheading">Your Crescent experience</div>
+                            <label>Display name <span className="field-hint">Your chosen name for your dashboard.</span><input type="text" maxLength={100} value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Your name or nickname" /></label>
                             <label>What brings you here?
-                                <select value={goal} onChange={e => setGoal(e.target.value as Goal)}><option value="track_cycle">Track my cycle and understand my patterns</option><option value="predict_moon">Explore moon phases and cosmic rituals</option><option value="manage_symptoms">Keep track of symptoms and how I feel</option></select>
+                                <select value={goal} onChange={e => { const next = e.target.value as Goal; setGoal(next); if (next === 'cosmic_cycle') setWantsAstrology(true); }}><option value="track_cycle">Track my cycle and understand my patterns</option><option value="cosmic_cycle">Cycle tracking + astrology</option><option value="fertility_support">Fertility awareness</option><option value="predict_moon">Explore moon phases and cosmic rituals</option><option value="manage_symptoms">Keep track of symptoms and how I feel</option></select>
                             </label>
+                            <label className="astrology-preference"><input type="checkbox" checked={wantsAstrology} onChange={e => setWantsAstrology(e.target.checked)} /><span><strong>Include astrology and lunar features</strong><small>Optional — turn this on whenever you want the cosmic extras.</small></span></label>
+                            {wantsAstrology && <>
                             <div className="form-subheading">Your cosmic profile <span className="field-hint">Totally optional — share only what you’re comfortable with.</span></div>
                             <label>Birthday <span className="field-hint">Used to calculate your Sun sign.</span><input type="date" value={birthDate} max={localDateInputValue()} onChange={e => setBirthDate(e.target.value)} /></label>
                             <div className="cycle-settings__number-fields">
