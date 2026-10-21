@@ -20,33 +20,63 @@ class CycleDashboardTest extends TestCase
             ->getJson('/api/dashboard?timezone=Africa%2FNairobi')
             ->assertOk()
             ->assertJsonPath('user.email', $user->email)
-            ->assertJsonPath('profile.average_cycle_length', 28)
+            ->assertJsonPath('profile.average_cycle_length', null)
+            ->assertJsonPath('profile.average_period_length', null)
+            ->assertJsonPath('profile.cycle_regularity', 'unknown')
             ->assertJsonPath('latest_period', null);
     }
 
-    public function test_user_can_save_period_start_and_get_a_cycle_estimate(): void
+    public function test_user_can_save_period_dates_and_get_a_cycle_estimate(): void
     {
         $user = User::factory()->create();
         $startDate = today('Africa/Nairobi')->subDays(4)->toDateString();
+        $endDate = today('Africa/Nairobi')->subDays(1)->toDateString();
 
         $this->actingAs($user)
             ->putJson('/api/cycle-profile', [
                 'average_cycle_length' => 30,
                 'average_period_length' => 5,
+                'cycle_regularity' => 'regular',
                 'timezone' => 'Africa/Nairobi',
             ])
             ->assertOk()
-            ->assertJsonPath('profile.average_cycle_length', 30);
+            ->assertJsonPath('profile.average_cycle_length', 30)
+            ->assertJsonPath('profile.cycle_regularity', 'regular');
 
-        $this->postJson('/api/periods', ['start_date' => $startDate])
-            ->assertCreated()
-            ->assertJsonPath('period.start_date', $startDate);
+        $this->postJson('/api/periods', [
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+        ])->assertCreated()
+            ->assertJsonPath('period.start_date', $startDate)
+            ->assertJsonPath('period.end_date', $endDate);
 
         $this->getJson('/api/dashboard?timezone=Africa%2FNairobi')
             ->assertOk()
             ->assertJsonPath('cycle_day', 5)
             ->assertJsonPath('estimated_next_period', today('Africa/Nairobi')->addDays(26)->toDateString())
-            ->assertJsonPath('latest_period.start_date', $startDate);
+            ->assertJsonPath('latest_period.start_date', $startDate)
+            ->assertJsonPath('latest_period.end_date', $endDate);
+    }
+
+    public function test_user_can_save_unknown_cycle_lengths_and_irregularity(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->putJson('/api/cycle-profile', [
+                'average_cycle_length' => null,
+                'average_period_length' => null,
+                'cycle_regularity' => 'irregular',
+                'timezone' => 'Africa/Nairobi',
+            ])
+            ->assertOk()
+            ->assertJsonPath('profile.average_cycle_length', null)
+            ->assertJsonPath('profile.average_period_length', null)
+            ->assertJsonPath('profile.cycle_regularity', 'irregular');
+
+        $this->getJson('/api/dashboard?timezone=Africa%2FNairobi')
+            ->assertOk()
+            ->assertJsonPath('estimated_next_period', null);
     }
 
     public function test_registration_creates_a_signed_in_account(): void
