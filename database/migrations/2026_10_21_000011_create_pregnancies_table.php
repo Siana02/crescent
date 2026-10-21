@@ -11,7 +11,7 @@ return new class extends Migration
         if (! Schema::hasTable('pregnancies')) {
             Schema::create('pregnancies', function (Blueprint $table) {
                 $table->id();
-                $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
+                $table->foreignId('user_id')->constrained()->cascadeOnDelete();
                 $table->date('due_date');
                 $table->date('last_period_date')->nullable();
                 $table->date('conception_date')->nullable();
