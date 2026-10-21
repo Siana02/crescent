@@ -136,3 +136,6 @@
 .pregnancy-size-comparison small{color:#a08aa8;font-size:7px;letter-spacing:.08em}
 .pregnancy-size-comparison strong{color:#795d86;font-family:var(--serif,Georgia,serif);font-size:13px;font-weight:400}
 @media(max-width:520px){.pregnancy-size-comparison{justify-content:center;text-align:left}}
+
+
+.pregnancy-size-comparison .pregnancy-size-note{color:#a394a8;font-size:7px;letter-spacing:0;line-height:1.5}
