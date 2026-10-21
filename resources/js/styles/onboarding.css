@@ -140,3 +140,11 @@
 .pregnancy-onboarding-safety{margin:0;padding:10px 12px;border-radius:11px;background:#f7f2f8;color:#95879b;font-size:9px;line-height:1.7}
 @media(max-width:520px){.pregnancy-date-source-grid{grid-template-columns:1fr}.pregnancy-date-source{grid-template-columns:28px minmax(0,1fr);min-height:0;align-items:center;column-gap:8px;padding:10px}.pregnancy-date-source>span{grid-row:span 2}.pregnancy-date-source>small{grid-column:2}}
 @media(prefers-reduced-motion:reduce){.pregnancy-date-source{transition:none}.pregnancy-date-source:hover{transform:none}}
+
+
+.pregnancy-stage-preview{display:flex;align-items:center;gap:11px;padding:13px;border:1px solid #e4d2e9;border-radius:13px;background:linear-gradient(120deg,#f5edf8,#fff9fc)}
+.pregnancy-stage-preview>span{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;border-radius:50%;background:#fffafd;color:#a183b0;font-size:21px}
+.pregnancy-stage-preview>div{display:grid;gap:4px}
+.pregnancy-stage-preview small{color:#a08da7;font-size:8px;line-height:1.5}
+.pregnancy-stage-preview small:first-child{font-size:7px;font-weight:900;letter-spacing:.1em}
+.pregnancy-stage-preview strong{color:#795e85;font-family:var(--serif,Georgia,serif);font-size:15px;font-weight:400}
