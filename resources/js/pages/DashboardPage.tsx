@@ -33,6 +33,13 @@ function formatDate(date: string | null): string {
     }).format(new Date(`${date}T12:00:00`));
 }
 
+function localDateInputValue(date = new Date()): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 function estimateCaption(days: number | null): string {
     if (days === null) return 'Log a period to see your estimate.';
     if (days < 0) return `${Math.abs(days)} day${Math.abs(days) === 1 ? '' : 's'} past this estimate`;
@@ -151,7 +158,7 @@ export default function DashboardPage() {
     return (
         <div className="dashboard-shell">
             <header className="dashboard-header">
-                <a className="dashboard-brand" href="/" aria-label="Crescent home"><span aria-hidden="true">☾</span> crescent<span>.</span></a>
+                <a className="dashboard-brand" href="/" aria-label="Crescent home"><span className="dashboard-brand__moon" aria-hidden="true">☾</span><span className="dashboard-brand__word">crescent<span>.</span></span></a>
                 <div className="dashboard-header__actions">
                     <span className="dashboard-greeting">A little space for {data?.user.name.split(' ')[0] ?? 'you'}</span>
                     <button className="dashboard-logout" type="button" onClick={handleLogout}>Sign out</button>
@@ -207,7 +214,7 @@ export default function DashboardPage() {
                     <form className="cycle-settings__form" onSubmit={handleSave}>
                         <label>
                             Last period start date
-                            <input type="date" value={lastPeriodStart} max={new Date().toISOString().slice(0, 10)} onChange={(event) => setLastPeriodStart(event.target.value)} />
+                            <input type="date" value={lastPeriodStart} max={localDateInputValue()} onChange={(event) => setLastPeriodStart(event.target.value)} />
                             <span className="field-hint">Leave blank if you’re not ready to log one.</span>
                         </label>
                         <div className="cycle-settings__number-fields">
