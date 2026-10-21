@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import Button from '../components/Button';
 import '../styles/onboarding.css';
 
@@ -55,6 +55,43 @@ export default function OnboardingPage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
     const [inviteCode, setInviteCode] = useState('');
+
+    useEffect(() => {
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+        fetch(`/api/dashboard?timezone=${encodeURIComponent(timezone)}`, {
+            credentials: 'same-origin',
+            headers: { Accept: 'application/json' },
+        }).then(async response => {
+            if (!response.ok) return;
+            const profile = await response.json() as {
+                user?: { name?: string };
+                profile?: {
+                    display_name?: string | null; primary_goal?: Goal; wants_astrology?: boolean;
+                    birth_date?: string | null; birth_time?: string | null; birth_place?: string | null;
+                    average_cycle_length?: number | null; average_period_length?: number | null;
+                    cycle_regularity?: Regularity; contraception_type?: string | null;
+                    partner_preference?: PartnerPreference;
+                };
+                latest_period?: { start_date: string; end_date: string | null } | null;
+            };
+            setDisplayName(profile.profile?.display_name || profile.user?.name || '');
+            if (profile.profile?.primary_goal) setGoal(profile.profile.primary_goal);
+            if (profile.profile?.wants_astrology) setWantsAstrology(true);
+            setBirthDate(profile.profile?.birth_date ?? '');
+            setBirthTime(profile.profile?.birth_time?.slice(0, 5) ?? '');
+            setBirthTimeUnknown(!profile.profile?.birth_time);
+            setBirthPlace(profile.profile?.birth_place ?? '');
+            setCycleLength(profile.profile?.average_cycle_length ? String(profile.profile.average_cycle_length) : '28');
+            setCycleLengthUnknown(profile.profile?.average_cycle_length == null);
+            setRegularity(profile.profile?.cycle_regularity ?? 'unknown');
+            setContraception(profile.profile?.contraception_type ?? 'prefer_not_to_say');
+            setPartnerPreference(profile.profile?.partner_preference ?? 'solo');
+            setPeriodStart(profile.latest_period?.start_date ?? '');
+            setPeriodEnd(profile.latest_period?.end_date ?? '');
+        }).catch(() => {
+            // Onboarding remains usable even if prefill data cannot be loaded.
+        });
+    }, []);
 
     function chooseGoal(next: Goal) {
         setGoal(next);
