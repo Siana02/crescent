@@ -80,6 +80,7 @@ export default function LandingPage() {
                     <a href="#why-crescent" onClick={() => setIsMenuOpen(false)}>Why Crescent</a>
                     <a href="#how-it-works" onClick={() => setIsMenuOpen(false)}>How it works</a>
                     <a href="#our-promise" onClick={() => setIsMenuOpen(false)}>Our promise</a>
+                    <a href="/login" onClick={() => setIsMenuOpen(false)}>Log in</a>
                 </nav>
 
                 <button
@@ -93,7 +94,7 @@ export default function LandingPage() {
                     <span className="menu-toggle__lines" aria-hidden="true"><span /><span /><span /></span>
                 </button>
 
-                <Button href="#get-started" variant="outline" className="header-link" onClick={() => setIsMenuOpen(false)}>
+                <Button href="/register" variant="outline" className="header-link" onClick={() => setIsMenuOpen(false)}>
                     Your journey <span className="button__icon" aria-hidden="true">↗</span>
                 </Button>
             </header>
@@ -214,7 +215,7 @@ export default function LandingPage() {
                     <p className="closing-cta__overline">THERE IS NO ONE WAY TO BE YOU</p>
                     <h2>Begin wherever <em>you are.</em></h2>
                     <p>Make a little space for noticing, learning, and caring for yourself.</p>
-                    <Button href="#home" variant="light" className="closing-cta__button">Come as you are <span className="button__icon" aria-hidden="true">→</span></Button>
+                    <Button href="/register" variant="light" className="closing-cta__button">Come as you are <span className="button__icon" aria-hidden="true">→</span></Button>
                 </section>
             </main>
 
