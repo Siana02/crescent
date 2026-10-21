@@ -170,11 +170,30 @@ class AstrologyController extends Controller
             }
             $placements[] = [
                 'name' => $name, 'sign' => Str::title($sign),
-                'degree' => data_get($item, 'degree', data_get($item, 'position.degree', data_get($item, 'longitude'))),
+                'degree' => data_get($item, 'degree', data_get($item, 'position.degree')),
                 'house' => data_get($item, 'house'),
                 'retrograde' => (bool) data_get($item, 'retrograde', data_get($item, 'is_retrograde', false)),
             ];
         }
+        $ascendant = data_get($payload, 'ascendant')
+            ?? data_get($payload, 'angles.ascendant')
+            ?? data_get($payload, 'chart.ascendant')
+            ?? data_get($payload, 'natal_chart.ascendant');
+        if (is_array($ascendant)) {
+            $ascendantSign = data_get($ascendant, 'sign', data_get($ascendant, 'zodiac_sign', data_get($ascendant, 'sign_name')));
+            if (is_string($ascendantSign) && $ascendantSign !== '') {
+                $placements[] = [
+                    'name' => 'Ascendant',
+                    'sign' => Str::title($ascendantSign),
+                    'degree' => data_get($ascendant, 'degree', data_get($ascendant, 'position.degree')),
+                    'house' => 1,
+                    'retrograde' => false,
+                ];
+            }
+        } elseif (is_string($ascendant) && $ascendant !== '') {
+            $placements[] = ['name' => 'Ascendant', 'sign' => Str::title($ascendant), 'degree' => null, 'house' => 1, 'retrograde' => false];
+        }
+
         return $placements;
     }
 }
