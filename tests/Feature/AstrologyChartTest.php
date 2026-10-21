@@ -22,8 +22,6 @@ class AstrologyChartTest extends TestCase
             ], 200),
             'api.cosmyday.com/natal' => Http::response([
                 'sunSign' => 'Leo',
-                'moonSign' => 'Cancer',
-                'risingSign' => 'Virgo',
                 'planets' => [
                     ['planetName' => 'Sun', 'signName' => 'Leo', 'degree' => 2.5],
                     ['planetName' => 'Moon', 'signName' => 'Cancer', 'degree' => 14.2],
