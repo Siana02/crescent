@@ -141,7 +141,7 @@ class AstrologyController extends Controller
                 'calculated_at' => $moment->toIso8601String(),
                 'source' => 'CosmyDay',
                 'source_url' => 'https://cosmyday.com',
-                'note' => 'Planetary sign positions are calculated for the current UTC moment. House cusps and Ascendant are intentionally omitted from this global sky view.',
+                'note' => 'Planetary sign positions are calculated for the current UTC hour. House cusps and Ascendant are intentionally omitted from this global sky view.',
             ]);
         } catch (\Throwable $exception) {
             report($exception);
