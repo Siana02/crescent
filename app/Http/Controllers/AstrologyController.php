@@ -157,7 +157,7 @@ class AstrologyController extends Controller
             return response()->json(['message' => 'Add your birthday in Profile & settings to see your Sun-sign reading.'], 422);
         }
 
-        return $this->cachedGet('cosmyday:content:daily:'.$sign, now()->addHours(24), '/content/daily/'.$sign);
+        return $this->cachedGet('cosmyday:content:daily:'.$sign.':'.now()->format('Ymd'), now()->addDay()->startOfDay(), '/content/daily/'.$sign);
     }
 
     public function events(Request $request): JsonResponse
@@ -178,7 +178,17 @@ class AstrologyController extends Controller
 
     public function transit(): JsonResponse
     {
-        return $this->cachedGet('cosmyday:content:transit', now()->addHours(24), '/content/transit');
+        return $this->cachedGet('cosmyday:content:transit:'.now()->format('Ymd'), now()->addDay()->startOfDay(), '/content/transit');
+    }
+
+    public function moon(): JsonResponse
+    {
+        return $this->cachedGet('cosmyday:content:moon:'.now()->format('Ymd'), now()->addDay()->startOfDay(), '/content/moon');
+    }
+
+    public function weekAhead(): JsonResponse
+    {
+        return $this->cachedGet('cosmyday:content:week-ahead:'.now()->format('Ymd'), now()->addDay()->startOfDay(), '/content/week-ahead');
     }
 
     private function cachedGet(string $key, \DateTimeInterface $expiresAt, string $path, array $query = []): JsonResponse
