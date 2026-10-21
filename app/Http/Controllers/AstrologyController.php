@@ -176,6 +176,9 @@ class AstrologyController extends Controller
             }
             $name = data_get($item, 'name', data_get($item, 'planet', data_get($item, 'body', is_string($key) ? $key : '')));
             $sign = data_get($item, 'sign', data_get($item, 'zodiac_sign', data_get($item, 'sign_name')));
+            if (is_array($sign)) {
+                $sign = data_get($sign, 'name', data_get($sign, 'label', data_get($sign, 'sign')));
+            }
             if (! is_string($name) || ! is_string($sign) || $name === '' || $sign === '') {
                 continue;
             }
@@ -203,6 +206,23 @@ class AstrologyController extends Controller
             }
         } elseif (is_string($ascendant) && $ascendant !== '') {
             $placements[] = ['name' => 'Ascendant', 'sign' => Str::title($ascendant), 'degree' => null, 'house' => 1, 'retrograde' => false];
+        }
+
+        if (! collect($placements)->contains(fn ($placement) => Str::lower($placement['name']) === 'ascendant')) {
+            $houses = data_get($payload, 'houses', data_get($payload, 'house_cusps', data_get($payload, 'chart.houses', [])));
+            if (is_array($houses)) {
+                foreach ($houses as $index => $house) {
+                    if (! is_array($house)) {
+                        continue;
+                    }
+                    $number = (int) data_get($house, 'house', data_get($house, 'number', is_numeric($index) ? ((int) $index + (array_is_list($houses) ? 1 : 0)) : 0));
+                    $houseSign = data_get($house, 'sign', data_get($house, 'zodiac_sign', data_get($house, 'sign_name')));
+                    if ($number === 1 && is_string($houseSign) && $houseSign !== '') {
+                        $placements[] = ['name' => 'Ascendant', 'sign' => Str::title($houseSign), 'degree' => data_get($house, 'degree'), 'house' => 1, 'retrograde' => false];
+                        break;
+                    }
+                }
+            }
         }
 
         return $placements;
