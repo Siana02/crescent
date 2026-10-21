@@ -94,7 +94,7 @@ export default function LandingPage() {
                     <span className="menu-toggle__lines" aria-hidden="true"><span /><span /><span /></span>
                 </button>
 
-                <Button href="/register" variant="outline" className="header-link" onClick={() => setIsMenuOpen(false)}>
+                <Button href="/register" variant="outline" shape="square" className="header-link" onClick={() => setIsMenuOpen(false)}>
                     Your journey <span className="button__icon" aria-hidden="true">↗</span>
                 </Button>
             </header>
@@ -120,10 +120,10 @@ export default function LandingPage() {
                         </p>
 
                         <div className="hero-actions" id="get-started">
-                            <Button href="#how-it-works" variant="primary">
+                            <Button href="#how-it-works" variant="primary" shape="square">
                                 Explore Crescent <span className="button__icon" aria-hidden="true">→</span>
                             </Button>
-                            <Button href="#our-promise" variant="quiet">
+                            <Button href="#our-promise" variant="quiet" shape="square">
                                 Get to know us
                             </Button>
                         </div>
@@ -215,7 +215,7 @@ export default function LandingPage() {
                     <p className="closing-cta__overline">THERE IS NO ONE WAY TO BE YOU</p>
                     <h2>Begin wherever <em>you are.</em></h2>
                     <p>Make a little space for noticing, learning, and caring for yourself.</p>
-                    <Button href="/register" variant="light" className="closing-cta__button">Come as you are <span className="button__icon" aria-hidden="true">→</span></Button>
+                    <Button href="/register" variant="light" shape="square" className="closing-cta__button">Come as you are <span className="button__icon" aria-hidden="true">→</span></Button>
                 </section>
             </main>
 
