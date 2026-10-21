@@ -33,7 +33,7 @@ function eventSignDetails(item: EventItem) {
  if (from && to) return { label: planet ? String(planet) + ': ' + from + ' → ' + to : from + ' → ' + to, detail: (planet ? String(planet) : 'This planet') + ' changes signs from ' + from + ' into ' + to + '.' };
  if (to) return { label: (planet ? String(planet) + ' · ' : '') + to, detail: (planet ? String(planet) : 'This event') + ' is associated with ' + to + '.' };
  const text = [item.title,item.name,item.description,item.summary].filter(value => typeof value === 'string').join(' ');
- const matches = text.match(new RegExp('\\\\b(' + ZODIAC_SIGNS.join('|') + ')\\\\b','i'));
+ const matches = text.match(new RegExp('\\b(' + ZODIAC_SIGNS.join('|') + ')\\b','i'));
  if (matches) return { label: matches[1][0].toUpperCase() + matches[1].slice(1).toLowerCase(), detail: 'The event feed mentions ' + matches[1][0].toUpperCase() + matches[1].slice(1).toLowerCase() + '; see the event note for context.' };
  const kind = titleCase(item.kind ?? item.event_type ?? item.title ?? 'Celestial event');
  const detail = /full moon/i.test(kind) ? 'A lunar culmination. Its zodiac sign is important to the astrological interpretation, but this feed has not supplied it for this event.' :
