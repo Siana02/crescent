@@ -125,3 +125,7 @@
 @media(prefers-reduced-motion:reduce){.cosmic-big-three-card,.cosmic-weather-card{transition:none}.cosmic-big-three-card:hover,.cosmic-weather-card:hover{transform:none}}
 
 #personal-transits{scroll-margin-top:24px}
+
+.cosmic-event-card__reflection{position:relative;z-index:1;margin-top:12px;padding:11px 12px;border-left:2px solid #d5b3d8;border-radius:0 12px 12px 0;background:rgba(255,255,255,.62)}
+.cosmic-event-card__reflection strong{display:block;margin-bottom:4px;color:#a178a6;font-size:8px;letter-spacing:.1em;text-transform:uppercase}
+.cosmic-event-card__reflection p{margin:0;color:#89758f;font-size:10px;line-height:1.75}
