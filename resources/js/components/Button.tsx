@@ -1,4 +1,4 @@
-import type { MouseEventHandler, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 type ButtonVariant = 'primary' | 'outline' | 'quiet' | 'light';
 
@@ -8,7 +8,7 @@ type ButtonProps = {
     variant?: ButtonVariant;
     className?: string;
     type?: 'button' | 'submit' | 'reset';
-    onClick?: MouseEventHandler<HTMLButtonElement | HTMLAnchorElement>;
+    onClick?: () => void;
     ariaLabel?: string;
     disabled?: boolean;
 };
@@ -33,14 +33,14 @@ export default function Button({
 
     if (href) {
         return (
-            <a className={classes} href={href} onClick={onClick as MouseEventHandler<HTMLAnchorElement> | undefined} aria-label={ariaLabel}>
+            <a className={classes} href={href} onClick={onClick} aria-label={ariaLabel}>
                 {label}
             </a>
         );
     }
 
     return (
-        <button className={classes} type={type} onClick={onClick as MouseEventHandler<HTMLButtonElement> | undefined} aria-label={ariaLabel} disabled={disabled}>
+        <button className={classes} type={type} onClick={onClick} aria-label={ariaLabel} disabled={disabled}>
             {label}
         </button>
     );
