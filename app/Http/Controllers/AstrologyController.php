@@ -106,6 +106,17 @@ class AstrologyController extends Controller
         }
     }
 
+    public function daily(Request $request): JsonResponse
+    {
+        $sign = Str::lower((string) $request->user()->cycleProfile?->sun_sign);
+        $allowed = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'];
+        if (! in_array($sign, $allowed, true)) {
+            return response()->json(['message' => 'Add your birthday in Profile & settings to see your Sun-sign reading.'], 422);
+        }
+
+        return $this->cachedGet('cosmyday:content:daily:'.$sign, now()->addHours(24), '/content/daily/'.$sign);
+    }
+
     public function events(Request $request): JsonResponse
     {
         $validated = $request->validate([
