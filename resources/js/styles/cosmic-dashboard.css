@@ -123,3 +123,5 @@
 @media(max-width:900px){.cosmic-weather-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cosmic-weather-card:last-child{grid-column:1/-1}}
 @media(max-width:620px){.cosmic-weather-grid,.cosmic-aspect-grid,.cosmic-transit-story__chapters{grid-template-columns:1fr}.cosmic-weather-card{min-height:0}.cosmic-weather-card:last-child{grid-column:auto}.cosmic-transit-story__lead{padding:16px;gap:10px}.cosmic-transit-story__spark{width:36px;height:36px;flex-basis:36px}.cosmic-big-three-card{min-height:175px;padding:18px!important}}
 @media(prefers-reduced-motion:reduce){.cosmic-big-three-card,.cosmic-weather-card{transition:none}.cosmic-big-three-card:hover,.cosmic-weather-card:hover{transform:none}}
+
+#personal-transits{scroll-margin-top:24px}
