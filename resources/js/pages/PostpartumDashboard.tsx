@@ -32,6 +32,9 @@ export default function PostpartumDashboard({ data, onLogout, onRefresh }: Props
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState('');
     const [notice, setNotice] = useState('');
+    const [inviteType, setInviteType] = useState<'observer' | 'co_tracker'>('observer');
+    const [inviteCode, setInviteCode] = useState('');
+    const [isInviting, setIsInviting] = useState(false);
     const firstName = data.profile.display_name?.trim() || data.user.name.split(' ')[0] || 'there';
     const logs = data.pregnancy?.postpartum_logs_today ?? [];
 
@@ -52,6 +55,22 @@ export default function PostpartumDashboard({ data, onLogout, onRefresh }: Props
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Your note could not be saved.');
         } finally { setIsSaving(false); }
+    }
+
+    async function createInvite(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault(); setError(''); setInviteCode(''); setIsInviting(true);
+        try {
+            const response = await fetch('/api/relationships/invite', {
+                method: 'POST', credentials: 'same-origin',
+                headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken() },
+                body: JSON.stringify({ relationship_type: inviteType }),
+            });
+            const result = await response.json() as { invite_code?: string; message?: string; errors?: Record<string, string[]> };
+            if (!response.ok) throw new Error(result.errors ? Object.values(result.errors)[0]?.[0] : result.message || 'We could not create an invitation.');
+            setInviteCode(result.invite_code ?? '');
+        } catch (e) {
+            setError(e instanceof Error ? e.message : 'We could not create an invitation.');
+        } finally { setIsInviting(false); }
     }
 
     return <div className="pregnancy-shell postpartum-shell">
@@ -86,6 +105,12 @@ export default function PostpartumDashboard({ data, onLogout, onRefresh }: Props
             <section className="postpartum-today">
                 <p className="pregnancy-eyebrow">TODAY’S LITTLE TRAIL</p><h2>Things you’ve tucked away</h2>
                 {logs.length ? <div className="postpartum-log-list">{logs.map(log => <article key={log.id}><span>{CATEGORIES.find(item => item.value === log.category)?.icon ?? '✧'}</span><div><strong>{CATEGORIES.find(item => item.value === log.category)?.label ?? 'Note'}</strong><small>{log.notes}</small></div></article>)}</div> : <p className="postpartum-empty">Nothing logged today — and that is completely okay. This space will be here when you need it.</p>}
+            </section>
+
+            <section className="pregnancy-companion">
+                <div><p className="pregnancy-eyebrow">YOUR PEOPLE, YOUR CHOICE</p><h2>Invite someone into this chapter</h2><p>You can invite a partner or companion whenever you are ready. Connecting never switches sharing on automatically.</p></div>
+                <form onSubmit={createInvite}><label>Choose a companion role<select value={inviteType} onChange={event => setInviteType(event.target.value as 'observer' | 'co_tracker')}><option value="observer">Partner or observer</option><option value="co_tracker">Co-tracking companion</option></select></label><Button type="submit" disabled={isInviting}>{isInviting ? 'Creating code…' : 'Create a Cosmic Sync Code ✧'}</Button></form>
+                {inviteCode && <div className="pregnancy-invite-code"><small>Your invitation code</small><strong>{inviteCode}</strong><button type="button" onClick={() => navigator.clipboard?.writeText(inviteCode)}>Copy code</button><span>Expires in seven days. Your details stay private until you choose to share.</span></div>}
             </section>
 
             <p className="pregnancy-medical-note">Crescent is a personal journal, not medical care. For concerns about your recovery or your baby’s health, contact your healthcare professional or local emergency service.</p>
