@@ -128,9 +128,12 @@ class AstrologyController extends Controller
                 return $response->json();
             });
 
-            $placements = array_values(array_filter(
-                $this->normalisePlacements($chart),
-                fn (array $placement) => ! in_array(Str::lower($placement['name']), ['ascendant', 'rising', 'asc'], true)
+            $placements = array_values(array_map(
+                fn (array $placement) => array_merge($placement, ['house' => null]),
+                array_filter(
+                    $this->normalisePlacements($chart),
+                    fn (array $placement) => ! in_array(Str::lower($placement['name']), ['ascendant', 'rising', 'asc'], true)
+                )
             ));
 
             return response()->json([
