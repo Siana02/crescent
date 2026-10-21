@@ -2,9 +2,10 @@ import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import Button from '../components/Button';
 import '../styles/onboarding.css';
 
-type Goal = 'track_cycle' | 'cosmic_cycle' | 'fertility_support' | 'manage_symptoms';
+type Goal = 'track_cycle' | 'cosmic_cycle' | 'fertility_support' | 'manage_symptoms' | 'trying_to_conceive' | 'pregnancy_support';
 type PartnerPreference = 'solo' | 'observer' | 'co_tracker';
 type Regularity = 'regular' | 'irregular' | 'unknown';
+type PregnancyDateSource = 'due_date' | 'last_period_date' | 'conception_date';
 
 type ApiError = { message?: string; errors?: Record<string, string[]> };
 type InviteResponse = { invite_code?: string; message?: string; errors?: Record<string, string[]> };
@@ -152,6 +153,13 @@ export default function OnboardingPage() {
     const [inviteCode, setInviteCode] = useState('');
     const [acceptCode, setAcceptCode] = useState('');
     const [connectionNotice, setConnectionNotice] = useState('');
+    const [pregnancyDateSource, setPregnancyDateSource] = useState<PregnancyDateSource>('due_date');
+    const [pregnancyDueDate, setPregnancyDueDate] = useState('');
+    const [pregnancyLastPeriodDate, setPregnancyLastPeriodDate] = useState('');
+    const [pregnancyConceptionDate, setPregnancyConceptionDate] = useState('');
+    const [wantsBabyAstrology, setWantsBabyAstrology] = useState(false);
+    const pregnancyJourney = goal === 'pregnancy_support';
+    const activeSteps = pregnancyJourney ? [STEPS[0], STEPS[1], { eyebrow: 'YOUR PREGNANCY JOURNEY', title: 'A little life, a whole new universe', subtitle: 'We’ll use the date you know best to estimate your stage. Your maternity care team remains your source for medical guidance.' }, STEPS[3]] : STEPS;
 
     useEffect(() => {
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
@@ -167,8 +175,9 @@ export default function OnboardingPage() {
                     birth_date?: string | null; birth_time?: string | null; birth_place?: string | null;
                     average_cycle_length?: number | null; average_period_length?: number | null;
                     cycle_regularity?: Regularity; contraception_type?: string | null;
-                    partner_preference?: PartnerPreference;
+                    partner_preference?: PartnerPreference; active_journey?: 'cycle' | 'fertility' | 'pregnancy' | 'postpartum';
                 };
+                pregnancy?: { due_date?: string; last_period_date?: string | null; conception_date?: string | null; due_date_source?: PregnancyDateSource; wants_baby_astrology?: boolean } | null;
                 latest_period?: { start_date: string; end_date: string | null } | null;
             };
             setDisplayName(profile.profile?.display_name || profile.user?.name || '');
@@ -185,6 +194,13 @@ export default function OnboardingPage() {
             setPartnerPreference(profile.profile?.partner_preference ?? 'solo');
             setPeriodStart(profile.latest_period?.start_date ?? '');
             setPeriodEnd(profile.latest_period?.end_date ?? '');
+            if (profile.pregnancy) {
+                setPregnancyDueDate(profile.pregnancy.due_date ?? '');
+                setPregnancyLastPeriodDate(profile.pregnancy.last_period_date ?? '');
+                setPregnancyConceptionDate(profile.pregnancy.conception_date ?? '');
+                setPregnancyDateSource(profile.pregnancy.due_date_source ?? 'due_date');
+                setWantsBabyAstrology(profile.pregnancy.wants_baby_astrology ?? false);
+            }
         }).catch(() => {
             // Onboarding remains usable even if prefill data cannot be loaded.
         });
@@ -197,10 +213,13 @@ export default function OnboardingPage() {
 
     async function saveOnboarding(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        if (step < STEPS.length - 1) { setStep(current => current + 1); setError(''); return; }
+        if (step < activeSteps.length - 1) { setStep(current => current + 1); setError(''); return; }
         setError('');
-        if (periodEnd && !periodStart) { setError('Add your period start date too, or leave both dates blank.'); return; }
-        if (periodStart && periodEnd && periodEnd < periodStart) { setError('Your period end date cannot be before its start date.'); return; }
+        if (!pregnancyJourney && periodEnd && !periodStart) { setError('Add your period start date too, or leave both dates blank.'); return; }
+        if (!pregnancyJourney && periodStart && periodEnd && periodEnd < periodStart) { setError('Your period end date cannot be before its start date.'); return; }
+        if (pregnancyJourney && pregnancyDateSource === 'due_date' && !pregnancyDueDate) { setError('Choose your estimated due date to open your pregnancy journey.'); return; }
+        if (pregnancyJourney && pregnancyDateSource === 'last_period_date' && !pregnancyLastPeriodDate) { setError('Choose the first day of your last period, or select another date option.'); return; }
+        if (pregnancyJourney && pregnancyDateSource === 'conception_date' && !pregnancyConceptionDate) { setError('Choose your estimated conception date, or select another date option.'); return; }
 
         setIsSaving(true);
         setIsProcessing(true);
@@ -212,22 +231,37 @@ export default function OnboardingPage() {
                 body: JSON.stringify({
                     display_name: displayName.trim() || null,
                     primary_goal: goal,
+                    active_journey: pregnancyJourney ? 'pregnancy' : (goal === 'trying_to_conceive' || goal === 'fertility_support' ? 'fertility' : 'cycle'),
                     wants_astrology: wantsAstrology,
                     birth_date: birthDate || null,
                     birth_time: wantsAstrology && !birthTimeUnknown && birthTime ? birthTime : null,
                     birth_place: wantsAstrology ? birthPlace.trim() || null : null,
-                    average_cycle_length: cycleLengthUnknown ? null : Number(cycleLength),
-                    average_period_length: periodStart && periodEnd ? Math.round((new Date(`${periodEnd}T12:00:00`).getTime() - new Date(`${periodStart}T12:00:00`).getTime()) / 86400000) + 1 : null,
-                    cycle_regularity: regularity,
-                    contraception_type: contraception,
+                    average_cycle_length: pregnancyJourney || cycleLengthUnknown ? null : Number(cycleLength),
+                    average_period_length: !pregnancyJourney && periodStart && periodEnd ? Math.round((new Date(`${periodEnd}T12:00:00`).getTime() - new Date(`${periodStart}T12:00:00`).getTime()) / 86400000) + 1 : null,
+                    cycle_regularity: pregnancyJourney ? 'unknown' : regularity,
+                    contraception_type: pregnancyJourney ? 'prefer_not_to_say' : contraception,
                     partner_preference,
                     timezone,
-                    onboarding_completed: true,
+                    onboarding_completed: !pregnancyJourney,
                 }),
             });
             const profileResult = (await profileResponse.json()) as ApiError;
             if (!profileResponse.ok) throw new Error(firstError(profileResult, 'We could not save your details just yet.'));
-            if (periodStart) {
+            if (pregnancyJourney) {
+                const pregnancyResponse = await fetch('/api/pregnancy', {
+                    method: 'PUT', credentials: 'same-origin', headers,
+                    body: JSON.stringify({
+                        due_date_source: pregnancyDateSource,
+                        due_date: pregnancyDateSource === 'due_date' ? pregnancyDueDate : null,
+                        last_period_date: pregnancyDateSource === 'last_period_date' ? pregnancyLastPeriodDate : null,
+                        conception_date: pregnancyDateSource === 'conception_date' ? pregnancyConceptionDate : null,
+                        wants_baby_astrology: wantsBabyAstrology,
+                    }),
+                });
+                const pregnancyResult = (await pregnancyResponse.json()) as ApiError;
+                if (!pregnancyResponse.ok) throw new Error(firstError(pregnancyResult, 'We could not prepare your pregnancy space just yet.'));
+            }
+            if (!pregnancyJourney && periodStart) {
                 const periodResponse = await fetch('/api/periods', {
                     method: 'POST', credentials: 'same-origin', headers,
                     body: JSON.stringify({ start_date: periodStart, end_date: periodEnd || null }),
@@ -272,7 +306,7 @@ export default function OnboardingPage() {
         </main>;
     }
 
-    const current = STEPS[step];
+    const current = activeSteps[step] ?? activeSteps[0];
     return <main className="onboarding-shell">
         <div className="onboarding-sky" aria-hidden="true"><span>✦</span><span>✧</span><span>☾</span><span>✷</span><span>✦</span><span>❀</span><span>✧</span></div>
         <header className="onboarding-header">
@@ -291,17 +325,18 @@ export default function OnboardingPage() {
                 <small>YOUR BODY · YOUR RHYTHM · YOUR MAGIC</small>
             </div>
             <div className="onboarding-card__content">
-                <div className="onboarding-progress" aria-label={`Step ${step + 1} of ${STEPS.length}`}>
-                    {STEPS.map((item, index) => <span key={item.eyebrow} className={index <= step ? 'is-complete' : ''}></span>)}
+                <div className="onboarding-progress" aria-label={`Step ${step + 1} of ${activeSteps.length}`}>
+                    {activeSteps.map((item, index) => <span key={item.eyebrow} className={index <= step ? 'is-complete' : ''}></span>)}
                 </div>
-                <p className="onboarding-eyebrow">{current.eyebrow} · STEP {step + 1} OF {STEPS.length}</p>
+                <p className="onboarding-eyebrow">{current.eyebrow} · STEP {step + 1} OF {activeSteps.length}</p>
                 <h1 id="onboarding-title">{current.title}</h1>
                 <p className="onboarding-subtitle">{current.subtitle}</p>
                 <form onSubmit={saveOnboarding} className="onboarding-form">
                     {step === 0 && <div className="onboarding-choices">
                         <ChoiceCard selected={goal === 'track_cycle'} icon="🌿" title="Just tracking my body & cycle" description="Period dates, symptoms, moods and patterns." onClick={() => chooseGoal('track_cycle')} />
                         <ChoiceCard selected={goal === 'cosmic_cycle'} icon="🌙" title="Syncing my cycle with the cosmos" description="Cycle tracking with astrology and lunar notes." onClick={() => chooseGoal('cosmic_cycle')} />
-                        <ChoiceCard selected={goal === 'fertility_support'} icon="🌸" title="Planning a pregnancy / fertility" description="Cycle awareness and estimated fertile windows." onClick={() => chooseGoal('fertility_support')} />
+                        <ChoiceCard selected={goal === 'trying_to_conceive' || goal === 'fertility_support'} icon="🌸" title="I’m trying to conceive" description="Fertility awareness, cycle history and estimated fertile windows." onClick={() => chooseGoal('trying_to_conceive')} />
+                        <ChoiceCard selected={goal === 'pregnancy_support'} icon="🤰" title="I’m currently pregnant" description="A dedicated pregnancy space for milestones, wellbeing and your due-date journey." onClick={() => chooseGoal('pregnancy_support')} />
                         <ChoiceCard selected={goal === 'manage_symptoms'} icon="🪷" title="Managing symptoms & moods" description="Gentle daily check-ins and personal patterns." onClick={() => chooseGoal('manage_symptoms')} />
                         <label className="onboarding-toggle"><input type="checkbox" checked={wantsAstrology} onChange={event => { const enabled = event.target.checked; setWantsAstrology(enabled); if (!enabled && goal === 'cosmic_cycle') setGoal('track_cycle'); }} /><span className="onboarding-toggle__visual"></span><span><strong>Add a little astrology?</strong><small>Optional, even if you chose another goal.</small></span></label>
                     </div>}
@@ -321,7 +356,18 @@ export default function OnboardingPage() {
                             </Field>
                         </>}
                     </div>}
-                    {step === 2 && <div className="onboarding-fields">
+                    {step === 2 && pregnancyJourney && <div className="onboarding-fields pregnancy-onboarding-fields">
+                        <div className="pregnancy-onboarding-orbit"><span aria-hidden="true">✧</span><strong>YOUR LITTLE STAR’S ARRIVAL WINDOW</strong><small>Choose whichever date you know best. We’ll make an estimate, never a promise.</small></div>
+                        <div className="pregnancy-date-source-grid">
+                            {[{value:'due_date' as PregnancyDateSource,icon:'🌷',title:'I know my due date',detail:'My midwife or doctor gave me an estimate.'},{value:'last_period_date' as PregnancyDateSource,icon:'🌙',title:'I know my last period date',detail:'Use the first day to estimate a due date.'},{value:'conception_date' as PregnancyDateSource,icon:'✨',title:'I know the conception date',detail:'An estimate based on conception timing.'}].map(choice => <button type="button" key={choice.value} aria-pressed={pregnancyDateSource === choice.value} className={pregnancyDateSource === choice.value ? 'pregnancy-date-source is-selected' : 'pregnancy-date-source'} onClick={() => setPregnancyDateSource(choice.value)}><span aria-hidden="true">{choice.icon}</span><strong>{choice.title}</strong><small>{choice.detail}</small></button>)}
+                        </div>
+                        {pregnancyDateSource === 'due_date' && <CalendarField label="Your estimated due date" value={pregnancyDueDate} onChange={setPregnancyDueDate} hint="This is an estimate, and your care team may update it." />}
+                        {pregnancyDateSource === 'last_period_date' && <CalendarField label="First day of your last period" value={pregnancyLastPeriodDate} maxDate={localDateString(new Date())} onChange={setPregnancyLastPeriodDate} hint="We use 280 days from this date as a conventional estimate." />}
+                        {pregnancyDateSource === 'conception_date' && <CalendarField label="Estimated conception date" value={pregnancyConceptionDate} maxDate={localDateString(new Date())} onChange={setPregnancyConceptionDate} hint="We use 266 days from this date as a conventional estimate." />}
+                        <label className="pregnancy-astrology-toggle"><input type="checkbox" checked={wantsBabyAstrology} onChange={event => setWantsBabyAstrology(event.target.checked)} /><span aria-hidden="true">✦</span><span><strong>Save a little Star Child sky keepsake?</strong><small>Optional astrology for fun. A due date cannot predict an exact birth chart or guarantee a zodiac sign.</small></span></label>
+                        <p className="pregnancy-onboarding-safety">Pregnancy dates and week estimates can change. Crescent supports your personal journal; it does not replace prenatal care or medical advice.</p>
+                    </div>}
+                    {step === 2 && !pregnancyJourney && <div className="onboarding-fields">
                         <div className="onboarding-cycle-calendar"><div className="onboarding-cycle-calendar__intro"><span>✿ YOUR RECENT RHYTHM</span><p>Think of the last bleed you remember. We’ll place it on your personal moon calendar.</p></div><div className="onboarding-date-grid"><CalendarField label="The first day" hint="When did your period begin?" value={periodStart} maxDate={localDateString(new Date())} onChange={value => { setPeriodStart(value); if (periodEnd && value && periodEnd < value) setPeriodEnd(""); }} /><CalendarField label="The last day" hint="When did your bleeding finish?" value={periodEnd} maxDate={localDateString(new Date())} minDate={periodStart || undefined} onChange={setPeriodEnd} /></div><div className="onboarding-cycle-whisper"><span aria-hidden="true">☾</span><p>No pressure to remember perfectly. If you’re unsure, leave the dates blank and begin logging from today.</p></div></div>
                         <section className="onboarding-cycle-length"><div className="onboarding-cycle-length__top"><div><span>✧ YOUR CYCLE’S TEMPO</span><p>About how many days from one period’s first day to the next?</p></div><div className="onboarding-cycle-length__number"><strong>{cycleLengthUnknown ? '？' : cycleLength}</strong><small>{cycleLengthUnknown ? 'still a mystery' : 'days'}</small></div></div><input aria-label="Usual cycle length in days" type="range" min={21} max={45} step={1} value={cycleLength} disabled={cycleLengthUnknown} onChange={event => { setCycleLength(event.target.value); setCycleLengthUnknown(false); }} /><div className="onboarding-cycle-length__scale"><span>21 days</span><span>45 days</span></div><button type="button" className={cycleLengthUnknown ? 'onboarding-unknown-chip is-selected' : 'onboarding-unknown-chip'} aria-pressed={cycleLengthUnknown} onClick={() => setCycleLengthUnknown(current => !current)}><span aria-hidden="true">☁</span> I don’t know yet</button></section>
                         <fieldset className="onboarding-regularity"><legend>Does your cycle keep a steady rhythm?</legend><div className="onboarding-regularity__choices">{[{value:'regular' as Regularity,icon:'🌙',title:'Mostly steady',detail:'It tends to arrive around the same time.'},{value:'irregular' as Regularity,icon:'🌦️',title:'A little unpredictable',detail:'The timing often changes.'},{value:'unknown' as Regularity,icon:'🌱',title:'I’m still learning',detail:'I’m not sure yet.'}].map(choice => <button type="button" key={choice.value} aria-pressed={regularity === choice.value} className={regularity === choice.value ? 'onboarding-regularity-card is-selected' : 'onboarding-regularity-card'} onClick={() => setRegularity(choice.value)}><span aria-hidden="true">{choice.icon}</span><strong>{choice.title}</strong><small>{choice.detail}</small></button>)}</div></fieldset>
@@ -339,7 +385,7 @@ export default function OnboardingPage() {
                     {error && <p className="onboarding-error" role="alert">{error}</p>}
                     <div className="onboarding-actions">
                         {step > 0 && <Button type="button" variant="outline" onClick={() => { setStep(currentStep => currentStep - 1); setError(''); }}>Back</Button>}
-                        <Button type="submit" className="onboarding-next" disabled={isSaving}>{isSaving ? 'Saving your universe…' : step === STEPS.length - 1 ? 'Create my Crescent space ✦' : 'Continue'}<span aria-hidden="true">→</span></Button>
+                        <Button type="submit" className="onboarding-next" disabled={isSaving}>{isSaving ? 'Saving your universe…' : step === activeSteps.length - 1 ? 'Create my Crescent space ✦' : 'Continue'}<span aria-hidden="true">→</span></Button>
                     </div>
                 </form>
                 <p className="onboarding-privacy">Your details stay private. You can update your choices later, and you can skip optional birth details.</p>
