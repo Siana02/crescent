@@ -8,7 +8,7 @@ type PostpartumData = {
     profile: { display_name: string | null; active_journey: string; wants_astrology: boolean };
     pregnancy: {
         due_date: string; status: string; gestational_week: number; trimester: number;
-        days_until_due: number; today_checkin: null; postpartum_logs_today: PostpartumLog[];
+        days_until_due: number; today_checkin: { log_date: string; symptoms: string[]; mood: string | null; energy_level: string | null; notes: string | null } | null; postpartum_logs_today: PostpartumLog[];
     } | null;
 };
 type Props = { data: PostpartumData; onLogout: () => Promise<void>; onRefresh: () => Promise<void> };
