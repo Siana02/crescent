@@ -34,8 +34,8 @@ class DashboardController extends Controller
             ? CarbonImmutable::parse($latestPeriod->start_date->format('Y-m-d'), $profile->timezone)->startOfDay()
             : null;
         $periodHistory = $isPregnancyJourney ? collect() : (clone $periodQuery)
+            ->reorder('start_date')
             ->whereDate('start_date', '>=', $today->subMonths(6)->toDateString())
-            ->orderBy('start_date')
             ->get()
             ->map(fn ($period) => [
                 'start_date' => $period->start_date->format('Y-m-d'),
