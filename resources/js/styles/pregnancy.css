@@ -125,3 +125,6 @@
 .pregnancy-transition p:not(.pregnancy-eyebrow){max-width:620px;margin:0;color:#98889e;font-size:9px;line-height:1.8}
 .pregnancy-transition .button{flex-shrink:0}
 @media(max-width:700px){.pregnancy-transition{align-items:stretch;flex-direction:column}.pregnancy-transition .button{width:100%}}
+
+
+.pregnancy-edit-link{display:inline-block;margin-top:5px;color:#92749d;font-size:8px;text-decoration:underline;text-underline-offset:3px}
