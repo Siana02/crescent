@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'user_id', 'average_cycle_length', 'average_period_length', 'cycle_regularity', 'timezone',
     'birth_date', 'contraception_type', 'primary_goal', 'birth_time', 'birth_place',
     'sun_sign', 'moon_sign', 'rising_sign', 'onboarding_completed',
+    'display_name', 'wants_astrology', 'partner_preference',
 ])]
 class CycleProfile extends Model
 {
@@ -25,6 +26,7 @@ class CycleProfile extends Model
             'average_period_length' => 'integer',
             'birth_date' => 'date:Y-m-d',
             'onboarding_completed' => 'boolean',
+            'wants_astrology' => 'boolean',
         ];
     }
 }
