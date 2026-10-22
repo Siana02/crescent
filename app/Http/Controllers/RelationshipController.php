@@ -28,7 +28,12 @@ class RelationshipController extends Controller
         }
 
         if ($validated['relationship_type'] === 'observer' && Relationship::where('user_one_id', $request->user()->id)
-            ->where('relationship_type', 'observer')->whereIn('status', ['pending', 'accepted'])->exists()) {
+            ->where('relationship_type', 'observer')
+            ->where(function ($query) {
+                $query->where('status', 'accepted')->orWhere(function ($pending) {
+                    $pending->where('status', 'pending')->where('expires_at', '>', now());
+                });
+            })->exists()) {
             throw ValidationException::withMessages([
                 'relationship_type' => 'You can have one support partner at a time. Disconnect your current support connection before creating another invitation.',
             ]);
