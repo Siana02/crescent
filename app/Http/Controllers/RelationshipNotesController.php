@@ -81,6 +81,9 @@ class RelationshipNotesController extends Controller
         $validated = $request->validate([
             'body' => ['required', 'string', 'min:1', 'max:1200'],
         ]);
+        if (trim($validated['body']) === '') {
+            throw ValidationException::withMessages(['body' => 'Write a little note before saving.']);
+        }
 
         $timezone = $request->user()->cycleProfile?->timezone ?: config('app.timezone', 'UTC');
         $today = CarbonImmutable::today($timezone)->toDateString();
