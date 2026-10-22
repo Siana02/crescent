@@ -69,7 +69,6 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
                     <div className="cosmic-connection-promise"><span>✧</span> Their choices · Your own profile · Gentle connection</div>
                 </div><div className="cosmic-welcome__art"><span>💌</span><i>✦</i></div>
             </section>
-            {connection && <SharedPartnerSpace />}
             {connection?.companion_cycle_summary && permissions?.cycle_details && (() => {
                 const summary = connection.companion_cycle_summary!;
                 const phase = cyclePhase(summary.cycle_day);
@@ -101,6 +100,7 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
                     <div className="cosmic-support-wellbeing-advice"><p className="cosmic-eyebrow">A FEW WAYS TO SHOW UP</p><div>{careIdeas(connection.companion_wellbeing).map((idea, index) => <p key={idea}><span aria-hidden="true">{['♡','✿','✧'][index]}</span>{idea}</p>)}</div></div>
                     <p className="cosmic-fineprint">Her check-in is the best guide. These are invitations to offer care, never assumptions about what she needs.</p>
                 </section>}
+                <SharedPartnerSpace />
                 <section className="cosmic-week-card cosmic-support-permissions">
                     <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">YOUR PARTNER'S CHOICES</p><h2>What they share with you</h2></div><span className="cosmic-guide-stamp" aria-hidden="true">♡</span></div>
                     <p className="cosmic-muted">These settings were chosen by your partner before they created the invitation. You can view them here; only they can change what is shared.</p>
