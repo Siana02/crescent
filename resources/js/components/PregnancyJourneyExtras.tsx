@@ -127,7 +127,8 @@ export default function PregnancyJourneyExtras({week,trimester,postpartum=false,
  const [notice,setNotice]=useState('');
  const care=PARTNER_CARE[(Math.max(0,week)+new Date().getDate())%PARTNER_CARE.length];
  const development=WEEKLY_DEVELOPMENT[Math.min(39,Math.max(0,week-1))];
- const nutrition=useMemo(()=>WEEKLY_NUTRITION[Math.max(0,week-1)%WEEKLY_NUTRITION.length],[week]);
+ const nutrition=useMemo(()=>WEEKLY_NUTRITION[Math.min(WEEKLY_NUTRITION.length-1,Math.max(0,week-1))],[week]);
+ const upcomingReminders=reminders.filter(reminder=>!reminder.completed_at&&new Date(reminder.remind_at).getTime()>=Date.now()).sort((a,b)=>new Date(a.remind_at).getTime()-new Date(b.remind_at).getTime());
  useEffect(()=>{let live=true;fetch('/api/pregnancy/reminders',{credentials:'same-origin',headers:{Accept:'application/json'}}).then(r=>r.ok?r.json():{reminders:[]}).then(data=>{if(live)setReminders(data.reminders??[])}).catch(()=>{});return()=>{live=false}},[]);
  async function saveReminder(event:FormEvent<HTMLFormElement>){
   event.preventDefault();setBusy(true);setError('');setNotice('');
@@ -184,7 +185,7 @@ export default function PregnancyJourneyExtras({week,trimester,postpartum=false,
     {error&&<p className="pregnancy-alert" role="alert">{error}</p>}{notice&&<p className="pregnancy-notice" role="status">{notice}</p>}
     <button className="pregnancy-floral-button" type="submit" disabled={busy}>{busy?'Saving reminder…':'Save reminder ✿'}</button>
    </form>
-   <div className="pregnancy-reminder-list"><h3>Upcoming reminders</h3>{reminders.length===0?<p>No reminders yet. Add one above when it would make life easier.</p>:reminders.map(reminder=><article key={reminder.id}><span aria-hidden="true">{reminder.category==='appointment'?'♡':reminder.category==='shopping'?'✿':'✧'}</span><div><strong>{reminder.title}</strong><small>{displayDate(reminder.remind_at)}{reminder.share_with_partner?' · Shared with partner':' · Private'}</small>{reminder.notes&&<p>{reminder.notes}</p>}</div></article>)}</div>
+   <div className="pregnancy-reminder-list"><h3>Upcoming reminders</h3>{upcomingReminders.length===0?<p>No upcoming reminders yet. Add one above when it would make life easier.</p>:upcomingReminders.map(reminder=><article key={reminder.id}><span aria-hidden="true">{reminder.category==='appointment'?'♡':reminder.category==='shopping'?'✿':'✧'}</span><div><strong>{reminder.title}</strong><small>{displayDate(reminder.remind_at)}{reminder.share_with_partner?' · Shared with partner':' · Private'}{reminder.created_by_name?' · Added by '+reminder.created_by_name:''}</small>{reminder.notes&&<p>{reminder.notes}</p>}</div></article>)}</div>
    <small className="pregnancy-reminder-disclaimer">These are in-app shared reminders, not emergency alerts or guaranteed push notifications. Keep using your clinic’s appointment system and your device calendar for time-critical reminders.</small>
   </section>
   {!postpartum&&<section className="pregnancy-petal-card"><p className="pregnancy-eyebrow">A GENTLE SAFETY NOTE</p><h2>When something feels wrong, ask for help</h2><p>Severe or persistent headache, vision changes, heavy bleeding, chest pain, trouble breathing, severe abdominal pain, or reduced fetal movement after you have an established movement pattern warrant urgent professional advice. Follow local emergency guidance; do not wait for an app response.</p><p className="pregnancy-source-links"><a href="https://www.acog.org/womens-health/faqs/urgent-maternal-warning-signs" target="_blank" rel="noreferrer">ACOG · urgent maternal warning signs</a></p></section>}
