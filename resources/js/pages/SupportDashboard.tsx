@@ -50,6 +50,7 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
                     <div className="cosmic-connection-promise"><span>✧</span> Their choices · Your own profile · Gentle connection</div>
                 </div><div className="cosmic-welcome__art"><span>💌</span><i>✦</i></div>
             </section>
+            {connection && <SharedPartnerSpace />}
             {!connection ? <section className="cosmic-week-card cosmic-support-empty"><p className="cosmic-eyebrow">YOUR SHARED SPACE</p><h2>No connected space yet</h2><p>Ask your partner for their Cosmic Sync Code. You can connect from the Connections page.</p><a className="cosmic-support-link" href="/connections">Open Connections →</a></section> : <>
                 <section className="cosmic-week-card cosmic-support-permissions">
                     <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">YOUR PARTNER'S CHOICES</p><h2>What they share with you</h2></div><span className="cosmic-guide-stamp" aria-hidden="true">♡</span></div>
@@ -75,9 +76,8 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
                     <div className="cosmic-support-signs"><article><span>☉</span><small>Your Sun</small><strong>{data.profile.sun_sign ?? 'Add your birth date'}</strong></article><article><span>☾</span><small>Their Sun</small><strong>{connection.companion_sun_sign ?? 'Birth date not added yet'}</strong></article><article><span>✧</span><small>Their Moon</small><strong>{connection.companion_moon_sign ?? 'Not available yet'}</strong></article><article><span>↟</span><small>Their Rising</small><strong>{connection.companion_rising_sign ?? 'Birth time may be needed'}</strong></article></div>
                     <a className="cosmic-support-link" href="/astrology">Explore the Cosmic Atelier →</a><p className="cosmic-fineprint">Astrology is for reflection and entertainment, not a prediction or relationship diagnosis.</p>
                 </section>}
-                <section className="cosmic-week-card cosmic-support-next"><p className="cosmic-eyebrow">STAY CONNECTED</p><h2>Keep the conversation open</h2><p>Your partner's private notes and connection reflections live in the shared space. You can visit Connections to read or write a note and see any available relationship insights.</p><a className="cosmic-support-link" href="/connections">Open your shared space →</a></section>
+                <section className="cosmic-week-card cosmic-support-next"><p className="cosmic-eyebrow">STAY CONNECTED</p><h2>Keep the conversation open</h2><p>Your partner's private notes and connection reflections live in the shared space. You can visit Connections to read or write a note and see any available relationship insights.</p><a className="cosmic-support-link" href="/connections">Open Connections →</a></section>
             </>}
-            <SharedPartnerSpace />
  <footer className="cosmic-footer"><a className="cosmic-brand" href="/dashboard"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a><p>Your journey, your boundaries, your little universe.</p><div><a href="/connections">Connections</a><a href="/profile">Profile & settings</a></div></footer>
         </main>
     </div>;
