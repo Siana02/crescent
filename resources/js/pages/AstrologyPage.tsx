@@ -67,13 +67,13 @@ function WeeklyForecast({content,onRetry}:{content:DailyContent;onRetry:()=>void
  if(!rows.length){
   const text=contentText(normalized,'');
   const markers:{label:string;start:number;end:number}[]=[];
-  const dayPattern=/\\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Day\\s*[1-7])(?:,?\\s+[A-Z][a-z]+\\s+\\d{1,2})?\\s*(?:[:—–-])\\s*/gi;
+  const dayPattern=/\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Day\s*[1-7])(?:,?\s+[A-Z][a-z]+\\s+\d{1,2})?\s*(?:[:—–-])\s*/gi;
   let match:RegExpExecArray|null;
-  while((match=dayPattern.exec(text)))markers.push({label:match[1].replace(/\\s+/g,' '),start:match.index,end:dayPattern.lastIndex});
+  while((match=dayPattern.exec(text)))markers.push({label:match[1].replace(/\s+/g,' '),start:match.index,end:dayPattern.lastIndex});
   if(markers.length>=2){
    rows=markers.map((marker,index)=>({title:marker.label,text:text.slice(marker.end,markers[index+1]?.start??text.length).trim()})).filter(row=>row.text).slice(0,7);
   } else {
-   const paragraphs=text.split(/\\n\\s*\\n/).map(p=>p.trim()).filter(Boolean);
+   const paragraphs=text.split(/\n\s*\n/).map(p=>p.trim()).filter(Boolean);
    rows=(paragraphs.length?paragraphs:[text].filter(Boolean)).slice(0,7).map((paragraph,index)=>({title:'Day '+String(index+1).padStart(2,'0'),text:paragraph}));
   }
  }
