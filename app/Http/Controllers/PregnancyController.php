@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pregnancy;
+use App\Models\PregnancyReminder;
+use App\Models\Relationship;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -114,8 +116,20 @@ class PregnancyController extends Controller
 
     public function transitionPostpartum(Request $request): JsonResponse
     {
+        $validated = $request->validate([
+            'baby_name' => ['nullable', 'string', 'max:80'],
+            'baby_birth_date' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
+            'baby_birth_time' => ['nullable', 'date_format:H:i'],
+            'baby_birth_place' => ['nullable', 'string', 'max:180'],
+        ]);
         $pregnancy = $request->user()->pregnancies()->where('status', 'active')->latest()->firstOrFail();
-        $pregnancy->update(['status' => 'postpartum']);
+        $pregnancy->update([
+            'status' => 'postpartum',
+            'baby_name' => $validated['baby_name'] ?? null,
+            'baby_birth_date' => $validated['baby_birth_date'],
+            'baby_birth_time' => $validated['baby_birth_time'] ?? null,
+            'baby_birth_place' => $validated['baby_birth_place'] ?? null,
+        ]);
 
         $profile = $request->user()->cycleProfile()->firstOrCreate([], [
             'timezone' => config('app.timezone', 'UTC'),
@@ -127,7 +141,92 @@ class PregnancyController extends Controller
             'average_period_length' => null,
         ]);
 
-        return response()->json(['message' => 'Your postpartum and newborn space is ready. Your pregnancy history remains saved.']);
+        return response()->json([
+            'message' => 'Your postpartum and newborn space is ready. Your pregnancy history remains saved.',
+            'baby' => ['name' => $pregnancy->baby_name, 'birth_date' => $pregnancy->baby_birth_date?->format('Y-m-d'), 'birth_time' => $pregnancy->baby_birth_time, 'birth_place' => $pregnancy->baby_birth_place],
+        ]);
+    }
+
+    public function reminders(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $reminders = collect();
+        $ownPregnancy = $user->pregnancies()->whereIn('status', ['active', 'postpartum'])->latest()->first();
+        if ($ownPregnancy) {
+            $reminders = $ownPregnancy->reminders()->with('creator:id,name')->get();
+        }
+
+        $relationships = Relationship::query()->where('status', 'accepted')
+            ->where(function ($query) use ($user) {
+                $query->where('user_one_id', $user->id)->orWhere('user_two_id', $user->id);
+            })->get();
+        $otherIds = $relationships->map(fn ($relationship) => $relationship->user_one_id === $user->id ? $relationship->user_two_id : $relationship->user_one_id);
+        if ($otherIds->isNotEmpty()) {
+            $partnerPregnancyIds = Pregnancy::query()->whereIn('user_id', $otherIds)->whereIn('status', ['active', 'postpartum'])->pluck('id');
+            $shared = PregnancyReminder::query()->whereIn('pregnancy_id', $partnerPregnancyIds)
+                ->where('share_with_partner', true)->with('creator:id,name')->get();
+            $reminders = $reminders->concat($shared);
+        }
+
+        return response()->json(['reminders' => $reminders->unique('id')->sortBy('remind_at')->values()->map(fn ($reminder) => [
+            'id' => $reminder->id, 'title' => $reminder->title, 'category' => $reminder->category,
+            'remind_at' => $reminder->remind_at?->toIso8601String(), 'notes' => $reminder->notes,
+            'share_with_partner' => (bool) $reminder->share_with_partner, 'completed_at' => $reminder->completed_at?->toIso8601String(),
+            'created_by_name' => $reminder->creator?->name,
+        ])]);
+    }
+
+    public function storeReminder(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:140'],
+            'category' => ['required', Rule::in(['appointment', 'shopping', 'class', 'medication', 'support', 'other'])],
+            'remind_at' => ['required', 'date', 'after:now'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+            'share_with_partner' => ['sometimes', 'boolean'],
+        ]);
+        $user = $request->user();
+        $pregnancy = $user->pregnancies()->whereIn('status', ['active', 'postpartum'])->latest()->first();
+        $shareWithPartner = (bool) ($validated['share_with_partner'] ?? false);
+        if (! $pregnancy) {
+            abort_unless($shareWithPartner, 403, 'A reminder for your partner’s pregnancy must be shared with them.');
+            $relationships = Relationship::query()->where('status', 'accepted')
+                ->where(function ($query) use ($user) {
+                    $query->where('user_one_id', $user->id)->orWhere('user_two_id', $user->id);
+                })->get();
+            $otherIds = $relationships->map(fn ($relationship) => $relationship->user_one_id === $user->id ? $relationship->user_two_id : $relationship->user_one_id);
+            $pregnancy = Pregnancy::query()->whereIn('user_id', $otherIds)->whereIn('status', ['active', 'postpartum'])->latest()->first();
+            abort_unless($pregnancy, 404, 'No connected pregnancy journey is available for this reminder.');
+        }
+        $reminder = $pregnancy->reminders()->create([
+            'created_by' => $request->user()->id,
+            'title' => $validated['title'],
+            'category' => $validated['category'],
+            'remind_at' => $validated['remind_at'],
+            'notes' => $validated['notes'] ?? null,
+            'share_with_partner' => $shareWithPartner,
+        ]);
+
+        return response()->json(['message' => $reminder->share_with_partner ? 'Reminder saved and shared with your connected partner.' : 'Reminder saved in your private pregnancy planner.', 'reminder' => $reminder], 201);
+    }
+
+    public function updateBabyDetails(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'baby_name' => ['nullable', 'string', 'max:80'],
+            'baby_birth_date' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
+            'baby_birth_time' => ['nullable', 'date_format:H:i'],
+            'baby_birth_place' => ['nullable', 'string', 'max:180'],
+        ]);
+        $pregnancy = $request->user()->pregnancies()->where('status', 'postpartum')->latest()->firstOrFail();
+        $pregnancy->update([
+            'baby_name' => $validated['baby_name'] ?? null,
+            'baby_birth_date' => $validated['baby_birth_date'],
+            'baby_birth_time' => $validated['baby_birth_time'] ?? null,
+            'baby_birth_place' => $validated['baby_birth_place'] ?? null,
+        ]);
+
+        return response()->json(['message' => 'Your baby’s keepsake details have been updated.']);
     }
 
     public function postpartumCheckin(Request $request): JsonResponse

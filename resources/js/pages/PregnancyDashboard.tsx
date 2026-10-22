@@ -1,5 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import Button from '../components/Button';
+import JourneyNavigation from '../components/JourneyNavigation';
+import SharedPartnerSpace from '../components/SharedPartnerSpace';
+import PregnancyJourneyExtras from '../components/PregnancyJourneyExtras';
 import { getMoonPhase } from '../utils/moonPhase';
 import '../styles/pregnancy.css';
 
@@ -17,6 +20,10 @@ type PregnancySummary = {
     due_date_source: string;
     wants_baby_astrology: boolean;
     status: string;
+    baby_name?: string | null;
+    baby_birth_date?: string | null;
+    baby_birth_time?: string | null;
+    baby_birth_place?: string | null;
     gestational_week: number;
     gestational_day_in_week: number;
     gestational_days: number;
@@ -114,9 +121,15 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
     const [error, setError] = useState('');
     const [notice, setNotice] = useState('');
     const [inviteType, setInviteType] = useState<'observer' | 'co_tracker'>('observer');
+    const [inviteSharing, setInviteSharing] = useState({ pregnancy_details: true, wellbeing_updates: true, astrology: false });
     const [inviteCode, setInviteCode] = useState('');
     const [isInviting, setIsInviting] = useState(false);
     const [isTransitioning, setIsTransitioning] = useState(false);
+    const [showBirthForm, setShowBirthForm] = useState(false);
+    const [babyName, setBabyName] = useState('');
+    const [babyBirthDate, setBabyBirthDate] = useState('');
+    const [babyBirthTime, setBabyBirthTime] = useState('');
+    const [babyBirthPlace, setBabyBirthPlace] = useState('');
     const firstName = data.profile.display_name?.trim() || data.user.name.split(' ')[0] || 'there';
 
     async function saveCheckin(event: FormEvent<HTMLFormElement>) {
@@ -147,7 +160,7 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
             const response = await fetch('/api/relationships/invite', {
                 method: 'POST', credentials: 'same-origin',
                 headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken() },
-                body: JSON.stringify({ relationship_type: inviteType }),
+                body: JSON.stringify({ relationship_type: inviteType, sharing_preferences: { cycle_details: false, pregnancy_details: inviteSharing.pregnancy_details, wellbeing_updates: inviteSharing.wellbeing_updates, astrology: inviteSharing.astrology } }),
             });
             const result = await response.json() as { invite_code?: string; message?: string; errors?: Record<string, string[]> };
             if (!response.ok) throw new Error(result.errors ? Object.values(result.errors)[0]?.[0] : result.message || 'We could not create an invitation.');
@@ -157,16 +170,17 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
         } finally { setIsInviting(false); }
     }
 
-    async function transitionToPostpartum() {
-        if (!window.confirm('Open your postpartum and newborn journal? Your pregnancy history will stay saved, and Crescent will stop showing pregnancy-stage estimates.')) return;
+    async function transitionToPostpartum(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
         setError(''); setIsTransitioning(true);
         try {
             const response = await fetch('/api/pregnancy/postpartum', {
                 method: 'POST', credentials: 'same-origin',
-                headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrfToken() },
+                headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken() },
+                body: JSON.stringify({ baby_name: babyName.trim() || null, baby_birth_date: babyBirthDate, baby_birth_time: babyBirthTime || null, baby_birth_place: babyBirthPlace.trim() || null }),
             });
-            const result = await response.json() as { message?: string };
-            if (!response.ok) throw new Error(result.message || 'We could not open your postpartum space.');
+            const result = await response.json() as { message?: string; errors?: Record<string, string[]> };
+            if (!response.ok) throw new Error(result.errors ? Object.values(result.errors)[0]?.[0] : result.message || 'We could not open your postpartum space.');
             window.location.assign('/dashboard');
         } catch (e) {
             setError(e instanceof Error ? e.message : 'We could not open your postpartum space.');
@@ -190,6 +204,7 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
             <a className="pregnancy-brand" href="/" aria-label="Crescent home"><span>☾</span> crescent<span>.</span></a>
             <div className="pregnancy-header__actions"><span>A softer space for {firstName}</span><Button variant="outline" onClick={onLogout}>Sign out</Button></div>
         </header>
+        <JourneyNavigation active="dashboard" journey="pregnancy" />
         <main className="pregnancy-main">
             <section className="pregnancy-hero">
                 <div className="pregnancy-hero__sparkles" aria-hidden="true"><span>✦</span><span>✧</span><span>☾</span><span>❀</span></div>
@@ -211,6 +226,8 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
                 <div><p className="pregnancy-eyebrow">A LITTLE WEEK-BY-WEEK SPACE</p><h2>{focus.title}</h2><p>{focus.copy}</p></div>
                 <div className="pregnancy-week-guide__seal"><span aria-hidden="true">✧</span><strong>{week <= 13 ? 'FIRST' : week <= 27 ? 'SECOND' : 'THIRD'} TRIMESTER</strong><small>One week at a time</small></div>
             </section>
+
+            <PregnancyJourneyExtras week={week} trimester={pregnancy.trimester} />
 
             {pregnancy.wants_baby_astrology && <section className="pregnancy-cosmos">
                 <div className="pregnancy-cosmos__intro"><p className="pregnancy-eyebrow">THE STAR CHILD KEEPSAKE</p><h2>A sky snapshot for the date you’re dreaming of</h2><p>A playful look at the sky around your estimated due date — not a prediction of the actual birth chart.</p></div>
@@ -235,13 +252,30 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
 
             <section className="pregnancy-companion">
                 <div><p className="pregnancy-eyebrow">YOUR PEOPLE, YOUR CHOICE</p><h2>Invite someone into this chapter</h2><p>You can begin solo and invite a partner or companion whenever you’re ready. Connecting never switches sharing on automatically.</p></div>
-                <form onSubmit={createInvite}><label>Choose a companion role<select value={inviteType} onChange={event => setInviteType(event.target.value as 'observer' | 'co_tracker')}><option value="observer">Partner or observer</option><option value="co_tracker">Co-tracking companion</option></select></label><Button type="submit" disabled={isInviting}>{isInviting ? 'Creating code…' : 'Create a Cosmic Sync Code ✧'}</Button></form>
+                <form className="pregnancy-invite-form" onSubmit={createInvite}><label>Choose a companion role<select value={inviteType} onChange={event => setInviteType(event.target.value as 'observer' | 'co_tracker')}><option value="observer">Partner or observer</option><option value="co_tracker">Co-cycling companion</option></select></label>
+                    <fieldset className="pregnancy-invite-sharing"><legend>Choose what to share from the start</legend>
+                        <label><input type="checkbox" checked={inviteSharing.pregnancy_details} onChange={event => setInviteSharing(value => ({...value,pregnancy_details:event.target.checked}))}/> Pregnancy stage and due-date details</label>
+                        <label><input type="checkbox" checked={inviteSharing.wellbeing_updates} onChange={event => setInviteSharing(value => ({...value,wellbeing_updates:event.target.checked}))}/> Symptoms and wellbeing updates</label>
+                        <label><input type="checkbox" checked={inviteSharing.astrology} onChange={event => setInviteSharing(value => ({...value,astrology:event.target.checked}))}/> Astrology reflections (both people must opt in)</label>
+                    </fieldset>
+                    <small>You can adjust these permissions later in Connections. Private notes stay private unless you choose to share them.</small>
+                    <Button type="submit" disabled={isInviting}>{isInviting ? 'Creating code…' : 'Create a Cosmic Sync Code ✧'}</Button></form>
                 {inviteCode && <div className="pregnancy-invite-code"><small>Your invitation code</small><strong>{inviteCode}</strong><button type="button" onClick={() => navigator.clipboard?.writeText(inviteCode)}>Copy code</button><span>Expires in seven days. Your details stay private until you choose to share.</span></div>}
             </section>
 
+            <SharedPartnerSpace />
+
             <section className="pregnancy-transition">
-                <div><p className="pregnancy-eyebrow">WHEN YOUR CHAPTER CHANGES</p><h2>Make room for the next little universe</h2><p>When your baby has arrived, you can choose to move into a postpartum and newborn journal. Crescent will never switch you automatically, and your pregnancy history will stay saved.</p></div>
-                <Button type="button" variant="outline" disabled={isTransitioning} onClick={transitionToPostpartum}>{isTransitioning ? 'Preparing your next chapter…' : 'My baby has arrived · open postpartum space'}</Button>
+                <div><p className="pregnancy-eyebrow">WHEN YOUR CHAPTER CHANGES</p><h2>Make room for the next little universe</h2><p>When your baby has arrived, enter their birth details to create a little keepsake and move into your postpartum and newborn journal. Your pregnancy history stays saved.</p></div>
+                {!showBirthForm && <Button type="button" variant="outline" onClick={() => setShowBirthForm(true)}>My baby has arrived · begin postpartum</Button>}
+                {showBirthForm && <form className="pregnancy-birth-form" onSubmit={transitionToPostpartum}>
+                    <label>Baby’s name (optional)<input value={babyName} maxLength={80} onChange={event => setBabyName(event.target.value)} placeholder="A name or little nickname" /></label>
+                    <div className="pregnancy-birth-fields"><label>Baby’s birth date *<input type="date" required max={new Date().toISOString().slice(0,10)} value={babyBirthDate} onChange={event => setBabyBirthDate(event.target.value)} /></label><label>Birth time (if known)<input type="time" value={babyBirthTime} onChange={event => setBabyBirthTime(event.target.value)} /></label></div>
+                    <label>Birthplace (optional)<input value={babyBirthPlace} maxLength={180} onChange={event => setBabyBirthPlace(event.target.value)} placeholder="Town, city or hospital" /></label>
+                    <p className="pregnancy-gentle-note">Birth time and place help refine a natal chart. Add only what you know; you can keep these details private.</p>
+                    {error && <p className="pregnancy-alert" role="alert">{error}</p>}
+                    <div className="pregnancy-birth-actions"><Button type="submit" disabled={isTransitioning}>{isTransitioning ? 'Preparing your next chapter…' : 'Save birth details & open postpartum ✿'}</Button><Button type="button" variant="outline" onClick={() => setShowBirthForm(false)} disabled={isTransitioning}>Not yet</Button></div>
+                </form>}
             </section>
             <p className="pregnancy-medical-note">Crescent is a personal journal, not a medical device or a substitute for prenatal care. Symptom logs do not assess risk or diagnose conditions. If a symptom worries you or feels urgent, contact your maternity care team or local emergency service.</p>
         </main>

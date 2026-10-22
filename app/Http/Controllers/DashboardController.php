@@ -86,6 +86,10 @@ class DashboardController extends Controller
                 'due_date_source' => $pregnancy->due_date_source,
                 'wants_baby_astrology' => (bool) $pregnancy->wants_baby_astrology,
                 'status' => $pregnancy->status,
+                'baby_name' => $pregnancy->baby_name,
+                'baby_birth_date' => $pregnancy->baby_birth_date?->format('Y-m-d'),
+                'baby_birth_time' => $pregnancy->baby_birth_time,
+                'baby_birth_place' => $pregnancy->baby_birth_place,
                 'gestational_week' => $gestationalWeek,
                 'gestational_day_in_week' => $gestationalDays % 7,
                 'gestational_days' => $gestationalDays,
@@ -170,6 +174,10 @@ class DashboardController extends Controller
                             'gestational_week' => $sharedPregnancy->status === 'active' ? $gestationalWeek : null,
                             'trimester' => $sharedPregnancy->status === 'active' ? ($gestationalWeek <= 13 ? 1 : ($gestationalWeek <= 27 ? 2 : 3)) : null,
                             'days_until_due' => $sharedPregnancy->status === 'active' ? $daysUntilDue : null,
+                            'baby_name' => $sharedPregnancy->baby_name,
+                            'baby_birth_date' => $sharedPregnancy->baby_birth_date?->format('Y-m-d'),
+                            'baby_birth_time' => $sharedPregnancy->baby_birth_time,
+                            'baby_birth_place' => $sharedPregnancy->baby_birth_place,
                         ];
                     }
                 }

@@ -22,22 +22,27 @@ class AstrologyController extends Controller
     public function chart(Request $request): JsonResponse
     {
         $profile = $request->user()->cycleProfile;
-        if (! $profile?->birth_date || ! $profile?->birth_place) {
+        $babyMode = $request->query('subject') === 'baby';
+        $baby = $babyMode ? $request->user()->pregnancies()->where('status', 'postpartum')->latest()->first() : null;
+        $birthDate = $babyMode ? $baby?->baby_birth_date?->format('Y-m-d') : $profile?->birth_date?->format('Y-m-d');
+        $birthTime = $babyMode ? $baby?->baby_birth_time : $profile?->birth_time;
+        $birthPlace = $babyMode ? $baby?->baby_birth_place : $profile?->birth_place;
+        if (! $birthDate || ! $birthPlace) {
             return response()->json([
-                'message' => 'Add your birth date and birthplace in Profile & settings to calculate your chart.',
+                'message' => $babyMode ? 'Add your baby’s birthplace to their keepsake to calculate a fuller chart. Their Sun sign can still be enjoyed from the birth date.' : 'Add your birth date and birthplace in Profile & settings to calculate your chart.',
                 'needs_birth_details' => true,
+                'subject' => $babyMode ? 'baby' : 'self',
             ], 422);
         }
 
-        $birthDate = $profile->birth_date->format('Y-m-d');
-        $birthTimeKnown = filled($profile->birth_time);
-        $hour = $birthTimeKnown ? (int) substr($profile->birth_time, 0, 2) : 12;
-        $minute = $birthTimeKnown ? (int) substr($profile->birth_time, 3, 2) : 0;
-        $locationKey = 'cosmyday:location:'.hash('sha256', Str::lower(trim($profile->birth_place)));
+        $birthTimeKnown = filled($birthTime);
+        $hour = $birthTimeKnown ? (int) substr((string) $birthTime, 0, 2) : 12;
+        $minute = $birthTimeKnown ? (int) substr((string) $birthTime, 3, 2) : 0;
+        $locationKey = 'cosmyday:location:'.hash('sha256', Str::lower(trim((string) $birthPlace)));
 
         try {
-            $location = Cache::remember($locationKey, now()->addDays(30), function () use ($profile) {
-                $response = RateLimiter::attempt('cosmyday:location-search', 1, fn () => $this->client()->get(self::BASE_URL.'/search-location', ['q' => $profile->birth_place]), 1);
+            $location = Cache::remember($locationKey, now()->addDays(30), function () use ($birthPlace) {
+                $response = RateLimiter::attempt('cosmyday:location-search', 1, fn () => $this->client()->get(self::BASE_URL.'/search-location', ['q' => $birthPlace]), 1);
                 if ($response === false) {
                     throw new \RuntimeException('Birthplace lookup is busy. Please try again in a moment.');
                 }
@@ -52,13 +57,13 @@ class AstrologyController extends Controller
                     $lat = data_get($candidate, 'lat', data_get($candidate, 'latitude'));
                     $lon = data_get($candidate, 'lon', data_get($candidate, 'lng', data_get($candidate, 'longitude')));
                     if (is_numeric($lat) && is_numeric($lon)) {
-                        return ['lat' => (float) $lat, 'lon' => (float) $lon, 'label' => data_get($candidate, 'display_name', data_get($candidate, 'name', $profile->birth_place))];
+                        return ['lat' => (float) $lat, 'lon' => (float) $lon, 'label' => data_get($candidate, 'display_name', data_get($candidate, 'name', $birthPlace))];
                     }
                 }
                 throw new \RuntimeException('We could not match that birthplace. Try a city and country, such as Nairobi, Kenya.');
             });
 
-            $cacheKey = 'cosmyday:natal:v2:'.hash('sha256', implode('|', [$birthDate, $profile->birth_time ?? 'unknown-time', $location['lat'], $location['lon']]));
+            $cacheKey = 'cosmyday:natal:v2:'.hash('sha256', implode('|', [$birthDate, $birthTime ?? 'unknown-time', $location['lat'], $location['lon']]));
             $chart = Cache::remember($cacheKey, now()->addDays(30), function () use ($birthDate, $hour, $minute, $location) {
                 [$year, $month, $day] = array_map('intval', explode('-', $birthDate));
                 $response = $this->client()->post(self::BASE_URL.'/natal', [
@@ -86,13 +91,15 @@ class AstrologyController extends Controller
             if (! $birthTimeKnown) {
                 unset($signs['rising_sign']);
             }
-            if ($signs !== []) {
+            if ($signs !== [] && ! $babyMode && $profile) {
                 $profile->forceFill($signs)->save();
             }
 
             return response()->json([
                 'chart' => $chart, 'placements' => $placements, 'birth_time_known' => $birthTimeKnown,
-                'birthplace' => $location['label'] ?? $profile->birth_place,
+                'subject' => $babyMode ? 'baby' : 'self',
+                'birth_date' => $birthDate,
+                'birthplace' => $location['label'] ?? $birthPlace,
                 'calculated_at' => now()->toIso8601String(), 'source' => 'CosmyDay', 'source_url' => 'https://cosmyday.com',
             ]);
         } catch (ConnectionException $exception) {
