@@ -61,6 +61,83 @@ class RelationshipInsightsController extends Controller
         });
     }
 
+    private function chartForProfile(?CycleProfile $profile): array
+    {
+        if (! $profile?->birth_date || ! $profile?->birth_place) return ['placements' => [], 'birth_time_known' => false];
+
+        $key = 'crescent:relationship-natal:'.hash('sha256', implode('|', [
+            $profile->birth_date->format('Y-m-d'),
+            $profile->birth_time ?? 'unknown-time',
+            mb_strtolower(trim($profile->birth_place)),
+        ]));
+
+        return Cache::remember($key, now()->addDays(7), function () use ($profile) {
+            $chartRequest = Request::create('/api/astrology/chart', 'GET');
+            $chartRequest->setUserResolver(fn () => (object) ['cycleProfile' => $profile]);
+            $response = app(AstrologyController::class)->chart($chartRequest);
+            $data = $response->getData(true);
+            return $response->getStatusCode() === 200
+                ? ['placements' => $data['placements'] ?? [], 'birth_time_known' => (bool) ($data['birth_time_known'] ?? false)]
+                : ['placements' => [], 'birth_time_known' => false];
+        });
+    }
+
+    private function absoluteLongitude(array $placement): ?float
+    {
+        $signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+        $sign = array_search($placement['sign'] ?? null, $signs, true);
+        $degree = $placement['degree'] ?? null;
+        if ($sign === false || ! is_numeric($degree)) return null;
+        return $sign * 30 + (float) $degree;
+    }
+
+    private function aspects(array $first, array $second, bool $firstTimeKnown = true, bool $secondTimeKnown = true, bool $transitMode = false): array
+    {
+        $rules = [
+            ['name' => 'Conjunction', 'angle' => 0, 'orb' => 6],
+            ['name' => 'Sextile', 'angle' => 60, 'orb' => 4],
+            ['name' => 'Square', 'angle' => 90, 'orb' => 5],
+            ['name' => 'Trine', 'angle' => 120, 'orb' => 5],
+            ['name' => 'Opposition', 'angle' => 180, 'orb' => 6],
+        ];
+        $allowed = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'];
+        $found = [];
+        foreach ($first as $left) {
+            if (! in_array($left['name'] ?? '', $allowed, true)) continue;
+            if (! $firstTimeKnown && ($left['name'] ?? '') === 'Moon') continue;
+            $leftLongitude = $this->absoluteLongitude($left);
+            if ($leftLongitude === null) continue;
+            foreach ($second as $right) {
+                if (! in_array($right['name'] ?? '', $allowed, true)) continue;
+                if (! $secondTimeKnown && ($right['name'] ?? '') === 'Moon') continue;
+                $rightLongitude = $this->absoluteLongitude($right);
+                if ($rightLongitude === null) continue;
+                $separation = abs($leftLongitude - $rightLongitude);
+                if ($separation > 180) $separation = 360 - $separation;
+                $matches = array_values(array_filter(array_map(function (array $rule) use ($separation) {
+                    $distance = abs($separation - $rule['angle']);
+                    return ['name' => $rule['name'], 'orb' => round($distance, 1), 'limit' => $rule['orb']];
+                }, $rules), fn (array $rule) => $rule['orb'] <= $rule['limit']));
+                usort($matches, fn (array $a, array $b) => $a['orb'] <=> $b['orb']);
+                if (! $matches) continue;
+                $aspect = $matches[0];
+                $supportive = in_array($aspect['name'], ['Trine', 'Sextile'], true);
+                $found[] = [
+                    'left' => $left['name'],
+                    'right' => $right['name'],
+                    'aspect' => $aspect['name'],
+                    'orb' => $aspect['orb'],
+                    'tone' => $supportive ? 'supportive' : (in_array($aspect['name'], ['Square', 'Opposition'], true) ? 'growth' : 'intense'),
+                    'text' => $transitMode
+                        ? ($supportive ? 'A potentially supportive opening for this theme. Notice what feels easier, without treating it as guaranteed.' : 'A reflective pressure point around this theme. Slow down, check assumptions and choose a practical response.')
+                        : ($supportive ? 'Traditionally read as a flowing connection between these planetary themes.' : 'Traditionally read as a more active connection that can invite awareness, negotiation and growth.'),
+                ];
+            }
+        }
+        usort($found, fn (array $a, array $b) => $a['orb'] <=> $b['orb']);
+        return array_slice($found, 0, 5);
+    }
+
     public function show(Relationship $relationship, Request $request): JsonResponse
     {
         $this->ensureParticipant($relationship, $request);
@@ -75,10 +152,13 @@ class RelationshipInsightsController extends Controller
         $theirPreferences = array_merge($defaults, $allPreferences[(string) $otherId] ?? []);
         $shareAstrology = (bool) ($myPreferences['astrology'] && $theirPreferences['astrology']);
 
+        $mineChart = $shareAstrology ? $this->chartForProfile($mine) : ['placements' => [], 'birth_time_known' => false];
+        $theirChart = $shareAstrology ? $this->chartForProfile($theirs) : ['placements' => [], 'birth_time_known' => false];
         $compatibility = [
             'available' => false,
-            'summary' => 'Add birth dates to both profiles to begin exploring your celestial connection.',
+            'summary' => 'Both people can opt in to astrology and add birth date, time (if known) and birthplace to explore their natal connection.',
             'themes' => [],
+            'aspects' => [],
         ];
         if ($shareAstrology && $mine && $theirs) {
             $pairs = [
@@ -90,9 +170,15 @@ class RelationshipInsightsController extends Controller
                 $tone = $this->signTone($pair['left'], $pair['right']);
                 if ($tone) $compatibility['themes'][] = ['label' => $pair['label'], 'left' => $pair['left'], 'right' => $pair['right'], ...$tone];
             }
-            if ($compatibility['themes'] !== []) {
+            $compatibility['aspects'] = $this->aspects(
+                $mineChart['placements'] ?? [],
+                $theirChart['placements'] ?? [],
+                (bool) ($mineChart['birth_time_known'] ?? false),
+                (bool) ($theirChart['birth_time_known'] ?? false)
+            );
+            if ($compatibility['themes'] !== [] || $compatibility['aspects'] !== []) {
                 $compatibility['available'] = true;
-                $compatibility['summary'] = 'A reflective reading of the natal sign placements currently available for both profiles. It is an invitation to understand each other, not a verdict about your relationship.';
+                $compatibility['summary'] = 'A reflective comparison of the natal sign placements and planetary aspects available for both profiles. It is an invitation to understand each other, not a verdict about your relationship.';
             }
         }
 
@@ -100,7 +186,7 @@ class RelationshipInsightsController extends Controller
         $cacheKey = 'crescent:relationship-insight:'.$relationship->id.':'.$today;
         $mineForInsight = $shareAstrology ? $mine : null;
         $theirsForInsight = $shareAstrology ? $theirs : null;
-        $insight = Cache::remember($cacheKey, now('UTC')->endOfDay(), function () use ($relationship, $mineForInsight, $theirsForInsight, $compatibility, $today) {
+        $insight = Cache::remember($cacheKey, now('UTC')->endOfDay(), function () use ($relationship, $mineForInsight, $theirsForInsight, $mineChart, $theirChart, $shareAstrology, $compatibility, $today) {
             $sky = $this->skySnapshot();
             $moon = collect($sky)->firstWhere('name', 'Moon');
             $venus = collect($sky)->firstWhere('name', 'Venus');
@@ -118,6 +204,12 @@ class RelationshipInsightsController extends Controller
             ];
             $index = (int) (crc32($today.'|'.$relationship->id.'|'.($mineForInsight?->sun_sign ?? '').'|'.($theirsForInsight?->sun_sign ?? '')) % count($themes));
             $chosen = $themes[$index];
+            $personalTransits = $shareAstrology ? array_merge(
+                $this->aspects($sky, $mineChart['placements'] ?? [], true, (bool) ($mineChart['birth_time_known'] ?? false), true),
+                $this->aspects($sky, $theirChart['placements'] ?? [], true, (bool) ($theirChart['birth_time_known'] ?? false), true)
+            ) : [];
+            usort($personalTransits, fn (array $a, array $b) => $a['orb'] <=> $b['orb']);
+            $personalTransits = array_slice($personalTransits, 0, 5);
             $transitNote = $moon && $venus
                 ? 'Today’s sky snapshot: Moon in '.($moon['sign'] ?? 'an unreported sign').' and Venus in '.($venus['sign'] ?? 'an unreported sign').'.'
                 : 'The current sky feed is unavailable, so today’s suggestion uses a general relationship reflection.';
@@ -129,7 +221,8 @@ class RelationshipInsightsController extends Controller
                 'tip' => $chosen['tip'],
                 'transit_note' => $transitNote,
                 'transits' => array_values(array_filter([$sun, $moon, $venus, $mercury])),
-                'source' => 'Current planetary sign snapshot and available natal sign placements',
+                'personal_transits' => $personalTransits,
+                'source' => $shareAstrology ? 'Current planetary positions compared with both opted-in natal charts' : 'Current planetary sign snapshot and general relationship reflection',
                 'relationship_type' => $relationship->relationship_type,
             ];
         });
