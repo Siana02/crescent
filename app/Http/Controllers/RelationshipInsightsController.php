@@ -163,8 +163,8 @@ class RelationshipInsightsController extends Controller
         if ($shareAstrology && $mine && $theirs) {
             $pairs = [
                 ['label' => 'Sun signs', 'left' => $mine->sun_sign, 'right' => $theirs->sun_sign],
-                ['label' => 'Moon signs', 'left' => $mine->moon_sign, 'right' => $theirs->moon_sign],
-                ['label' => 'Rising signs', 'left' => $mine->rising_sign, 'right' => $theirs->rising_sign],
+                ['label' => 'Moon signs', 'left' => ($mineChart['birth_time_known'] ?? false) ? $mine->moon_sign : null, 'right' => ($theirChart['birth_time_known'] ?? false) ? $theirs->moon_sign : null],
+                ['label' => 'Rising signs', 'left' => ($mineChart['birth_time_known'] ?? false) ? $mine->rising_sign : null, 'right' => ($theirChart['birth_time_known'] ?? false) ? $theirs->rising_sign : null],
             ];
             foreach ($pairs as $pair) {
                 $tone = $this->signTone($pair['left'], $pair['right']);
