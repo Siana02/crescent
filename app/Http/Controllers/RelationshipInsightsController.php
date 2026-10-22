@@ -152,8 +152,9 @@ class RelationshipInsightsController extends Controller
         $defaults = ['cycle_details' => false, 'pregnancy_details' => false, 'wellbeing_updates' => false, 'astrology' => false];
         $myPreferences = array_merge($defaults, $allPreferences[(string) $userId] ?? []);
         $theirPreferences = array_merge($defaults, $allPreferences[(string) $otherId] ?? []);
+        $primaryPreferences = $allPreferences[(string) $relationship->user_one_id] ?? $allPreferences;
         $shareAstrology = $relationship->relationship_type === 'observer'
-            ? (bool) (($relationship->sharing_preferences[(string) $relationship->user_one_id]['astrology'] ?? $myPreferences['astrology'] ?? false)
+            ? (bool) (($primaryPreferences['astrology'] ?? false)
                 && $mine?->wants_astrology && $theirs?->wants_astrology)
             : (bool) ($myPreferences['astrology'] && $theirPreferences['astrology'] && $mine?->wants_astrology && $theirs?->wants_astrology);
 
@@ -206,7 +207,6 @@ class RelationshipInsightsController extends Controller
             }
         }
 
-        $primaryPreferences = $allPreferences[(string) $relationship->user_one_id] ?? $allPreferences;
         $isPrimaryViewer = $userId === (int) $relationship->user_one_id;
         $canUseCycleContext = $isPrimaryViewer || (bool) (($primaryPreferences['cycle_details'] ?? false) || ($primaryPreferences['wellbeing_updates'] ?? false));
         $canUseSymptoms = $isPrimaryViewer || (bool) ($primaryPreferences['wellbeing_updates'] ?? false);
