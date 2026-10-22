@@ -119,10 +119,13 @@ class DashboardController extends Controller
                     $companionPreferences = array_merge($defaults, $allPreferences);
                 }
                 $companionProfile = $companion?->cycleProfile;
-                $companionJourney = $companionProfile?->active_journey ?? 'cycle';
-                $journeyIsShared = $companionJourney === 'pregnancy' || $companionJourney === 'postpartum'
-                    ? $companionPreferences['pregnancy_details']
-                    : $companionPreferences['cycle_details'];
+                $companionRole = $companionProfile?->relationship_role ?? 'tracker';
+                $companionJourney = $companionRole === 'support' ? null : ($companionProfile?->active_journey ?? 'cycle');
+                $journeyIsShared = $companionJourney === null ? false : (
+                    $companionJourney === 'pregnancy' || $companionJourney === 'postpartum'
+                        ? $companionPreferences['pregnancy_details']
+                        : $companionPreferences['cycle_details']
+                );
 
                 return [
                     'id' => $relationship->id,
@@ -132,6 +135,7 @@ class DashboardController extends Controller
                     'companion_name' => $relationship->status === 'accepted'
                         ? ($companionProfile?->display_name ?: $companion?->name)
                         : null,
+                    'companion_role' => $companionRole,
                     'companion_journey' => $journeyIsShared ? $companionJourney : null,
                     'companion_goal' => $journeyIsShared ? $companionProfile?->primary_goal : null,
                     'companion_sun_sign' => $companionPreferences['astrology'] ? $companionProfile?->sun_sign : null,
