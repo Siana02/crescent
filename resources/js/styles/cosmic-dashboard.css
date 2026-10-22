@@ -189,3 +189,77 @@
 .cosmic-modal form>button[type=submit],.cosmic-modal form>.button{margin-top:18px}
 @media(max-width:700px){.cosmic-today-tip{grid-template-columns:1fr;gap:15px;padding:17px}.cosmic-today-tip__art{min-height:100px}.cosmic-today-tip__art>span{width:58px;height:58px;font-size:30px}.cosmic-today-tip__art>i{top:12px;right:18px}.cosmic-today-tip__art>b{bottom:12px;left:18px}.cosmic-today-tip__copy h2{font-size:25px}.cosmic-energy-choices button{min-width:calc(50% - 5px)}.cosmic-mood-choices button{min-width:calc(33.333% - 7px);flex:1}.cosmic-modal{padding:23px 17px}.cosmic-modal .cosmic-symptom-options{grid-template-columns:1fr}.cosmic-week-cycle{font-size:7px!important}}
 @media(prefers-reduced-motion:reduce){.cosmic-week-day,.cosmic-choice-row button,.cosmic-modal .cosmic-symptom-options label{transition:none}.cosmic-week-day:hover,.cosmic-choice-row button:hover,.cosmic-modal .cosmic-symptom-options label:hover{transform:none}}
+
+/* Cycle drawer and check-in polish */
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,1,0');
+.material-symbols-rounded{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:20px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga';-webkit-font-smoothing:antialiased}
+.cosmic-choice-icon{display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;flex:0 0 27px;border-radius:10px;background:#fff8fd;color:#a66b9c;transition:transform .18s,background .18s}
+.cosmic-choice-row button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:9px 13px;border-radius:15px;background:linear-gradient(145deg,#fffdfd,#fff7fc);box-shadow:0 2px 8px rgba(133,89,143,.035);transition:transform .18s,border-color .18s,box-shadow .18s}
+.cosmic-choice-row button:hover{transform:translateY(-2px);box-shadow:0 7px 16px rgba(133,89,143,.09)}
+.cosmic-choice-row button.is-picked{border-color:#c58bbd;background:linear-gradient(135deg,#f5e8ff,#ffe7f1);color:#744c84;box-shadow:inset 0 0 0 1px rgba(194,132,184,.12),0 5px 14px rgba(148,91,159,.1)}
+.cosmic-choice-row button.is-picked .cosmic-choice-icon{background:#fff;color:#b25f99}
+.cosmic-checkin{position:relative;overflow:hidden;background:radial-gradient(circle at 100% 0,rgba(240,222,255,.45),transparent 33%),linear-gradient(145deg,#fffdfd,#fff8fc)}
+.cosmic-checkin:after{content:'✧  ♡  ✿';position:absolute;right:24px;bottom:18px;color:#d9b3d1;font-size:17px;letter-spacing:10px;opacity:.42;pointer-events:none}
+.cosmic-checkin form{position:relative;z-index:1}
+.cosmic-checkin legend{display:flex;align-items:center;gap:8px;font-family:var(--serif,Georgia,serif);font-size:17px;font-weight:400}
+.cosmic-checkin legend:before{content:'✦';color:#ce8eb9;font-size:13px}
+.cosmic-energy-choices button{min-width:130px;justify-content:flex-start;border-radius:17px;padding:11px 13px}
+.cosmic-mood-choices button{min-width:105px;justify-content:flex-start;border-radius:16px;padding:9px 11px}
+.cosmic-mood-choices .cosmic-choice-icon{width:30px;height:30px;flex-basis:30px;border-radius:11px;background:#f9edf9}
+.cosmic-mood-choices button:nth-child(3n+2) .cosmic-choice-icon{background:#f1eaff;color:#8f75b2}
+.cosmic-mood-choices button:nth-child(3n) .cosmic-choice-icon{background:#fff0e3;color:#bd8a70}
+.cosmic-modal-backdrop{padding:22px 12px;align-items:center}
+.cosmic-modal{width:min(760px,100%);max-height:min(88vh,900px);overflow-y:auto;overscroll-behavior:contain;border:1px solid #ead8ed;background:radial-gradient(ellipse at 100% 0,#f0e4ff 0,transparent 34%),radial-gradient(ellipse at 0 0,#ffe6f1 0,transparent 30%),#fffdfd;box-shadow:0 30px 100px rgba(74,42,85,.27)}
+.cosmic-modal:before{content:'✧  ✿  ♡';display:block;margin:0 0 8px;color:#c58ab7;font-size:16px;letter-spacing:12px}
+.cosmic-modal h2{font-family:var(--serif,Georgia,serif);font-size:clamp(27px,4vw,36px);line-height:1.12;color:#62476f}
+.cosmic-modal>p:not(.cosmic-eyebrow){color:#96839a;line-height:1.7}
+.cosmic-modal fieldset{margin-top:22px;padding:17px;border:1px solid #efdfef;border-radius:18px;background:rgba(255,255,255,.7)}
+.cosmic-modal legend{padding:0 7px;font-family:var(--serif,Georgia,serif);font-size:17px}
+.cosmic-modal form>label{margin-top:17px}
+.cosmic-modal .cosmic-symptom-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
+.cosmic-modal .cosmic-symptom-groups>fieldset{min-width:0;margin:0;padding:15px 13px;border:1px solid #eddfef;border-radius:18px;background:linear-gradient(145deg,#fffdfd,#fff8fc)}
+.cosmic-modal .cosmic-symptom-groups>fieldset:nth-child(6n+2){background:linear-gradient(145deg,#faf5ff,#fffdfd)}
+.cosmic-modal .cosmic-symptom-groups>fieldset:nth-child(6n+3){background:linear-gradient(145deg,#fff4f8,#fffdfd)}
+.cosmic-modal .cosmic-symptom-groups>fieldset legend{display:block;max-width:100%;margin:0 0 13px;padding:0 0 9px;border-bottom:1px solid #f0e3f0;color:#8e6095;font-family:var(--serif,Georgia,serif);font-size:19px}
+.cosmic-symptom-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.cosmic-symptom-options label{position:relative;display:flex;align-items:center;gap:9px;min-width:0;min-height:43px;padding:10px 11px;border:1px solid #efe1ef;border-radius:13px;background:#fff;box-shadow:0 2px 7px rgba(116,77,129,.025);cursor:pointer;transition:background .18s,border-color .18s,transform .18s}
+.cosmic-symptom-options label:hover{transform:translateY(-1px);border-color:#d6b5d8}
+.cosmic-symptom-options label.is-picked{border-color:#c68ebf;background:linear-gradient(135deg,#f5e9ff,#ffedf5);color:#6f4b7c;box-shadow:inset 0 0 0 1px rgba(196,133,186,.12)}
+.cosmic-symptom-options label>input[type=checkbox]{width:15px;height:15px;flex:0 0 15px;accent-color:#b76fa8}
+.cosmic-symptom-options label>span{font-size:11px;line-height:1.45}
+.cosmic-modal--symptoms .cosmic-severity-choices .cosmic-choice-row button{min-width:108px}
+.cosmic-modal--symptoms .cosmic-drawer-moods{background:linear-gradient(135deg,#fff7fc,#f7f0ff)}
+.cosmic-modal--symptoms .cosmic-drawer-moods .cosmic-mood-choices button{min-width:108px}
+.cosmic-modal--symptoms .cosmic-modal-close,.cosmic-modal--sex .cosmic-modal-close,.cosmic-modal--period .cosmic-modal-close{background:#fff;border:1px solid #ead8ed;box-shadow:0 4px 12px rgba(110,76,127,.08)}
+.cosmic-modal--sex .cosmic-symptom-options{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cosmic-modal--sex .cosmic-symptom-options label{background:linear-gradient(145deg,#fff,#fff9fd)}
+.cosmic-modal--sex .cosmic-symptom-options label.is-picked{background:linear-gradient(135deg,#f3e8ff,#ffe9f2)}
+.cosmic-modal--sex fieldset:nth-of-type(2){background:linear-gradient(135deg,#fff7fb,#f0f8ff)}
+.cosmic-modal--period .cosmic-period-flow .cosmic-choice-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+.cosmic-modal--period .cosmic-flow-choice{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:100px;padding:12px 5px;border:1px solid #efdfef;border-radius:17px;background:#fffafd;color:#87648f;cursor:pointer}
+.cosmic-modal--period .cosmic-flow-choice.is-picked{border-color:#d982a6;background:linear-gradient(150deg,#fff0f6,#ffe4ed);color:#b54470;box-shadow:inset 0 0 0 1px #e9b4c9,0 7px 15px rgba(197,105,146,.1)}
+.cosmic-flow-drops{display:flex;align-items:flex-end;justify-content:center;gap:2px;min-height:25px;color:#cf4f78}
+.cosmic-flow-drops svg{filter:drop-shadow(0 2px 1px rgba(184,57,100,.12))}
+.cosmic-flow-drops.is-unknown{color:#a88db1}
+.cosmic-flow-choice>span:last-child{font-size:11px;font-weight:700;text-align:center}
+.cosmic-modal--period .cosmic-flow-choice.is-picked .cosmic-flow-drops{color:#b52f63}
+.cosmic-modal form>small{display:block;margin-top:12px}
+.cosmic-modal form>button[type=submit]{margin-top:18px}
+.cosmic-modal--symptoms form>small{padding:13px 14px;border-left:3px solid #d99bbd;border-radius:0 12px 12px 0;background:#fff2f7;color:#94677e}
+.cosmic-today-tip{background:radial-gradient(ellipse at 0 0,#ffe9f4 0,transparent 42%),linear-gradient(120deg,#fffafc,#f7f1ff)}
+.cosmic-tip-myth{padding:13px 15px;border:1px solid #ead8ef;border-radius:15px;background:rgba(255,255,255,.72)}
+.cosmic-tip-myth>span{color:#a56d9d;font-size:9px;font-weight:800;letter-spacing:.14em}
+.cosmic-tip-myth>p{margin:7px 0 0;color:#866f8f;font-size:11px;line-height:1.7}
+.cosmic-selected-day{align-items:flex-start}
+.cosmic-selected-day>div{min-width:0}
+@media(max-width:680px){
+ .cosmic-modal{padding:22px 16px}
+ .cosmic-modal .cosmic-symptom-groups{grid-template-columns:1fr}
+ .cosmic-symptom-options{grid-template-columns:1fr}
+ .cosmic-modal--sex .cosmic-symptom-options{grid-template-columns:1fr}
+ .cosmic-modal--period .cosmic-period-flow .cosmic-choice-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .cosmic-modal--period .cosmic-flow-choice{min-height:83px}
+ .cosmic-mood-choices button{min-width:calc(50% - 8px)}
+ .cosmic-energy-choices button{min-width:calc(50% - 8px)}
+ .cosmic-checkin:after{right:12px;bottom:9px;font-size:13px;letter-spacing:5px}
+}
