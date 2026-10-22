@@ -35,21 +35,21 @@ function dateLabel(value: string) {
 }
 function csrfToken() { return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? ''; }
 function cyclePhase(day: number | null) {
-    if (!day || day < 1) return { key: 'unknown', label: 'Phase not available', title: 'Let her lead the rhythm', summary: 'Cycle timing is an estimate. Her own check-in is more useful than a calendar prediction.' };
+    if (!day || day < 1) return { key: 'unknown', label: 'Phase not available', title: 'Let them lead the rhythm', summary: 'Cycle timing is an estimate. Their own check-in is more useful than a calendar prediction.' };
     if (day <= 5) return { key: 'menstrual', label: 'Menstrual phase · estimated', title: 'Comfort first, plans flexible', summary: 'Bleeding days can come with cramps, fatigue or headaches for some people. Others feel well; ask what today feels like for her.' };
-    if (day <= 13) return { key: 'follicular', label: 'Follicular phase · estimated', title: 'Make room for what feels good', summary: 'Energy may rise for some people after menstruation, but there is no universal energy pattern. Offer a walk, a fun plan or a quiet day—her call.' };
-    if (day <= 16) return { key: 'ovulatory', label: 'Around ovulation · estimated', title: 'Follow her lead, not the calendar', summary: 'Some people notice changes in energy, cervical fluid or desire around ovulation; others notice nothing. Ask what she feels like doing.' };
+    if (day <= 13) return { key: 'follicular', label: 'Follicular phase · estimated', title: 'Make room for what feels good', summary: 'Energy may rise for some people after menstruation, but there is no universal energy pattern. Offer a walk, a fun plan or a quiet day—their call.' };
+    if (day <= 16) return { key: 'ovulatory', label: 'Around ovulation · estimated', title: 'Follow her lead, not the calendar', summary: 'Some people notice changes in energy, cervical fluid or desire around ovulation; others notice nothing. Ask what they feel like doing.' };
     return { key: 'luteal', label: 'Luteal phase · estimated', title: 'A little extra thoughtfulness goes far', summary: 'Some people notice PMS symptoms such as irritability, low mood, tiredness, bloating or cravings before a period. Never assume or take feelings personally—listen and ask what would help.' };
 }
-function careIdeas(wellbeing: SharedRelationship['companion_wellbeing']) {
+function careIdeas(wellbeing: SharedRelationship['companion_wellbeing'], partnerName: string) {
     const tags = [...(wellbeing?.symptoms ?? []), ...(wellbeing?.mood ?? []), wellbeing?.category ?? ''].join(' ').toLowerCase().replace(/[_-]+/g, ' ');
     const ideas: string[] = [];
     if (/cramp|pain|headache|sore|ache|bloat/.test(tags)) ideas.push('Offer a heat pack, water, a comfortable setup or help with a practical task.');
-    if (/tired|fatigue|low energy|exhaust/.test(tags) || (wellbeing?.energy_level != null && wellbeing.energy_level <= 2)) ideas.push('Take one thing off her plate, make or order dinner, and offer an early night or a lie-in.');
+    if (/tired|fatigue|low energy|exhaust/.test(tags) || (wellbeing?.energy_level != null && wellbeing.energy_level <= 2)) ideas.push(`Take one thing off ${partnerName}'s plate, make or order dinner, and offer an early night or a lie-in.`);
     if (/anxious|stress|overwhelm|sad|low|irritable|angry/.test(tags)) ideas.push('Listen without debating or diagnosing. Ask: “Would you like comfort, help solving it, or a little space?”');
-    if (/crav|appetite|hungry/.test(tags)) ideas.push('Bring a snack or treat she actually wants, without commenting on what she should eat.');
-    if (/happy|good|energ|excited/.test(tags) || (wellbeing?.energy_level != null && wellbeing.energy_level >= 4)) ideas.push('If she is up for it, suggest a walk, a favourite café, a little date or another activity she enjoys.');
-    if (!ideas.length) ideas.push('Ask what would feel loving today: make dinner, plan something outdoors, run a bath, choose her favourite film or give her uninterrupted rest.');
+    if (/crav|appetite|hungry/.test(tags)) ideas.push(`Bring a snack or treat ${partnerName} actually wants, without commenting on what they should eat.`);
+    if (/happy|good|energ|excited/.test(tags) || (wellbeing?.energy_level != null && wellbeing.energy_level >= 4)) ideas.push(`If ${partnerName} is up for it, suggest a walk, a favourite café, a little date or another activity they enjoy.`);
+    if (!ideas.length) ideas.push('Ask what would feel loving today: make dinner, plan something outdoors, run a bath, choose a favourite film or give them uninterrupted rest.');
     return ideas.slice(0, 3);
 }
 
@@ -57,7 +57,7 @@ function careIdeas(wellbeing: SharedRelationship['companion_wellbeing']) {
 export default function SupportDashboard({ data, onLogout }: { data: SupportDashboardData; onLogout: () => void }) {
     const connection = (data.relationships ?? []).find(item => item.status === 'accepted' && item.relationship_type === 'observer');
     const permissions = connection?.companion_sharing_preferences ?? connection?.sharing_preferences;
-    const supportName = data.profile.display_name?.trim() || data.user.name?.trim().split(/\\s+/)[0] || 'there';
+    const supportName = data.profile.display_name?.trim() || data.user.name?.trim().split(/\s+/)[0] || 'there';
     const primaryName = connection?.companion_name?.trim() || 'your partner';
     return <div className="cosmic-dashboard cosmic-support-dashboard">
         <header className="cosmic-header">
@@ -101,13 +101,13 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
                     <p className="cosmic-eyebrow">A LITTLE WELLBEING CHECK-IN</p><h2>How {primaryName} is feeling</h2><p className="cosmic-muted">Latest update · {dateLabel(connection.companion_wellbeing.log_date)}</p>
                     <div className="cosmic-support-tags">{[...(connection.companion_wellbeing.mood ?? []), ...(connection.companion_wellbeing.symptoms ?? []), connection.companion_wellbeing.category ?? '', connection.companion_wellbeing.energy_level ? `Energy ${connection.companion_wellbeing.energy_level}/5` : ''].filter(Boolean).map(tag => <span key={tag}>{tag}</span>)}</div>
                     {connection.companion_wellbeing.notes && <blockquote>{connection.companion_wellbeing.notes}</blockquote>}
-                    <div className="cosmic-support-wellbeing-advice"><p className="cosmic-eyebrow">A FEW WAYS TO SHOW UP</p><div>{careIdeas(connection.companion_wellbeing).map((idea, index) => <p key={idea}><span aria-hidden="true">{['♡','✿','✧'][index]}</span>{idea}</p>)}</div></div>
-                    <p className="cosmic-fineprint">{primaryName}'s check-in is the best guide. These are invitations to offer care, never assumptions about what she needs.</p>
+                    <div className="cosmic-support-wellbeing-advice"><p className="cosmic-eyebrow">A FEW WAYS TO SHOW UP</p><div>{careIdeas(connection.companion_wellbeing, primaryName).map((idea, index) => <p key={idea}><span aria-hidden="true">{['♡','✿','✧'][index]}</span>{idea}</p>)}</div></div>
+                    <p className="cosmic-fineprint">{primaryName}'s check-in is the best guide. These are invitations to offer care, never assumptions about what they need.</p>
                 </section>}
                 <SharedPartnerSpace />
                 <section className="cosmic-week-card cosmic-support-permissions">
                     <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">{primaryName.toUpperCase()}'S SHARING CHOICES</p><h2>What {primaryName} shares with you</h2></div><span className="cosmic-guide-stamp" aria-hidden="true">♡</span></div>
-                    <p className="cosmic-muted">These settings were chosen by ${primaryName} before they created the invitation. You can view them here; only they can change what is shared.</p>
+                    <p className="cosmic-muted">{`These settings were chosen by ${primaryName} before they created the invitation.`} You can view them here; only they can change what is shared.</p>
                     <div className="cosmic-support-permission-list">{labels.map(item => <article key={item.key} className={permissions?.[item.key] ? 'is-enabled' : ''}><span className="material-symbols-rounded">{item.icon}</span><div><strong>{item.title}</strong><small>{permissions?.[item.key] ? 'Your partner has enabled this update.' : 'Your partner has kept this private.'}</small></div><b>{permissions?.[item.key] ? 'Shared' : 'Private'}</b></article>)}</div>
                 </section>
                 {permissions?.astrology && <section className="cosmic-week-card cosmic-support-shared-card">
