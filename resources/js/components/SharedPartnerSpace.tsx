@@ -47,6 +47,7 @@ export default function SharedPartnerSpace(){
  const primaryName=role==='support'?(relationship.companion_name?.trim()||'your partner'):myName;
  const supportName=role==='support'?myName:(relationship.companion_name?.trim()||'your partner');
  const namesLabel=primaryName+' & '+supportName;
+ const partnerName=role==='support'?primaryName:supportName;
  const sharedSymptoms=relationship.relationship_type==='co_tracker'?(relationship.companion_wellbeing?.symptoms??[]):role==='support'?(relationship.companion_wellbeing?.symptoms??[]):(checkin?.symptoms??[]);
  const sharedDate=role==='support'||relationship.relationship_type==='co_tracker'?relationship.companion_wellbeing?.log_date:null;
  const sharedMood=relationship.relationship_type==='co_tracker'?(relationship.companion_wellbeing?.mood??[]):role==='support'?(relationship.companion_wellbeing?.mood??[]):(Array.isArray(checkin?.mood)?checkin?.mood??[]:typeof checkin?.mood==='string'?checkin.mood.split(','):[]);
