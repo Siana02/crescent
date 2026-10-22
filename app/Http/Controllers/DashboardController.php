@@ -216,6 +216,7 @@ class DashboardController extends Controller
                     'relationship_type' => $relationship->relationship_type,
                     'status' => $relationship->status,
                     'invite_code' => $isInitiator && $relationship->status === 'pending' ? $relationship->invite_code : null,
+                    'expires_at' => $isInitiator && $relationship->status === 'pending' ? $relationship->expires_at?->toIso8601String() : null,
                     'companion_name' => $relationship->status === 'accepted'
                         ? ($companionProfile?->display_name ?: $companion?->name)
                         : null,
