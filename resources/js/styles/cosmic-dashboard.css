@@ -926,3 +926,46 @@
 
 /* More editorial, less repetitive shared insight presentation. */
 .cosmic-daily-relationship,.cosmic-compatibility-panel{padding:clamp(18px,2.6vw,28px);border:1px solid #ead8ed;border-radius:22px;background:linear-gradient(145deg,#fffdfd 0%,#fff7fb 58%,#f7f3ff 100%);box-shadow:0 12px 28px #7651840c}.cosmic-daily-relationship>p,.cosmic-compatibility-panel>p{line-height:1.75}.cosmic-transit-chips{display:flex;flex-wrap:wrap;gap:8px;margin:15px 0}.cosmic-transit-chips>span{padding:7px 11px;border-radius:999px;background:#f0e8fb;color:#775487;font-size:11px;font-weight:700}.cosmic-personal-transit-list,.cosmic-synastry-aspects{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px;margin:16px 0}.cosmic-personal-transit-list article,.cosmic-synastry-aspects article{margin:0;padding:15px;border:1px solid #efe3f0;border-radius:15px;background:#fff}.cosmic-personal-transit-list article>div,.cosmic-synastry-aspects article>div{display:flex;flex-direction:column;gap:5px}.cosmic-personal-transit-list article strong,.cosmic-synastry-aspects article strong{font-size:13px;color:#64486e}.cosmic-personal-transit-list article span,.cosmic-synastry-aspects article span{font-size:10px;color:#a17fa8}.cosmic-personal-transit-list article p,.cosmic-synastry-aspects article p{font-size:12px;line-height:1.65;color:#78677e}
+
+/* Responsive, accessible mobile navigation shared across Crescent pages. */
+.cosmic-mobile-nav{display:none;position:relative;z-index:120}
+.cosmic-mobile-nav__toggle{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 14px;border:1px solid #ead6ed;border-radius:999px;background:linear-gradient(135deg,#fff8fc,#f0eaff);color:#765184;font:700 12px 'DM Sans',sans-serif;box-shadow:0 5px 15px #76518410;cursor:pointer}
+.cosmic-mobile-nav__toggle svg{flex:none}
+.cosmic-mobile-nav__scrim{position:fixed;inset:0;z-index:121;width:100%;height:100%;border:0;background:rgba(48,32,54,.28);backdrop-filter:blur(3px);cursor:pointer}
+.cosmic-mobile-nav__panel{position:absolute;top:calc(100% + 12px);right:0;z-index:122;width:min(340px,calc(100vw - 28px));padding:14px;border:1px solid #ead8ef;border-radius:23px;background:radial-gradient(ellipse at 100% 0,#eee4ff 0,transparent 45%),linear-gradient(145deg,#fffdfd,#fff6fb);box-shadow:0 24px 70px rgba(68,43,78,.22);color:#47354f}
+.cosmic-mobile-nav__heading{display:flex;align-items:center;gap:11px;padding:7px 6px 15px;border-bottom:1px solid #eee1f0;margin-bottom:8px}
+.cosmic-mobile-nav__heading>div{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}
+.cosmic-mobile-nav__heading strong{font-family:var(--serif,Georgia,serif);font-size:19px;font-weight:400;color:#60456d}
+.cosmic-mobile-nav__heading small{font-size:10px;color:#9b879f}
+.cosmic-mobile-nav__close{display:grid;place-items:center;width:34px;height:34px;border:1px solid #eee0f0;border-radius:50%;background:#fff;color:#85648d;cursor:pointer}
+.cosmic-mobile-nav__panel>a,.cosmic-mobile-nav__signout{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:0 12px;border:0;border-radius:13px;background:transparent;color:#765b80;text-align:left;text-decoration:none;font:650 12px 'DM Sans',sans-serif;cursor:pointer}
+.cosmic-mobile-nav__panel>a svg,.cosmic-mobile-nav__signout svg{flex:none;color:#a576a7}
+.cosmic-mobile-nav__panel>a .cosmic-mobile-nav__arrow{margin-left:auto;color:#c08ab1;font-size:14px}
+.cosmic-mobile-nav__panel>a:hover,.cosmic-mobile-nav__panel>a:focus-visible,.cosmic-mobile-nav__panel>a.is-active{outline:none;background:linear-gradient(100deg,#fbe8f2,#eee7ff);color:#634670}
+.cosmic-mobile-nav__panel>a.is-active{box-shadow:inset 3px 0 #d58bb4}
+.cosmic-mobile-nav__divider{height:1px;margin:9px 5px;background:#eee1f0}
+.cosmic-mobile-nav__signout{background:#fff0f5;color:#9a5d7b}
+.cosmic-mobile-nav__signout svg{color:#c17b9e}
+.cosmic-mobile-nav__signout:hover{background:#fce2ec}
+.cosmic-mobile-nav__signout:disabled{opacity:.65;cursor:wait}
+.cosmic-mobile-nav__footnote{margin:13px 6px 4px;color:#a38ca7;font-size:10px;text-align:center}
+.cosmic-mobile-nav__error{margin:8px 6px;padding:9px 11px;border-radius:10px;background:#fff0f0;color:#9a4545;font-size:11px;line-height:1.5}
+@media(max-width:900px){
+ .cosmic-header{position:relative;width:calc(100% - 32px);min-height:68px;gap:10px}
+ .cosmic-header nav{display:none!important}
+ .cosmic-header__right{margin-left:auto}
+ .cosmic-header__right>span,.cosmic-header__right>a,.cosmic-header__right>button{display:none}
+ .cosmic-mobile-nav{display:block;margin-left:auto}
+ .cosmic-header .cosmic-mobile-nav{flex:0 0 auto}
+}
+@media(max-width:420px){
+ .cosmic-header{width:calc(100% - 24px);min-height:62px}
+ .cosmic-brand{font-size:22px;gap:7px}
+ .cosmic-brand__mark{width:32px;height:32px;font-size:24px}
+ .cosmic-mobile-nav__toggle{min-height:40px;padding:0 12px}
+ .cosmic-mobile-nav__panel{right:-2px;width:min(320px,calc(100vw - 24px))}
+}
+@media(prefers-reduced-motion:no-preference){
+ .cosmic-mobile-nav__panel{animation:cosmic-menu-enter .18s ease-out}
+ @keyframes cosmic-menu-enter{from{opacity:0;transform:translateY(-5px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+}
