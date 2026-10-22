@@ -1044,3 +1044,30 @@
     height:22px;
   }
 }
+
+
+/* Final mobile menu fix: render the overlay at document level to escape header stacking/overflow. */
+.cosmic-menu-glyph{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:24px;height:24px}
+.cosmic-menu-glyph i{display:block;width:18px;height:2px;margin:0!important;border-radius:999px;background:currentColor;transform:translate(0,0) rotate(0);transform-origin:center;transition:width .2s ease,transform .2s ease,opacity .15s ease}
+.cosmic-menu-glyph i:nth-child(2){width:22px}
+.cosmic-mobile-nav__toggle.is-open .cosmic-menu-glyph{gap:0}
+.cosmic-mobile-nav__toggle.is-open .cosmic-menu-glyph i:first-child{width:22px;transform:translateY(1px) rotate(45deg)}
+.cosmic-mobile-nav__toggle.is-open .cosmic-menu-glyph i:nth-child(2){width:22px;transform:translateY(-1px) rotate(-45deg)}
+.cosmic-mobile-nav__scrim{position:fixed!important;inset:0!important;z-index:10001!important;display:block!important;width:100vw!important;height:100dvh!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:rgba(45,29,53,.22)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;cursor:pointer}
+.cosmic-mobile-nav__panel{position:fixed!important;top:max(72px,calc(env(safe-area-inset-top) + 64px))!important;right:max(14px,env(safe-area-inset-right))!important;z-index:10002!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:3px!important;width:min(360px,calc(100vw - 28px))!important;max-height:calc(100dvh - 92px)!important;overflow-y:auto!important;overscroll-behavior:contain;padding:18px!important;border:1px solid #e7d4ed!important;border-radius:24px!important;background:radial-gradient(ellipse at 100% 0,rgba(224,210,255,.92),transparent 42%),radial-gradient(ellipse at 0 100%,rgba(255,224,238,.88),transparent 45%),linear-gradient(145deg,#fffefd 0%,#fff7fb 60%,#f7f1ff 100%)!important;box-shadow:0 24px 70px rgba(47,28,57,.28)!important;color:#47354f!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+.cosmic-mobile-nav__panel:before{content:'✿  ✧  ❀';display:block;margin:0 0 7px;padding:2px 6px 10px;border-bottom:1px solid rgba(214,190,224,.65);color:#c28ab7;font-size:16px;letter-spacing:.45em;text-align:right;pointer-events:none}
+.cosmic-mobile-nav__panel>a,.cosmic-mobile-nav__panel>.cosmic-mobile-nav__signout{position:relative;z-index:1;display:flex!important;flex:0 0 auto;align-items:center;min-height:50px!important;width:100%!important;padding:0 13px!important;border:1px solid transparent!important;border-radius:14px!important;background:rgba(255,255,255,.62)!important;color:#765b80!important;text-align:left!important;text-decoration:none!important;font:650 12px 'DM Sans',sans-serif!important;cursor:pointer}
+.cosmic-mobile-nav__panel>a svg,.cosmic-mobile-nav__panel>.cosmic-mobile-nav__signout svg{display:block!important;flex:0 0 18px;color:#a576a7!important}
+.cosmic-mobile-nav__panel>a>span:nth-child(2),.cosmic-mobile-nav__panel>.cosmic-mobile-nav__signout>span{display:block!important;flex:1;min-width:0}
+.cosmic-mobile-nav__panel>a .cosmic-mobile-nav__arrow{margin-left:auto;color:#c08ab1;font-size:14px}
+.cosmic-mobile-nav__panel>a:hover,.cosmic-mobile-nav__panel>a:focus-visible,.cosmic-mobile-nav__panel>a.is-active{background:linear-gradient(100deg,#fbe8f2,#eee7ff)!important;border-color:#ead9f1!important;color:#634670!important;outline:2px solid transparent}
+.cosmic-mobile-nav__panel .cosmic-mobile-nav__heading{display:flex!important;align-items:center;gap:11px;padding:7px 6px 15px;border-bottom:1px solid #eee1f0;margin-bottom:8px}
+.cosmic-mobile-nav__panel .cosmic-mobile-nav__heading strong{display:block;color:#60456d;font-family:var(--serif,Georgia,serif);font-size:19px;font-weight:400}
+.cosmic-mobile-nav__panel .cosmic-mobile-nav__heading small{display:block;color:#9b879f;font-size:10px}
+.cosmic-mobile-nav__panel .cosmic-mobile-nav__divider{display:block;height:1px;flex:0 0 1px;margin:9px 5px;background:#eee1f0}
+.cosmic-mobile-nav__panel .cosmic-mobile-nav__footnote{display:block;margin:13px 6px 4px;color:#a38ca7;font-size:10px;text-align:center}
+@media(max-width:900px){
+ .cosmic-header .cosmic-mobile-nav__toggle{display:grid!important;place-items:center;width:42px;height:42px;padding:0;line-height:0}
+ .cosmic-mobile-nav__panel{right:12px!important;width:min(340px,calc(100vw - 24px))!important}
+}
+@media(prefers-reduced-motion:reduce){.cosmic-menu-glyph i{transition:none}.cosmic-mobile-nav__panel{animation:none!important}}
