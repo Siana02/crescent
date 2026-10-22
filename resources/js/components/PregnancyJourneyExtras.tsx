@@ -127,7 +127,7 @@ export default function PregnancyJourneyExtras({week,trimester,postpartum=false,
    <p className="pregnancy-eyebrow">A TINY COSMIC ATELIER</p><h2>{baby.name?.trim()?baby.name+'’s little universe':'Your little one’s first sky'}</h2>
    <div className="pregnancy-baby-chart"><span aria-hidden="true">✧</span><div><small>SUN SIGN</small><strong>{signForDate(baby.birth_date)}</strong><p>Born {new Intl.DateTimeFormat(undefined,{dateStyle:'long'}).format(new Date(baby.birth_date+'T12:00:00'))}</p></div></div>
    <p>{baby.birth_time&&baby.birth_place? `Birth details saved: ${baby.birth_time} · ${baby.birth_place}. `:'You can add a birth time and birthplace in Profile & settings to keep a fuller record. '}The Sun sign is date-based and approximate near sign boundaries; a complete natal chart needs accurate birth details and an astrology calculation.</p>
-   <a href="/astrology">Open Cosmic Atelier ↗</a>
+   <a href="/astrology?subject=baby">Open baby’s Cosmic Atelier ↗</a>
   </section>}
   <section className="pregnancy-petal-card pregnancy-reminder-planner">
    <p className="pregnancy-eyebrow">LET YOUR PEOPLE HELP</p><h2>Appointments, errands & little reminders</h2><p>Create a reminder for a clinic visit, baby shopping, transport, a birth class or a practical check-in. Shared reminders appear in the linked partner’s Crescent space.</p>
