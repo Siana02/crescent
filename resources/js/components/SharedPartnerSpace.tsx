@@ -1,9 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import '../styles/cosmic-dashboard.css';
+import PregnancyJourneyExtras from './PregnancyJourneyExtras';
 
 type SharedNote = { id:number; author_name:string; note_date:string; body:string; is_mine:boolean; read_at:string|null };
 type Relationship = {
- id:number; relationship_type:'observer'|'co_tracker'; status:string; companion_name:string|null;
+ id:number; relationship_type:'observer'|'co_tracker'; status:string; companion_name:string|null; companion_journey?:'cycle'|'fertility'|'pregnancy'|'postpartum'|null; companion_pregnancy_summary?:{status:string;due_date:string;gestational_week:number|null;trimester:number|null;days_until_due:number|null;baby_name?:string|null;baby_birth_date?:string|null;baby_birth_time?:string|null;baby_birth_place?:string|null}|null;
  companion_cycle_summary:{cycle_day:number;last_period_start:string;estimated_next_period:string|null}|null;
  companion_wellbeing:{log_date:string;symptoms?:string[];mood?:string[];energy_level?:number|null;notes?:string|null}|null;
 };
@@ -51,6 +52,7 @@ export default function SharedPartnerSpace(){
    <article className="cosmic-shared-space-card cosmic-shared-space-card--daily"><p className="cosmic-eyebrow">TODAY'S RELATIONSHIP TIP</p><h3>{insight?.daily.title??'Ask, do not assume'}</h3><p>{insight?.daily.tip??'Ask what kind of support would feel good today: listening, practical help, company or space.'}</p>{insight?.daily.cycle_context&&insight.daily.cycle_context.available!==false&&<small>Cycle-aware reflection · {insight.daily.cycle_context.phase.replace(/-/g,' ')}{insight.daily.cycle_context.cycle_day?' · estimated day '+insight.daily.cycle_context.cycle_day:''}</small>}</article>
    <article className="cosmic-shared-space-card"><p className="cosmic-eyebrow">A NOTE FROM THE HEART</p><h3>{notes?.can_write?'Send a little note':'Your shared notes'}</h3>{notes?.can_write&&<form className="cosmic-shared-note-form" onSubmit={saveNote}><textarea value={draft} maxLength={1200} rows={3} onChange={event=>setDraft(event.target.value)} placeholder="What would you like your partner to know today?"/><button type="submit" disabled={busy||!draft.trim()}>{busy?'Saving…':notes.today_note?'Update today’s note':'Send today’s note'}</button></form>}{message&&<small role="status">{message}</small>}<div className="cosmic-shared-note-history">{(notes?.notes??[]).slice().reverse().map(note=><article key={note.id}><div><strong>{note.is_mine?'You':note.author_name}</strong><small>{note.note_date}</small></div><p>{note.body}</p><small>{note.is_mine?(note.read_at?'Read by your partner':'Not read yet'):(note.read_at?'Read':'New note')}</small></article>)}</div></article>
   </div>
+  {(relationship.companion_journey === 'pregnancy' || relationship.companion_journey === 'postpartum') && <PregnancyJourneyExtras week={relationship.companion_pregnancy_summary?.gestational_week ?? 1} trimester={relationship.companion_pregnancy_summary?.trimester ?? 1} postpartum={relationship.companion_journey === 'postpartum'} partnerView baby={relationship.companion_pregnancy_summary ? {name:relationship.companion_pregnancy_summary.baby_name,birth_date:relationship.companion_pregnancy_summary.baby_birth_date,birth_time:relationship.companion_pregnancy_summary.baby_birth_time,birth_place:relationship.companion_pregnancy_summary.baby_birth_place} : null} />}
   <p className="cosmic-fineprint">Astrology and cycle reflections are estimates for conversation and care, not medical advice, consent, or a guarantee about fertility or mood.</p>
  </section>;
 }
