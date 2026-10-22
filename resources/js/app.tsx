@@ -9,6 +9,15 @@ import ProfileSettingsPage from './pages/ProfileSettingsPage';
 import AstrologyPage from './pages/AstrologyPage';
 import BabyAstrologyPage from './pages/BabyAstrologyPage';
 import './styles/app.css';
+import InstallAppPrompt from './components/InstallAppPrompt';
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch((error) => {
+            console.error('Crescent service worker registration failed:', error);
+        });
+    });
+}
 
 const mount = document.getElementById('app');
 
@@ -38,5 +47,6 @@ const page = path === '/astrology' && new URLSearchParams(window.location.search
 createRoot(mount).render(
     <React.StrictMode>
         {page}
+        {!["/login", "/register", "/"].includes(path) && <InstallAppPrompt />}
     </React.StrictMode>,
 );
