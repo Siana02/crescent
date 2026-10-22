@@ -43,6 +43,7 @@ function dateLabel(value: string) { return new Date(value + 'T12:00:00').toLocal
 export default function ConnectionsPage() {
     const [relationships, setRelationships] = useState<Relationship[]>([]);
     const [profileRole, setProfileRole] = useState<'tracker' | 'support'>('tracker');
+    const [ownJourney, setOwnJourney] = useState<Relationship['companion_journey']>('cycle');
     const [kind, setKind] = useState<RelationshipType>('observer');
     const [code, setCode] = useState(() => new URLSearchParams(window.location.search).get('code')?.trim().toUpperCase().slice(0, 8) ?? '');
     const [newCode, setNewCode] = useState('');
@@ -61,6 +62,7 @@ export default function ConnectionsPage() {
         const data = await readJson(response);
         if (!response.ok) throw new Error(data.message ?? 'Could not load your connections.');
         setProfileRole(data.profile?.relationship_role === 'support' ? 'support' : 'tracker');
+        setOwnJourney(data.profile?.active_journey ?? 'cycle');
         setRelationships((data.relationships ?? []).map((relationship: Partial<Relationship>) => ({
             ...relationship,
             sharing_preferences: { ...emptySharing, ...(relationship.sharing_preferences ?? {}) },
@@ -141,7 +143,7 @@ export default function ConnectionsPage() {
     return <div className="cosmic-dashboard cosmic-connections-page">
         <header className="cosmic-header"><a className="cosmic-brand" href="/dashboard"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a><nav><a href="/dashboard">Home</a><a className="is-active" href="/connections">Connections</a><a href="/astrology">The Cosmic Atelier</a><a href="/profile">Profile & settings</a></nav><div className="cosmic-header__right"><a href="/dashboard">Back to home ↗</a></div></header>
         <main className="cosmic-main">
-            <section className="cosmic-welcome cosmic-connections-welcome"><div><p className="cosmic-eyebrow">YOUR SPACE, YOUR BOUNDARIES</p><h1>Closer, <em>on your terms.</em></h1><p>Two accounts, two personal journeys, one shared space when you choose. Cycle and pregnancy details stay private until their owner chooses to share.</p><div className="cosmic-connection-promise"><span>✧</span> Consent first · Separate journeys · Gentle connection</div></div><div className="cosmic-welcome__art"><span>💌</span><i>✦</i></div></section>
+            <section className="cosmic-welcome cosmic-connections-welcome"><div><p className="cosmic-eyebrow">YOUR SPACE, YOUR BOUNDARIES</p><h1>Closer, <em>on your terms.</em></h1><p>Two accounts, two personal journeys, one shared space when you choose. Cycle and pregnancy details stay private until their owner chooses to share.</p><div className="cosmic-connection-promise"><span>✧</span> Consent first · Separate journeys · Gentle connection</div><p className="cosmic-own-journey">{profileRole === 'support' ? 'Your role · Support partner' : 'Your journey · ' + journeyLabel(ownJourney)}</p></div><div className="cosmic-welcome__art"><span>💌</span><i>✦</i></div></section>
             {error && <p role="alert" className="cosmic-toast is-error">{error}</p>}{notice && <p role="status" className="cosmic-toast">{notice}</p>}
             <div className="cosmic-connections-grid">
                 {profileRole !== 'support' ? <section className="cosmic-week-card cosmic-connection-action"><p className="cosmic-eyebrow">INVITE SOMEONE YOU TRUST</p><h2>Create a Cosmic Sync Code</h2><p className="cosmic-muted">Choose the connection that fits. You can change what you share after they accept.</p>
