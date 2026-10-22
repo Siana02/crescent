@@ -112,7 +112,7 @@ export default function PregnancyJourneyExtras({week,trimester,postpartum=false,
    <h2>{postpartum?'You deserve tending, too.':`A little nourishment for week ${week}`}</h2>
    <p>{postpartum?'Keep meals simple, accept practical help, and follow your clinician’s advice on recovery, hydration and any feeding-related needs.':nutrition}</p>
    {!postpartum&&<small>General information, not an individual diet plan. Ask your midwife or clinician about supplements, food restrictions and any medical conditions.</small>}
-   <p className="pregnancy-source-links">Sources: <a href="https://www.who.int/tools/elena/interventions/daily-iron-pregnancy" target="_blank" rel="noreferrer">WHO · iron and folic acid</a> · <a href="https://www.nhs.uk/pregnancy/keeping-well/have-a-healthy-diet/" target="_blank" rel="noreferrer">NHS · healthy diet</a></p>
+   <p className="pregnancy-source-links">Sources: <a href="https://www.nhs.uk/best-start-in-life/pregnancy/week-by-week-guide-to-pregnancy/" target="_blank" rel="noreferrer">NHS · week-by-week guide</a> · <a href="https://www.who.int/tools/elena/interventions/daily-iron-pregnancy" target="_blank" rel="noreferrer">WHO · iron and folic acid</a> · <a href="https://www.nhs.uk/pregnancy/keeping-well/have-a-healthy-diet/" target="_blank" rel="noreferrer">NHS · healthy diet</a></p>
   </section>
   <section className="pregnancy-petal-card">
    <p className="pregnancy-eyebrow">{partnerView?'A NOTE FOR THE SUPPORT PERSON':'YOUR CARE CALENDAR'}</p><h2>{partnerView?'Care that follows their lead':postpartum?'Gentle postpartum checkpoints':'Helpful appointment windows'}</h2>
