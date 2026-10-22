@@ -174,6 +174,10 @@ class DashboardController extends Controller
                             'gestational_week' => $sharedPregnancy->status === 'active' ? $gestationalWeek : null,
                             'trimester' => $sharedPregnancy->status === 'active' ? ($gestationalWeek <= 13 ? 1 : ($gestationalWeek <= 27 ? 2 : 3)) : null,
                             'days_until_due' => $sharedPregnancy->status === 'active' ? $daysUntilDue : null,
+                            'baby_name' => $sharedPregnancy->baby_name,
+                            'baby_birth_date' => $sharedPregnancy->baby_birth_date?->format('Y-m-d'),
+                            'baby_birth_time' => $sharedPregnancy->baby_birth_time,
+                            'baby_birth_place' => $sharedPregnancy->baby_birth_place,
                         ];
                     }
                 }
