@@ -141,7 +141,7 @@ export default function ConnectionsPage() {
             const data = await readJson(response);
             if (!response.ok) throw new Error(data.message ?? 'Could not connect with that code.');
             setCode(''); window.history.replaceState({}, '', '/connections');
-            setNotice('You are connected. Each person controls what they share.');
+            setNotice('You are connected. Sharing permissions remain under the profile owner’s control.');
             await load();
         } catch (exception) { setError(exception instanceof Error ? exception.message : 'Could not accept that code.'); }
         finally { setBusy(false); }
