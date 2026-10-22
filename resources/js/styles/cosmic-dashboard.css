@@ -501,3 +501,32 @@
 .cosmic-companion-birth-form button{grid-column:1/-1;justify-self:start}
 .cosmic-sharing-option:where(div){cursor:default}
 @media(max-width:760px){.cosmic-companion-birth-form{grid-template-columns:1fr}.cosmic-companion-birth-form button{width:100%}}
+
+
+.cosmic-support-dashboard .cosmic-header__right button{border:1px solid #e5d8e8;border-radius:999px;padding:9px 14px;background:#fff9fd;color:#796281;font:inherit;font-size:.8rem;cursor:pointer}
+.cosmic-support-permissions{margin-bottom:18px}
+.cosmic-support-permission-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+.cosmic-support-permission-list article{display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:10px;padding:13px;border:1px solid #e9deeb;border-radius:15px;background:#fff}
+.cosmic-support-permission-list article.is-enabled{border-color:#c4a4cb;background:linear-gradient(120deg,#fff5fa,#f5f0ff)}
+.cosmic-support-permission-list article>span{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:#f3e8f5;color:#9a7aa4}
+.cosmic-support-permission-list strong,.cosmic-support-permission-list small{display:block}
+.cosmic-support-permission-list strong{color:#5b4864;font-size:.83rem}
+.cosmic-support-permission-list small{margin-top:4px;color:#97899b;font-size:.7rem;line-height:1.4}
+.cosmic-support-permission-list b{color:#9986a0;font-size:.7rem}
+.cosmic-support-permission-list .is-enabled b{color:#8b6498}
+.cosmic-support-shared-card{margin-top:18px}
+.cosmic-support-cycle{display:flex;align-items:flex-start;gap:15px;margin-top:14px}
+.cosmic-support-cycle>.material-symbols-rounded{display:grid;place-items:center;flex:0 0 52px;height:52px;border-radius:17px;background:#f1e8f7;color:#9975a5;font-size:1.6rem}
+.cosmic-support-cycle h2{margin:0 0 8px;color:#594760;font-size:1.3rem}
+.cosmic-support-cycle p{margin:4px 0;color:#82728a;line-height:1.5}
+.cosmic-support-tags{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.cosmic-support-tags span{padding:7px 11px;border:1px solid #e8dce9;border-radius:999px;background:#fff8fc;color:#7a6683;font-size:.76rem}
+.cosmic-support-signs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0}
+.cosmic-support-signs article{display:grid;gap:5px;align-content:start;padding:13px;border:1px solid #e9deeb;border-radius:15px;background:linear-gradient(145deg,#fffafd,#f8f3ff)}
+.cosmic-support-signs article>span{font-size:1.35rem;color:#9c7ba8}
+.cosmic-support-signs small{color:#9a899f;font-size:.7rem}
+.cosmic-support-signs strong{color:#604b69;font-size:.86rem}
+.cosmic-support-link{display:inline-flex;margin-top:10px;color:#8f6b9b;font-weight:750;text-decoration:none}
+.cosmic-support-link:hover{text-decoration:underline}
+.cosmic-support-empty{margin-top:18px}
+@media(max-width:760px){.cosmic-support-permission-list{grid-template-columns:1fr}.cosmic-support-signs{grid-template-columns:repeat(2,minmax(0,1fr))}}
