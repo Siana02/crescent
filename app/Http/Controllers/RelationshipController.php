@@ -27,12 +27,28 @@ class RelationshipController extends Controller
             ]);
         }
 
+        if ($validated['relationship_type'] === 'observer' && Relationship::where('user_one_id', $request->user()->id)
+            ->where('relationship_type', 'observer')
+            ->where(function ($query) {
+                $query->where('status', 'accepted')->orWhere(function ($pending) {
+                    $pending->where('status', 'pending')->where('expires_at', '>', now());
+                });
+            })->exists()) {
+            throw ValidationException::withMessages([
+                'relationship_type' => 'You can have one support partner at a time. Disconnect your current support connection before creating another invitation.',
+            ]);
+        }
+
         $sharing = array_merge([
             'cycle_details' => false,
             'pregnancy_details' => false,
             'wellbeing_updates' => false,
             'astrology' => false,
         ], $validated['sharing_preferences'] ?? []);
+
+        if ($validated['relationship_type'] === 'observer') {
+            $request->user()->cycleProfile()->updateOrCreate([], ['wants_astrology' => (bool) $sharing['astrology']]);
+        }
 
         $relationship = Relationship::create([
             'user_one_id' => $request->user()->id,
@@ -49,6 +65,31 @@ class RelationshipController extends Controller
             'relationship_type' => $relationship->relationship_type,
             'status' => $relationship->status,
         ], 201);
+    }
+
+    public function disconnect(Relationship $relationship, Request $request): JsonResponse
+    {
+        abort_unless(
+            $relationship->status === 'accepted'
+            && in_array($request->user()->id, [$relationship->user_one_id, $relationship->user_two_id], true),
+            404
+        );
+        if ($relationship->relationship_type === 'observer' && $request->user()->id !== $relationship->user_one_id) {
+            abort(403, 'Only the person who started this support connection can disconnect it.');
+        }
+
+        $supportUser = $relationship->relationship_type === 'observer' ? $relationship->companion : null;
+        $relationship->update(['status' => 'revoked', 'invite_code' => null, 'expires_at' => now()]);
+        if ($supportUser) {
+            $supportUser->forceFill(['is_active' => false])->save();
+        }
+
+        return response()->json([
+            'message' => $relationship->relationship_type === 'observer'
+                ? 'The support connection has ended and the support account has been deactivated.'
+                : 'The shared co-cycling space has closed. Both personal accounts remain available.',
+            'account_deactivated' => (bool) $supportUser,
+        ]);
     }
 
     public function sharing(Relationship $relationship, Request $request): JsonResponse
@@ -87,6 +128,9 @@ class RelationshipController extends Controller
             unset($allPreferences[$key]);
         }
         $relationship->update(['sharing_preferences' => $allPreferences]);
+        if (array_key_exists('astrology', $validated) && ($relationship->relationship_type !== 'observer' || $request->user()->id === $relationship->user_one_id)) {
+            $request->user()->cycleProfile()->updateOrCreate([], ['wants_astrology' => (bool) $validated['astrology']]);
+        }
 
         return response()->json(['sharing_preferences' => $preferences]);
     }
@@ -195,6 +239,13 @@ class RelationshipController extends Controller
         if ($relationship->user_two_id !== null) {
             throw ValidationException::withMessages([
                 'invite_code' => 'That invitation has already been used.',
+            ]);
+        }
+
+        if ($relationship->relationship_type === 'observer' && Relationship::where('relationship_type', 'observer')
+            ->where('status', 'accepted')->where('user_two_id', $request->user()->id)->exists()) {
+            throw ValidationException::withMessages([
+                'invite_code' => 'This support account is already linked. Disconnect that support connection before joining another primary partner.',
             ]);
         }
 

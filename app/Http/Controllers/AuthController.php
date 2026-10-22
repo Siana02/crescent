@@ -211,7 +211,7 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($credentials)) {
+        if (! Auth::attempt([...$credentials, 'is_active' => true])) {
             return response()->json([
                 'message' => 'Those details did not match our records. Please try again.',
             ], 422);

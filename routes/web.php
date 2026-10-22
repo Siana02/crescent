@@ -22,7 +22,7 @@ Route::get('/auth/invitation-preview', [AuthController::class, 'invitationPrevie
 Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'active.account'])->group(function () {
     Route::get('/connections', fn () => view('welcome'));
     Route::get('/astrology', fn () => view('welcome'));
     Route::get('/profile', fn () => view('welcome'));
@@ -53,6 +53,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/astrology/moon', [AstrologyController::class, 'moon'])->middleware('throttle:30,1');
     Route::get('/api/astrology/week-ahead', [AstrologyController::class, 'weekAhead'])->middleware('throttle:30,1');
     Route::put('/api/cycle-profile', [CycleProfileController::class, 'update']);
+    Route::patch('/api/cycle-profile/astrology-consent', [CycleProfileController::class, 'astrologyConsent']);
     Route::post('/api/periods', [PeriodLogController::class, 'store']);
     Route::post('/api/daily-checkins', [DailyCheckinController::class, 'store'])->middleware('throttle:30,1');
     Route::post('/api/sex-logs', [SexLogController::class, 'store'])->middleware('throttle:30,1');
@@ -64,6 +65,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/relationships/invite', [RelationshipController::class, 'invite'])->middleware('throttle:10,1');
     Route::post('/api/relationships/accept', [RelationshipController::class, 'accept'])->middleware('throttle:10,1');
     Route::patch('/api/relationships/{relationship}/sharing', [RelationshipController::class, 'sharing']);
+    Route::post('/api/relationships/{relationship}/disconnect', [RelationshipController::class, 'disconnect']);
     Route::patch('/api/relationships/{relationship}/companion-birth-details', [RelationshipController::class, 'companionBirthDetails']);
     Route::get('/api/relationships/{relationship}/notes', [RelationshipNotesController::class, 'index']);
     Route::post('/api/relationships/{relationship}/notes', [RelationshipNotesController::class, 'store'])->middleware('throttle:20,1');
