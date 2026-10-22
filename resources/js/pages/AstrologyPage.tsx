@@ -1,11 +1,76 @@
 import { useEffect, useState } from 'react';
+import { BriefcaseBusiness, CalendarDays, Heart, NotebookPen, Sparkles, Zap } from 'lucide-react';
 import Button from '../components/Button';
 import '../styles/cosmic-dashboard.css';
 
 type Placement = { name: string; sign: string; degree?: number | string | null; house?: number | string | null; retrograde?: boolean };
 type ChartResponse = { chart?: unknown; placements?: Placement[]; birth_time_known?: boolean; birthplace?: string; source_url?: string; message?: string; needs_birth_details?: boolean };
 type EventItem = { id?: string; title?: string; name?: string; headline?: string; kind?: string; event_type?: string; date?: string; datetime?: string; exact_time?: string; time_et?: string | null; importance?: number; description?: string; summary?: string; short?: string; long?: string; sign?: string | null; url?: string; [key: string]: unknown };
-type ContentResponse = { title?: string; horoscope?: string; text?: string; body?: string; content?: string; summary?: string; prediction?: string; description?: string; long?: string; short?: string; message?: string };
+type ContentResponse = { title?: string; horoscope?: string; text?: string; body?: string; content?: string; summary?: string; prediction?: string; description?: string; long?: string; short?: string; message?: string; overview?: string; intro?: string; date?: string; sign?: string; days?: unknown[]; forecast?: unknown; weekly?: unknown; result?: unknown; data?: unknown; [key: string]: unknown };
+type HoroscopeSection = { key: string; label: string; text: string };
+function unwrapContent(value: unknown, depth = 0): ContentResponse | null {
+ if (depth > 4 || value == null) return null;
+ if (typeof value === 'string') return { text: value };
+ if (Array.isArray(value)) return { days: value };
+ if (typeof value !== 'object') return null;
+ const item=value as Record<string,unknown>;
+ for (const key of ['data','result','output','content_data','forecast_data']) {
+  if (item[key] && typeof item[key] === 'object') {
+   const nested=unwrapContent(item[key],depth+1);
+   if(nested)return {...item,...nested};
+  }
+ }
+ return item as ContentResponse;
+}
+function horoscopeSections(content: DailyContent): { intro: string; sections: HoroscopeSection[] } {
+ const raw=contentText(content,'Add your birthday in Profile & settings to discover your daily Sun-sign reading.');
+ const patterns=[
+  {key:'overview',label:'The overview',re:/✨?\s*Overview\s*:/ig},
+  {key:'work',label:'Work & goals',re:/💼\s*Work\s*&\s*goals\s*:/ig},
+  {key:'relationships',label:'Relationships',re:/❤️\s*Relationships\s*:/ig},
+  {key:'energy',label:'Energy & mood',re:/⚡\s*Energy\s*&\s*mood\s*:/ig},
+  {key:'tip',label:"Today's tip",re:/🔮\s*Today'?s\s*tip\s*:/ig},
+ ];
+ const matches:{key:string;label:string;start:number;end:number}[]=[];
+ for(const pattern of patterns){pattern.re.lastIndex=0;let match:RegExpExecArray|null;while((match=pattern.re.exec(raw))){matches.push({key:pattern.key,label:pattern.label,start:match.index,end:pattern.re.lastIndex});}}
+ matches.sort((a,b)=>a.start-b.start);
+ if(matches.length){
+  const intro=raw.slice(0,matches[0].start).replace(/^[\s✨🪐—–-]+|[\s✨🪐—–-]+$/g,'').trim();
+  const sections=matches.map((match,index)=>({key:match.key,label:match.label,text:raw.slice(match.end,matches[index+1]?.start??raw.length).trim()})).filter(section=>section.text);
+  return {intro,sections};
+ }
+ const story=splitStory(raw);
+ const sections=[{key:'overview',label:'The overview',text:story.lead},...story.rest.map((text,index)=>({key:'chapter-'+index,label:index===0?'A little reflection':'Another thing to notice',text}))].filter(section=>section.text);
+ return {intro:content?.date??'',sections};
+}
+function HoroscopeLayout({content}:{content:DailyContent}) {
+ const parsed=horoscopeSections(content);
+ const Icon=({kind}:{kind:string})=>kind==='work'?<BriefcaseBusiness size={19}/>:kind==='relationships'?<Heart size={19}/>:kind==='energy'?<Zap size={19}/>:kind==='tip'?<NotebookPen size={19}/>:<Sparkles size={19}/>;
+ return <div className="cosmic-horoscope-layout">
+  {parsed.intro&&<div className="cosmic-horoscope-date"><CalendarDays size={16}/><span>{parsed.intro}</span><span className="cosmic-horoscope-date__spark">✧</span></div>}
+  <div className="cosmic-horoscope-grid">{parsed.sections.map((section,index)=><article key={section.key} className={'cosmic-horoscope-card cosmic-horoscope-card--'+section.key}>
+   <div className="cosmic-horoscope-card__head"><span><Icon kind={section.key}/></span><p>{section.label}</p><i>{String(index+1).padStart(2,'0')}</i></div>
+   <p>{section.text}</p>
+  </article>)}</div>
+ </div>;
+}
+function WeeklyForecast({content}:{content:DailyContent}) {
+ const normalized=unwrapContent(content);
+ const days=Array.isArray(normalized?.days)?normalized!.days:Array.isArray(normalized?.forecast)?normalized!.forecast:Array.isArray(normalized?.weekly)?normalized!.weekly:[];
+ const dayRows=days.map((day,index)=>{
+  if(typeof day==='string')return {title:'Day '+(index+1),text:day};
+  const d=day as Record<string,unknown>;
+  return {title:String(d.day_name??d.dayName??d.day??d.date??d.title??('Day '+(index+1))),text:String(d.summary??d.forecast??d.description??d.text??d.content??d.overview??'')};
+ }).filter(day=>day.text.trim());
+ if(dayRows.length){
+  return <div className="cosmic-week-forecast-grid">{dayRows.slice(0,7).map((day,index)=><article key={day.title+'-'+index} className="cosmic-week-forecast-day"><span>{String(index+1).padStart(2,'0')}</span><h4>{day.title}</h4><p>{day.text}</p></article>)}</div>;
+ }
+ const text=contentText(normalized,'');
+ const paragraphs=text.split(/\n\s*\n/).map(p=>p.trim()).filter(Boolean);
+ const fallback=paragraphs.length?paragraphs:[text].filter(Boolean);
+ if(fallback.length)return <div className="cosmic-week-forecast-copy">{fallback.slice(0,7).map((paragraph,index)=><article key={index}><span>{String(index+1).padStart(2,'0')}</span><p>{paragraph}</p></article>)}</div>;
+ return <p className="cosmic-week-forecast-empty">The weekly forecast is temporarily unavailable. Your daily sky and upcoming-event notes remain available above.</p>;
+}
 type SkyResponse = { placements?: Placement[]; calculated_at?: string; note?: string; message?: string };
 type DailyContent = ContentResponse | null;
 type AspectInsight = { transit: Placement; natal: Placement; aspect: string; orb: number; impact: string; prompt: string };
@@ -26,7 +91,14 @@ const HOUSE_GUIDE = [
  {number:11,title:'Community & futures',symbol:'☆',area:'Friendships, networks, groups and hopes',detail:'The people and shared visions that help you imagine what comes next.'},
  {number:12,title:'Inner tides',symbol:'☁',area:'Solitude, dreams, the unconscious and closure',detail:'Rest, reflection, hidden patterns and the endings that make room.'},
 ];
-function contentText(content: DailyContent, fallback: string) { return content?.horoscope ?? content?.text ?? content?.body ?? content?.content ?? content?.long ?? content?.description ?? content?.summary ?? content?.prediction ?? content?.short ?? content?.message ?? fallback; }
+function contentText(content: DailyContent, fallback: string) {
+ const item=unwrapContent(content)??content;
+ if(!item)return fallback;
+ const value=item.horoscope??item.text??item.body??(typeof item.content==='string'?item.content:undefined)??item.long??item.description??item.summary??item.prediction??item.short??item.overview??item.intro??item.message??item.forecast;
+ if(typeof value==='string'&&value.trim())return value.trim();
+ if(Array.isArray(item.days))return item.days.map((day)=>typeof day==='string'?day:JSON.stringify(day)).join('\n\n');
+ return fallback;
+}
 function eventTitle(item: EventItem) { return item.headline ?? item.title ?? item.name ?? titleCase(item.kind ?? item.event_type ?? 'Sky event'); }
 function eventDescription(item: EventItem) { return item.long ?? item.description ?? item.summary ?? item.short ?? ''; }
 function eventDate(item: EventItem) { const value=item.date??item.datetime??item.exact_time; if(!value)return 'Date varies'; if(item.date){const date=new Date(item.date+'T12:00:00Z');const day=Number.isNaN(date.getTime())?String(item.date):new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}).format(date);return item.time_et?day+' · '+item.time_et+' ET':day;} const date=new Date(value);return Number.isNaN(date.getTime())?String(value):new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}).format(date); }
@@ -43,22 +115,41 @@ export default function AstrologyPage(){
  const [chart,setChart]=useState<ChartResponse|null>(null);const [events,setEvents]=useState<EventItem[]>([]);const [transit,setTransit]=useState<unknown>(null);const [horoscope,setHoroscope]=useState<ContentResponse|null>(null);const [sky,setSky]=useState<SkyResponse|null>(null);const [moonContent,setMoonContent]=useState<ContentResponse|null>(null);const [weekAhead,setWeekAhead]=useState<ContentResponse|null>(null);const [busy,setBusy]=useState(true);const [error,setError]=useState('');
  async function load(){
   setBusy(true);setError('');
+  const getJson=async(url:string)=>{
+   try{
+    const response=await fetch(url,{credentials:'same-origin',headers:{Accept:'application/json'}});
+    const data=await response.json().catch(()=>({}));
+    return {ok:response.ok,status:response.status,data};
+   }catch{
+    return {ok:false,status:0,data:{message:'This sky feed is temporarily unreachable.'}};
+   }
+  };
   try{
    const [c,e,t,h,s,m,w]=await Promise.all([
-    fetch('/api/astrology/chart',{credentials:'same-origin',headers:{Accept:'application/json'}}),
-    fetch('/api/astrology/events?days=30&min_importance=40&limit=24',{credentials:'same-origin',headers:{Accept:'application/json'}}),
-    fetch('/api/astrology/transit',{credentials:'same-origin',headers:{Accept:'application/json'}}),
-    fetch('/api/astrology/horoscope',{credentials:'same-origin',headers:{Accept:'application/json'}}),
-    fetch('/api/astrology/sky',{credentials:'same-origin',headers:{Accept:'application/json'}}),
-    fetch('/api/astrology/moon',{credentials:'same-origin',headers:{Accept:'application/json'}}),
-    fetch('/api/astrology/week-ahead',{credentials:'same-origin',headers:{Accept:'application/json'}}),
+    getJson('/api/astrology/chart'),
+    getJson('/api/astrology/events?days=30&min_importance=40&limit=24'),
+    getJson('/api/astrology/transit'),
+    getJson('/api/astrology/horoscope'),
+    getJson('/api/astrology/sky'),
+    getJson('/api/astrology/moon'),
+    getJson('/api/astrology/week-ahead'),
    ]);
-   const cd=await c.json();const ed=await e.json();const td=await t.json();const hd=await h.json();const sd=await s.json();const md=await m.json();const wd=await w.json();
+   const cd=c.data as ChartResponse;
    if(c.status===401){window.location.assign('/login');return;}
    if(!c.ok&&!cd.needs_birth_details)throw new Error(cd.message??'Your birth chart could not be loaded.');
    setChart(cd);
-   if(e.ok){const raw=ed.data;const list=Array.isArray(raw)?raw:(raw?.events??raw?.data??raw?.results??[]);setEvents(Array.isArray(list)?list:[]);}
-   if(t.ok)setTransit(td.data);if(h.ok)setHoroscope(hd.data);if(s.ok)setSky(sd);if(m.ok)setMoonContent(md.data);if(w.ok)setWeekAhead(wd.data);
+   if(e.ok){
+    const ed=e.data as Record<string,unknown>;
+    const raw=ed.data;
+    const nested=raw as Record<string,unknown>|undefined;
+    const list=Array.isArray(raw)?raw:(nested?.events??nested?.data??nested?.results??ed.events??[]);
+    setEvents(Array.isArray(list)?list as EventItem[]:[]);
+   }else setEvents([]);
+   setTransit(t.ok?unwrapContent(t.data?.data??t.data):null);
+   setHoroscope(h.ok?unwrapContent(h.data?.data??h.data):null);
+   setSky(s.ok?s.data as SkyResponse:null);
+   setMoonContent(m.ok?unwrapContent(m.data?.data??m.data):null);
+   setWeekAhead(w.ok?unwrapContent(w.data?.data??w.data):null);
   }catch(e){setError(e instanceof Error?e.message:'Cosmic details could not be loaded.');}
   finally{setBusy(false);}
  }
@@ -74,9 +165,9 @@ export default function AstrologyPage(){
  <section className="cosmic-week-card"><p className="cosmic-eyebrow">THE SKY IS IN MOTION</p><h2>Planetary placements</h2>{placements.length?<div className="cosmic-planet-list">{placements.map((p,i)=><article key={p.name+i}><span className="cosmic-planet-symbol">{({'Sun':'☉','Moon':'☾','Mercury':'☿','Venus':'♀','Mars':'♂','Jupiter':'♃','Saturn':'♄','Uranus':'♅','Neptune':'♆','Pluto':'♇','Ascendant':'↗'} as Record<string,string>)[p.name]??'✦'}</span><div><strong>{p.name}</strong><small>{p.house?'House '+p.house:'Birth chart placement'}{p.retrograde?' · Retrograde':''}</small></div><span className="cosmic-planet-sign">{p.sign}</span>{p.degree!==undefined&&p.degree!==null&&Number.isFinite(Number(p.degree))&&<small>{Number(p.degree).toFixed(2)}°</small>}</article>)}</div>:<p>We couldn't recognise the planetary list in this response yet. The API response may use a different shape, so we'll need to align the mapper to the documented response before relying on these placements.</p>}</section>
  <section className="cosmic-week-card cosmic-meaning-guide"><div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">YOUR ASTROLOGY FIELD GUIDE</p><h2>What, how & where</h2><p className="cosmic-guide-intro">A birth chart is a symbolic map. Think of each planet as an actor, each sign as its style, and each house as the life area where the story unfolds.</p></div><span className="cosmic-guide-stamp" aria-hidden="true">✦</span></div><div className="cosmic-meaning-grid"><article className="cosmic-meaning-card cosmic-meaning-card--rose"><span>☉</span><p className="cosmic-eyebrow">WHAT</p><h3>Planets</h3><p>The process or energy at work. Mars acts and asserts; Saturn sets limits; Jupiter grows and explores; Venus connects and values.</p></article><article className="cosmic-meaning-card cosmic-meaning-card--lilac"><span>♈</span><p className="cosmic-eyebrow">HOW</p><h3>Signs</h3><p>The style in which that energy expresses itself. Mars in Aries may be direct and quick; Mars in Taurus may be steady, patient and persistent.</p></article><article className="cosmic-meaning-card cosmic-meaning-card--butter"><span>⌂</span><p className="cosmic-eyebrow">WHERE</p><h3>Houses</h3><p>The life area where the story plays out. Mars in the 7th house points toward partnership themes; in the 6th, everyday work and routines.</p></article></div><div className="cosmic-guide-mantra"><span>✧</span><p><strong>Planets show us what is happening.</strong><strong>Signs show us how it is happening.</strong><strong>Houses show us where it is happening.</strong></p><span>✧</span></div></section>
  <section className="cosmic-week-card cosmic-house-guide"><div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">THE TWELVE ROOMS OF THE ZODIAC</p><h2>A little guide to the houses</h2><p className="cosmic-guide-intro">Each house represents a different area of life. Your chart shows which signs and planets fall into these rooms; the meanings below are a beginner-friendly guide, not a fixed prediction.</p></div><span className="cosmic-guide-stamp" aria-hidden="true">⌂</span></div><div className="cosmic-house-grid">{HOUSE_GUIDE.map(house=><article className="cosmic-house-card" key={house.number}><div className="cosmic-house-card__head"><span>{house.symbol}</span><small>HOUSE {String(house.number).padStart(2,'0')}</small></div><h3>{house.title}</h3><strong>{house.area}</strong><p>{house.detail}</p></article>)}</div><p className="cosmic-fineprint">House systems vary across astrological traditions. Crescent presents these as reflective prompts, not scientific or medical claims.</p></section></>}
- <section className="cosmic-week-card"><p className="cosmic-eyebrow">A LITTLE NOTE FROM YOUR SUN SIGN</p><h2>{horoscope?.title??'Your daily horoscope'}</h2><p>{horoscope?.horoscope??horoscope?.text??horoscope?.body??horoscope?.content??horoscope?.summary??horoscope?.prediction??'Add your birthday in Profile & settings to discover your daily Sun-sign reading.'}</p><p className="cosmic-fineprint">Daily horoscope content by <a href="https://cosmyday.com" target="_blank" rel="noreferrer">CosmyDay</a>. For reflection and entertainment.</p></section>
+ <section className="cosmic-week-card cosmic-horoscope-section"><div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">A LITTLE NOTE FROM YOUR SUN SIGN</p><h2>{horoscope?.title??'Your daily horoscope'}</h2><p className="cosmic-guide-intro">A little guidance for your day, separated into the themes you can actually use.</p></div><span className="cosmic-guide-stamp" aria-hidden="true">✿</span></div>{horoscope?<HoroscopeLayout content={horoscope}/>:<div className="cosmic-horoscope-empty"><Sparkles size={22}/><div><strong>Your Sun-sign reading is taking a little longer.</strong><p>Add your birthday in Profile & settings if your Sun sign is not set, or refresh in a moment to try the daily feed again.</p></div></div>}<p className="cosmic-fineprint">Daily horoscope content by <a href="https://cosmyday.com" target="_blank" rel="noreferrer">CosmyDay</a>. For reflection and entertainment.</p></section>
  <section className="cosmic-week-card"><p className="cosmic-eyebrow">THE SKY RIGHT NOW</p><h2>Where the planets are today</h2><p>Current planetary sign positions, calculated for the current UTC hour. The Ascendant and houses are left out because they depend on location.</p>{sky?.placements?.length?<div className="cosmic-planet-list">{sky.placements.map((p,i)=><article key={'sky-'+p.name+i}><span className="cosmic-planet-symbol">{({'Sun':'☉','Moon':'☾','Mercury':'☿','Venus':'♀','Mars':'♂','Jupiter':'♃','Saturn':'♄','Uranus':'♅','Neptune':'♆','Pluto':'♇'} as Record<string,string>)[p.name]??'✦'}</span><div><strong>{p.name}</strong><small>{p.retrograde?'Retrograde':'Current placement'}</small></div><span className="cosmic-planet-sign">{p.sign}</span>{p.degree!==undefined&&<small>{p.degree}°</small>}</article>)}</div>:<p>{sky?.message??'Current planetary positions will appear when the sky calculation is available.'}</p>}<p className="cosmic-fineprint">{sky?.calculated_at?'Calculated '+new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short',timeZone:'UTC'}).format(new Date(sky.calculated_at))+' UTC. ':''}Planetary data by <a href="https://cosmyday.com" target="_blank" rel="noreferrer">CosmyDay</a>.</p></section>
- <section className="cosmic-week-card cosmic-weather-section"><div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">A LITTLE DISPATCH FROM THE SKY</p><h2>Today's cosmic weather</h2><p>Three little windows into the sky: the Moon's mood, the current planetary pattern and the week gathering on the horizon.</p></div><span className="cosmic-guide-stamp" aria-hidden="true">☾</span></div><div className="cosmic-weather-grid"><article className="cosmic-weather-card cosmic-weather-card--moon"><div className="cosmic-weather-card__ornament">☾</div><p className="cosmic-eyebrow">LUNAR NOTES</p><h3>{moonContent?.title??'The Moon today'}</h3><WeatherCopy content={moonContent} fallback="Your Moon notes will appear when the daily lunar update is available."/><span className="cosmic-weather-card__footer">MOON PHASE & FEELING</span></article><article className="cosmic-weather-card cosmic-weather-card--now"><div className="cosmic-weather-card__ornament">✧</div><p className="cosmic-eyebrow">THE SKY RIGHT NOW</p><h3>{(transit&&typeof transit==='object'&&(transit as Record<string,unknown>).title)?String((transit as Record<string,unknown>).title):'Cosmic weather'}</h3><p>{transitStory.lead||transitText}</p><div className="cosmic-weather-card__chips">{(sky?.placements??[]).filter(p=>['Moon','Mercury','Venus','Mars'].includes(p.name)).slice(0,4).map(p=><span key={'weather-'+p.name}>{p.name} · {p.sign}</span>)}</div><span className="cosmic-weather-card__footer">PLANETARY PULSE</span></article><article className="cosmic-weather-card cosmic-weather-card--week"><div className="cosmic-weather-card__ornament">✦</div><p className="cosmic-eyebrow">LOOKING AHEAD</p><h3>{weekAhead?.title??'The week ahead'}</h3><WeatherCopy content={weekAhead} fallback="A fresh seven-day forecast will appear when the weekly sky update is available."/><span className="cosmic-weather-card__footer">YOUR NEXT SEVEN DAYS</span></article></div><p className="cosmic-fineprint">Daily sky content and planetary data by <a href="https://cosmyday.com/" target="_blank" rel="noreferrer">CosmyDay Astrology</a>. Refresh the page for the latest available chart and sky positions.</p></section>
+ <section className="cosmic-week-card cosmic-weather-section"><div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">A LITTLE DISPATCH FROM THE SKY</p><h2>Today's cosmic weather</h2><p>Three little windows into the sky: the Moon's mood, the current planetary pattern and the week gathering on the horizon.</p></div><span className="cosmic-guide-stamp" aria-hidden="true">☾</span></div><div className="cosmic-weather-grid"><article className="cosmic-weather-card cosmic-weather-card--moon"><div className="cosmic-weather-card__ornament">☾</div><p className="cosmic-eyebrow">LUNAR NOTES</p><h3>{moonContent?.title??'The Moon today'}</h3><WeatherCopy content={moonContent} fallback="Your Moon notes will appear when the daily lunar update is available."/><span className="cosmic-weather-card__footer">MOON PHASE & FEELING</span></article><article className="cosmic-weather-card cosmic-weather-card--now"><div className="cosmic-weather-card__ornament">✧</div><p className="cosmic-eyebrow">THE SKY RIGHT NOW</p><h3>{(transit&&typeof transit==='object'&&(transit as Record<string,unknown>).title)?String((transit as Record<string,unknown>).title):'Cosmic weather'}</h3><p>{transitStory.lead||transitText}</p><div className="cosmic-weather-card__chips">{(sky?.placements??[]).filter(p=>['Moon','Mercury','Venus','Mars'].includes(p.name)).slice(0,4).map(p=><span key={'weather-'+p.name}>{p.name} · {p.sign}</span>)}</div><span className="cosmic-weather-card__footer">PLANETARY PULSE</span></article><article className="cosmic-weather-card cosmic-weather-card--week"><div className="cosmic-weather-card__ornament">✦</div><p className="cosmic-eyebrow">LOOKING AHEAD</p><h3>{weekAhead?.title??'The week ahead'}</h3><WeeklyForecast content={weekAhead}/><span className="cosmic-weather-card__footer">YOUR NEXT SEVEN DAYS</span></article></div><p className="cosmic-fineprint">Daily sky content and planetary data by <a href="https://cosmyday.com/" target="_blank" rel="noreferrer">CosmyDay Astrology</a>. Refresh the page for the latest available chart and sky positions.</p></section>
  <section className="cosmic-week-card cosmic-transit-story" id="personal-transits"><div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">TODAY'S TRANSIT STORY</p><h2>Your chart meets today's sky</h2><p>A daily snapshot comparing today's planetary positions with the placements in your birth chart.</p></div><span className="cosmic-guide-stamp" aria-hidden="true">✧</span></div><div className="cosmic-transit-story__lead"><span className="cosmic-transit-story__spark">✦</span><div><p className="cosmic-eyebrow">THE BIG PICTURE</p><p>{transitStory.lead||transitText}</p></div></div>{transitStory.rest.length>0&&<div className="cosmic-transit-story__chapters">{transitStory.rest.map((paragraph,i)=><article key={'story-'+i}><span>{String(i+1).padStart(2,'0')}</span><p>{paragraph}</p></article>)}</div>}<div className="cosmic-personal-aspects"><div className="cosmic-personal-aspects__heading"><div><p className="cosmic-eyebrow">MADE FROM YOUR BIRTH CHART</p><h3>Your personal transits today</h3></div><span>☼</span></div>{personalAspects.length>0?<div className="cosmic-aspect-grid">{personalAspects.map((item,i)=><article className="cosmic-aspect-card" key={item.transit.name+'-'+item.natal.name+'-'+item.aspect}><div className="cosmic-aspect-card__top"><span>{item.transit.name} in {item.transit.sign}</span><small>{item.orb.toFixed(1)}° orb</small></div><h4>{item.aspect} to your natal {item.natal.name}</h4><p>{item.impact}</p><div className="cosmic-aspect-card__prompt"><strong>Try this</strong><span>{item.prompt}</span></div></article>)}</div>:<div className="cosmic-aspect-empty"><span>✧</span><div><strong>Your personal aspects are still coming into focus.</strong><p>Precise aspects need degree values for both your birth-chart placements and today's planetary positions. If your birth time is unknown, Crescent also leaves your time-sensitive Moon and Rising placements out of this calculation. If the feed doesn't provide the needed degrees, we won't invent an aspect; the general sky story above is still available.</p></div></div>}</div><p className="cosmic-fineprint">Personal aspects are calculated from the planetary degrees available in your chart and current-sky feed. Astrology is for reflection and entertainment, not medical, financial or relationship advice.</p></section>
  <section className="cosmic-reading"><div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">ON THE CELESTIAL HORIZON</p><h2>Events coming up</h2><p>Planetary sign changes, retrogrades, lunations and other notable sky events.</p></div></div>{events.length?<div className="cosmic-article-grid cosmic-event-grid">{events.map((item,i)=>{const detail=eventSignDetails(item);const description=eventDescription(item);return <article className="cosmic-article cosmic-event-card" key={item.id??(eventTitle(item)+i)}><div className="cosmic-event-card__top"><span aria-hidden="true">✧</span><small>{titleCase(item.kind??item.event_type??'Celestial event')}</small></div><h3>{eventTitle(item)}</h3><p className="cosmic-event-card__date">◷ {eventDate(item)}</p><div className="cosmic-event-card__sign"><span>{detail.label.toLowerCase().includes('retrograde')?'℞':'☉'}</span><strong>{detail.label}</strong></div><p className="cosmic-event-card__detail">{description||detail.detail}</p><div className="cosmic-event-card__reflection"><strong>A little reflection</strong><p>{eventReflection(item)}</p></div>{item.url&&<a className="cosmic-event-card__more" href={item.url} target="_blank" rel="noreferrer">Explore event ↗</a>}</article>})}</div>:<p>Upcoming events will appear here when the event feed returns its next set of sky dates.</p>}</section>
  <footer className="cosmic-footer"><a className="cosmic-brand" href="/dashboard"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a><p>Planetary data by <a href="https://cosmyday.com" target="_blank" rel="noreferrer">CosmyDay</a>.</p><div><a href="/connections">Connections</a><a href="/profile">Profile & settings</a></div></footer></main></div>;
