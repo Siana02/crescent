@@ -150,25 +150,30 @@ class PregnancyController extends Controller
     public function reminders(Request $request): JsonResponse
     {
         $user = $request->user();
+        $reminders = collect();
         $ownPregnancy = $user->pregnancies()->whereIn('status', ['active', 'postpartum'])->latest()->first();
         if ($ownPregnancy) {
-            $reminders = $ownPregnancy->reminders()->with('creator:id,name')->orderBy('remind_at')->get();
-        } else {
-            $relationshipIds = Relationship::query()->where('status', 'accepted')
-                ->where(function ($query) use ($user) {
-                    $query->where('user_one_id', $user->id)->orWhere('user_two_id', $user->id);
-                })->get();
-            $otherIds = $relationshipIds->map(fn ($relationship) => $relationship->user_one_id === $user->id ? $relationship->user_two_id : $relationship->user_one_id);
-            $pregnancyIds = Pregnancy::query()->whereIn('user_id', $otherIds)->whereIn('status', ['active', 'postpartum'])->pluck('id');
-            $reminders = PregnancyReminder::query()->whereIn('pregnancy_id', $pregnancyIds)->where('share_with_partner', true)->with('creator:id,name')->orderBy('remind_at')->get();
+            $reminders = $ownPregnancy->reminders()->with('creator:id,name')->get();
         }
 
-        return response()->json(['reminders' => $reminders->map(fn ($reminder) => [
+        $relationships = Relationship::query()->where('status', 'accepted')
+            ->where(function ($query) use ($user) {
+                $query->where('user_one_id', $user->id)->orWhere('user_two_id', $user->id);
+            })->get();
+        $otherIds = $relationships->map(fn ($relationship) => $relationship->user_one_id === $user->id ? $relationship->user_two_id : $relationship->user_one_id);
+        if ($otherIds->isNotEmpty()) {
+            $partnerPregnancyIds = Pregnancy::query()->whereIn('user_id', $otherIds)->whereIn('status', ['active', 'postpartum'])->pluck('id');
+            $shared = PregnancyReminder::query()->whereIn('pregnancy_id', $partnerPregnancyIds)
+                ->where('share_with_partner', true)->with('creator:id,name')->get();
+            $reminders = $reminders->concat($shared);
+        }
+
+        return response()->json(['reminders' => $reminders->unique('id')->sortBy('remind_at')->values()->map(fn ($reminder) => [
             'id' => $reminder->id, 'title' => $reminder->title, 'category' => $reminder->category,
             'remind_at' => $reminder->remind_at?->toIso8601String(), 'notes' => $reminder->notes,
             'share_with_partner' => (bool) $reminder->share_with_partner, 'completed_at' => $reminder->completed_at?->toIso8601String(),
             'created_by_name' => $reminder->creator?->name,
-        ])->values()]);
+        ])]);
     }
 
     public function storeReminder(Request $request): JsonResponse
