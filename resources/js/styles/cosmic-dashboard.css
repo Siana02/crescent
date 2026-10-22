@@ -568,3 +568,20 @@
  .cosmic-week-forecast:not(.is-expanded) .cosmic-week-forecast-day p{max-width:none}
  .cosmic-week-forecast-toggle{width:100%;justify-self:stretch}
 }
+
+/* Weekday planetary rulers and zodiac sign glyphs */
+.cosmic-day-ruler{display:flex;align-items:center;justify-content:center;gap:3px;max-width:100%;padding:4px 6px;border:1px solid rgba(204,173,212,.42);border-radius:99px;background:rgba(255,255,255,.82);color:#88649b}
+.cosmic-day-ruler>b{font-size:13px;line-height:1}
+.cosmic-day-ruler>small{font-size:8px!important;font-weight:800;color:#88649b!important}
+.cosmic-month-grid>button .cosmic-month-ruler{font-size:12px;color:#a77ab0}
+.cosmic-week-forecast-day .cosmic-weekday-ruler{display:inline-flex;align-items:center;gap:5px;margin:0 0 9px;padding:5px 8px;border:1px solid rgba(204,173,212,.5);border-radius:99px;background:linear-gradient(110deg,#fff2f8,#f1eaff);color:#88649b}
+.cosmic-weekday-ruler>span{font-size:14px;line-height:1}
+.cosmic-weekday-ruler>strong{font-size:9px;font-weight:800}
+.cosmic-weekday-ruler>small{font-size:8px;color:#a18aa7}
+.cosmic-big-three-card h3{overflow-wrap:anywhere}
+@media(max-width:640px){
+ .cosmic-week-day{gap:5px;padding:10px 2px}
+ .cosmic-day-ruler{gap:2px;padding:3px 4px}
+ .cosmic-day-ruler>small{font-size:7px!important}
+ .cosmic-week-forecast-day .cosmic-weekday-ruler{flex-wrap:wrap}
+}
