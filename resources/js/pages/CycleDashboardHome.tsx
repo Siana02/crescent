@@ -25,12 +25,12 @@ const activityOptions=[['vaginal','Vaginal sex'],['anal','Anal sex'],['oral_givi
 const moodOptions=[['calm','Calm','calm'],['happy','Happy','happy'],['tender','Tender','tender'],['focused','Focused','focused'],['anxious','Anxious','anxious'],['irritated','Irritated','irritated'],['intuitive','Intuitive','intuitive'],['overwhelmed','Overwhelmed','overwhelmed'],['moody','Moody','moody'],['zen','Zen','zen'],['playful','Playful','playful'],['sensitive','Sensitive','sensitive']] as const;
 
 const symptomIconMap:Record<string,string>={
- cramps:'cramp',pelvic_pain:'health_and_safety',one_sided_pain:'accessibility_new',lower_back_pain:'airline_seat_recline_extra',leg_pain:'directions_walk',painful_bowel_movement:'gastroenterology',painful_urination:'urinary',
- headache:'psychology_alt',migraine:'neurology',dizziness:'motion_sensor',joint_pain:'orthopedics',muscle_aches:'fitness_center',light_sensitivity:'visibility',
- breast_tenderness:'favorite',breast_swelling:'healing',bloating:'water',water_retention:'opacity',acne:'face_3',oily_skin:'face_4',dry_skin:'dry',
- nausea:'sick',constipation:'stethoscope',diarrhea:'water_drop',gas:'air',appetite_increase:'restaurant',appetite_decrease:'no_food',food_cravings:'cookie',sweet_cravings:'icecream',savoury_cravings:'lunch_dining',
- watery_discharge:'water_drop',creamy_discharge:'opacity',eggwhite_discharge:'water',sticky_discharge:'blur_on',dryness:'humidity_low',itching:'dermatology',unusual_odor:'air_freshener',spotting:'bloodtype',heavy_bleeding:'bloodtype',
- fatigue:'bedtime',low_energy:'battery_1_bar',high_energy:'bolt',insomnia:'bedtime_off',sleepiness:'hotel',anxiety:'self_improvement',irritability:'mood_bad',low_mood:'sentiment_dissatisfied',mood_swings:'mood',overwhelmed:'psychology',brain_fog:'cloud',difficulty_concentrating:'center_focus_strong',libido_increase:'local_fire_department',libido_decrease:'nightlight'
+ cramps:'healing',pelvic_pain:'health_and_safety',one_sided_pain:'accessibility_new',lower_back_pain:'airline_seat_recline_extra',leg_pain:'directions_walk',painful_bowel_movement:'monitor_heart',painful_urination:'water_drop',
+ headache:'psychology_alt',migraine:'neurology',dizziness:'explore',joint_pain:'orthopedics',muscle_aches:'fitness_center',light_sensitivity:'visibility',
+ breast_tenderness:'favorite',breast_swelling:'healing',bloating:'water',water_retention:'opacity',acne:'face',oily_skin:'face',dry_skin:'water_drop',
+ nausea:'sick',constipation:'stethoscope',diarrhea:'water_drop',gas:'air',appetite_increase:'restaurant',appetite_decrease:'remove_circle',food_cravings:'cookie',sweet_cravings:'cookie',savoury_cravings:'restaurant',
+ watery_discharge:'water_drop',creamy_discharge:'opacity',eggwhite_discharge:'water',sticky_discharge:'blur_on',dryness:'water_drop',itching:'dermatology',unusual_odor:'air',spotting:'bloodtype',heavy_bleeding:'bloodtype',
+ fatigue:'bedtime',low_energy:'battery_alert',high_energy:'bolt',insomnia:'bedtime_off',sleepiness:'bed',anxiety:'self_improvement',irritability:'mood_bad',low_mood:'sentiment_dissatisfied',mood_swings:'mood',overwhelmed:'psychology',brain_fog:'cloud',difficulty_concentrating:'center_focus_weak',libido_increase:'local_fire_department',libido_decrease:'bedtime'
 };
 function symptomIconFor(key:string){return symptomIconMap[key]??'spa';}
 function activityIconFor(key:string){return ({vaginal:'favorite',anal:'health_and_safety',oral_giving:'volunteer_activism',oral_receiving:'favorite_border',manual_partner:'waving_hand',mutual_masturbation:'diversity_3',masturbation:'self_care',kissing_touching:'face_3',toys:'toys',other:'auto_awesome'} as Record<string,string>)[key]??'favorite';}

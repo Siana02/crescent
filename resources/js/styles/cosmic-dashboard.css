@@ -459,3 +459,25 @@
 .cosmic-shared-summaries strong{color:#5f4c6a;font-size:.78rem;line-height:1.4}
 .cosmic-shared-summaries small{margin-top:5px;color:#8e7e97;font-size:.7rem;line-height:1.5}
 @media(max-width:850px){.cosmic-shared-summaries{grid-template-columns:1fr}}
+
+/* Symptom logging drawer: give every symptom card a full-width row on desktop. */
+.cosmic-modal--symptoms .cosmic-symptom-groups{
+  grid-template-columns:minmax(0,1fr);
+}
+.cosmic-modal--symptoms .cosmic-symptom-options{
+  grid-template-columns:minmax(0,1fr);
+}
+.cosmic-modal--symptoms .cosmic-symptom-options label{
+  width:100%;
+  min-height:48px;
+  gap:12px;
+  padding:12px 15px;
+}
+.cosmic-modal--symptoms .cosmic-symptom-options label>span{
+  overflow-wrap:anywhere;
+}
+.cosmic-modal--symptoms .cosmic-symptom-options label>input[type=checkbox]{
+  flex:0 0 17px;
+  width:17px;
+  height:17px;
+}
