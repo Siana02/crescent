@@ -820,3 +820,16 @@
 .cosmic-daily-relationship>p{color:#786581;font-size:12px;line-height:1.8}
 @media(max-width:700px){.cosmic-support-cycle-hero{grid-template-columns:minmax(0,1fr);padding:19px}.cosmic-support-cycle-orb{width:138px;max-width:138px}.cosmic-support-cycle-dates{grid-template-columns:minmax(0,1fr)}.cosmic-support-care-ideas{grid-template-columns:minmax(0,1fr)}.cosmic-support-care-heading h2{font-size:27px}}
 @media(prefers-reduced-motion:reduce){.cosmic-support-cycle-hero,.cosmic-support-cycle-spark,.cosmic-support-cycle-orb>i,.cosmic-support-care-heading>span,.cosmic-support-care-ideas article{animation:none!important;transition:none!important}.cosmic-support-care-ideas article:hover{transform:none}}
+
+/* Support-partner profile: replace cycle-specific settings with practical care guidance. */
+.cosmic-support-profile-guide{margin-top:22px;padding:clamp(18px,3vw,27px);border:1px solid #ead8ed;border-radius:24px;background:radial-gradient(ellipse at 100% 0,#f0e5ff 0,transparent 38%),radial-gradient(ellipse at 0 100%,#ffeaf3 0,transparent 42%),linear-gradient(145deg,#fffafd,#fff8fc);box-shadow:0 12px 30px rgba(116,75,132,.07)}
+.cosmic-support-profile-guide h2{margin:7px 0 9px;color:#684770;font-family:var(--serif,Georgia,serif);font-size:clamp(25px,3vw,34px);font-weight:400}
+.cosmic-support-profile-guide>p:not(.cosmic-eyebrow):not(.cosmic-fineprint){max-width:720px;color:#806c88;font-size:12px;line-height:1.85}
+.cosmic-support-profile-ideas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
+.cosmic-support-profile-ideas article{display:grid;grid-template-columns:34px minmax(0,1fr);align-content:start;column-gap:10px;padding:16px;border:1px solid #eddfed;border-radius:18px;background:#ffffffd9;transition:transform .2s ease,box-shadow .2s ease}
+.cosmic-support-profile-ideas article:hover{transform:translateY(-2px);box-shadow:0 9px 20px rgba(114,77,131,.09)}
+.cosmic-support-profile-ideas article>span{grid-row:span 2;display:grid;place-items:center;width:32px;height:32px;border-radius:11px;background:linear-gradient(135deg,#ffe3ef,#e9ddff);color:#a46b9c;font-size:20px}
+.cosmic-support-profile-ideas article>strong{align-self:center;color:#74517d;font-family:var(--serif,Georgia,serif);font-size:17px;font-weight:400}
+.cosmic-support-profile-ideas article>p{grid-column:2;margin:7px 0 0;color:#84728b;font-size:11px;line-height:1.75}
+@media(max-width:600px){.cosmic-support-profile-ideas{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){.cosmic-support-profile-ideas article{transition:none}.cosmic-support-profile-ideas article:hover{transform:none}}
