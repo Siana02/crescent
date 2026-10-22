@@ -172,6 +172,13 @@ class RelationshipController extends Controller
         }
 
         $profile = $request->user()->cycleProfile;
+        if ($relationship->relationship_type === 'observer'
+            && (($profile?->relationship_role ?? 'tracker') !== 'support')) {
+            throw ValidationException::withMessages([
+                'invite_code' => 'This is a support-partner invitation. Register or sign in with the support-partner role to join.',
+            ]);
+        }
+
         if ($relationship->relationship_type === 'co_tracker'
             && (($profile?->relationship_role ?? 'tracker') === 'support' || ! $profile?->onboarding_completed)) {
             throw ValidationException::withMessages([
