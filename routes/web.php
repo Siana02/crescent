@@ -27,7 +27,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', fn () => view('welcome'));
     Route::get('/settings', fn () => view('welcome'));
     Route::get('/dashboard', function (Request $request) {
-        if (! $request->user()->cycleProfile?->onboarding_completed) {
+        $profile = $request->user()->cycleProfile;
+        if (($profile?->relationship_role ?? 'tracker') === 'support') {
+            return redirect('/connections');
+        }
+        if (! $profile?->onboarding_completed) {
             return redirect('/onboarding');
         }
 
