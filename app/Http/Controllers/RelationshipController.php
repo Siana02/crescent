@@ -16,6 +16,11 @@ class RelationshipController extends Controller
         $validated = $request->validate([
             'relationship_type' => ['required', Rule::in(['observer', 'co_tracker'])],
         ]);
+        if (($request->user()->cycleProfile?->relationship_role ?? 'tracker') === 'support') {
+            throw ValidationException::withMessages([
+                'relationship_type' => 'Support-partner accounts join an invitation rather than create a tracking connection.',
+            ]);
+        }
 
         $relationship = Relationship::create([
             'user_one_id' => $request->user()->id,
@@ -84,6 +89,14 @@ class RelationshipController extends Controller
         if (! $relationship) {
             throw ValidationException::withMessages([
                 'invite_code' => 'That Cosmic Sync Code is not active. Ask your companion for a fresh one.',
+            ]);
+        }
+
+        $profile = $request->user()->cycleProfile;
+        if ($relationship->relationship_type === 'co_tracker'
+            && (($profile?->relationship_role ?? 'tracker') === 'support' || ! $profile?->onboarding_completed)) {
+            throw ValidationException::withMessages([
+                'invite_code' => 'Complete your own cycle or pregnancy setup before joining a co-tracking connection.',
             ]);
         }
 
