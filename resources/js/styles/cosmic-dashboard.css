@@ -263,3 +263,44 @@
  .cosmic-energy-choices button{min-width:calc(50% - 8px)}
  .cosmic-checkin:after{right:12px;bottom:9px;font-size:13px;letter-spacing:5px}
 }
+
+/* Cosmic Atelier: readable horoscope chapters and reliable forecast presentation */
+.cosmic-horoscope-section{overflow:hidden;background:radial-gradient(ellipse at 100% 0,rgba(239,221,255,.42),transparent 35%),radial-gradient(ellipse at 0 100%,rgba(255,222,237,.38),transparent 38%),#fffdfd}
+.cosmic-horoscope-layout{margin-top:22px}
+.cosmic-horoscope-date{display:flex;align-items:center;gap:10px;margin-bottom:15px;padding:12px 15px;border:1px solid #ebd9ef;border-radius:15px;background:linear-gradient(105deg,#f7efff,#fff4f8);color:#85628f;font-size:11px;font-weight:700}
+.cosmic-horoscope-date svg{color:#b77dad}
+.cosmic-horoscope-date__spark{margin-left:auto;color:#c58ab9;font-size:20px}
+.cosmic-horoscope-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.cosmic-horoscope-card{min-width:0;padding:17px 18px;border:1px solid #eddfef;border-radius:19px;background:linear-gradient(145deg,#fff,#fffafd);box-shadow:0 5px 17px rgba(110,75,128,.035)}
+.cosmic-horoscope-card--overview{background:linear-gradient(145deg,#f7f0ff,#fffdfd)}
+.cosmic-horoscope-card--work{background:linear-gradient(145deg,#fff5e9,#fffdfd)}
+.cosmic-horoscope-card--relationships{background:linear-gradient(145deg,#fff0f6,#fffdfd)}
+.cosmic-horoscope-card--energy{background:linear-gradient(145deg,#eef8f5,#fffdfd)}
+.cosmic-horoscope-card--tip{grid-column:1/-1;background:linear-gradient(110deg,#fff6e8,#fff2f8)}
+.cosmic-horoscope-card__head{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.cosmic-horoscope-card__head>span{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,.85);color:#a975a7;box-shadow:0 3px 10px rgba(111,76,129,.05)}
+.cosmic-horoscope-card--work .cosmic-horoscope-card__head>span{color:#b98a61}
+.cosmic-horoscope-card--relationships .cosmic-horoscope-card__head>span{color:#c46e99}
+.cosmic-horoscope-card--energy .cosmic-horoscope-card__head>span{color:#6b9d8d}
+.cosmic-horoscope-card__head p{margin:0;color:#755780;font-family:var(--serif,Georgia,serif);font-size:18px}
+.cosmic-horoscope-card__head i{margin-left:auto;color:#c3a1c5;font-size:10px;font-style:normal;font-weight:800;letter-spacing:.12em}
+.cosmic-horoscope-card>p{margin:0;color:#87748f;font-size:11px;line-height:1.85;overflow-wrap:anywhere}
+.cosmic-horoscope-empty{display:flex;align-items:flex-start;gap:13px;margin-top:18px;padding:17px;border:1px dashed #dec8e4;border-radius:17px;background:rgba(255,247,252,.7);color:#a879ad}
+.cosmic-horoscope-empty strong{color:#77577f}
+.cosmic-horoscope-empty p{margin:6px 0 0;color:#927f98;font-size:11px;line-height:1.75}
+.cosmic-week-forecast-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:7px 0 0}
+.cosmic-week-forecast-day{padding:12px 13px;border:1px solid rgba(204,173,212,.38);border-radius:15px;background:rgba(255,255,255,.73)}
+.cosmic-week-forecast-day>span,.cosmic-week-forecast-copy article>span{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:9px;background:#fff;color:#b080b2;font-family:var(--serif,Georgia,serif);font-size:13px}
+.cosmic-week-forecast-day h4{margin:9px 0 5px;color:#73547e;font-family:var(--serif,Georgia,serif);font-size:16px;font-weight:400}
+.cosmic-week-forecast-day p{margin:0;color:#907d97;font-size:10px;line-height:1.75}
+.cosmic-week-forecast-copy{display:grid;gap:9px;margin-top:6px}
+.cosmic-week-forecast-copy article{display:flex;align-items:flex-start;gap:9px;padding:11px;border:1px solid rgba(204,173,212,.35);border-radius:14px;background:rgba(255,255,255,.68)}
+.cosmic-week-forecast-copy article>span{flex:0 0 26px}
+.cosmic-week-forecast-copy article p{margin:2px 0 0;color:#907d97;font-size:10px;line-height:1.75;overflow-wrap:anywhere}
+.cosmic-week-forecast-empty{padding:12px;border:1px dashed #e2cde7;border-radius:13px;background:rgba(255,255,255,.6);font-size:10px;line-height:1.75}
+.cosmic-degree-check{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+.cosmic-degree-check>div{display:flex;flex-direction:column;gap:6px;padding:12px;border:1px solid #eadbed;border-radius:14px;background:rgba(255,255,255,.75)}
+.cosmic-degree-check>div>strong{margin-bottom:3px;color:#85628f;font-size:10px;letter-spacing:.04em}
+.cosmic-degree-check>div>span{color:#907d97;font-size:10px;line-height:1.5}
+.cosmic-aspect-empty{align-items:flex-start}
+@media(max-width:700px){.cosmic-horoscope-grid,.cosmic-week-forecast-grid,.cosmic-degree-check{grid-template-columns:1fr}.cosmic-horoscope-card--tip{grid-column:auto}.cosmic-horoscope-card{padding:15px}.cosmic-horoscope-card__head p{font-size:17px}}
