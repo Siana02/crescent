@@ -353,7 +353,7 @@ class AstrologyController extends Controller
                         ?? data_get($item, 'zodiac.sign')
                         ?? data_get($item, 'position.sign')
                         ?? data_get($item, 'position.zodiac_sign')
-                        ?? data_get($item, 'position.zodiacSign');
+                        ?? data_get($item, 'position.zodiacSign')
                         ?? data_get($item, 'position.sign.name')
                         ?? data_get($item, 'position.zodiac.name')
                         ?? data_get($item, 'position.zodiac_sign.name')
