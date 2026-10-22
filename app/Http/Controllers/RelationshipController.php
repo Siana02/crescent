@@ -22,7 +22,7 @@ class RelationshipController extends Controller
             'relationship_type' => $validated['relationship_type'],
             'status' => 'pending',
             'invite_code' => Str::upper(Str::random(8)),
-            'sharing_preferences' => ['cycle_details' => false],
+            'sharing_preferences' => ['cycle_details' => false, 'pregnancy_details' => false, 'wellbeing_updates' => false, 'astrology' => false],
             'expires_at' => now()->addDays(7),
         ]);
 
@@ -32,6 +32,31 @@ class RelationshipController extends Controller
             'relationship_type' => $relationship->relationship_type,
             'status' => $relationship->status,
         ], 201);
+    }
+
+    public function sharing(Relationship $relationship, Request $request): JsonResponse
+    {
+        abort_unless(
+            $relationship->status === 'accepted'
+            && in_array($request->user()->id, [$relationship->user_one_id, $relationship->user_two_id], true),
+            404
+        );
+
+        $validated = $request->validate([
+            'cycle_details' => ['sometimes', 'boolean'],
+            'pregnancy_details' => ['sometimes', 'boolean'],
+            'wellbeing_updates' => ['sometimes', 'boolean'],
+            'astrology' => ['sometimes', 'boolean'],
+        ]);
+        $preferences = array_merge([
+            'cycle_details' => false,
+            'pregnancy_details' => false,
+            'wellbeing_updates' => false,
+            'astrology' => false,
+        ], $relationship->sharing_preferences ?? [], $validated);
+        $relationship->update(['sharing_preferences' => $preferences]);
+
+        return response()->json(['sharing_preferences' => $preferences]);
     }
 
     public function accept(Request $request): JsonResponse
