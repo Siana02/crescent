@@ -183,7 +183,7 @@ class RelationshipInsightsController extends Controller
         }
 
         $today = now('UTC')->toDateString();
-        $cacheKey = 'crescent:relationship-insight:'.$relationship->id.':'.$today;
+        $cacheKey = 'crescent:relationship-insight:'.$relationship->id.':'.$today.':'.($shareAstrology ? 'astrology-on' : 'astrology-off').':'.hash('sha256', implode('|', [$mine?->birth_date?->format('Y-m-d') ?? '', $mine?->birth_time ?? '', $theirs?->birth_date?->format('Y-m-d') ?? '', $theirs?->birth_time ?? '']));
         $mineForInsight = $shareAstrology ? $mine : null;
         $theirsForInsight = $shareAstrology ? $theirs : null;
         $insight = Cache::remember($cacheKey, now('UTC')->endOfDay(), function () use ($relationship, $mineForInsight, $theirsForInsight, $mineChart, $theirChart, $shareAstrology, $compatibility, $today) {
