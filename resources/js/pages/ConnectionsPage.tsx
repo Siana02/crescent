@@ -11,6 +11,7 @@ type Relationship = {
     status: 'pending' | 'accepted' | 'revoked';
     invite_code: string | null;
     companion_name: string | null;
+    companion_role?: 'tracker' | 'support';
     companion_journey: 'cycle' | 'fertility' | 'pregnancy' | 'postpartum' | null;
     companion_goal?: string | null;
     companion_sun_sign?: string | null;
@@ -35,7 +36,8 @@ const sharingOptions: { key: SharingKey; title: string; detail: string; icon: st
 ];
 function csrf() { return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? ''; }
 async function readJson(response: Response) { return response.json().catch(() => ({})) as Promise<Record<string, any>>; }
-function journeyLabel(journey: Relationship['companion_journey']) {
+function journeyLabel(journey: Relationship['companion_journey'], role?: Relationship['companion_role']) {
+    if (role === 'support') return 'Support partner';
     return journey === 'pregnancy' ? 'Pregnancy journey' : journey === 'postpartum' ? 'Postpartum journey' : journey === 'fertility' ? 'Trying to conceive' : journey === 'cycle' ? 'Cycle tracking' : 'Journey not shared yet';
 }
 function dateLabel(value: string) { return new Date(value + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }); }
@@ -163,7 +165,7 @@ export default function ConnectionsPage() {
                     const noteData = notes[relationship.id];
                     const insight = insights[relationship.id];
                     return <article className="cosmic-connection-card" key={relationship.id}>
-                        <div className="cosmic-connection-card__header"><div className="cosmic-connection-avatar" aria-hidden="true">✿</div><div><p className="cosmic-eyebrow">{relationship.relationship_type === 'co_tracker' ? 'CO-TRACKING CONNECTION' : 'SUPPORT CONNECTION'}</p><h3>{relationship.companion_name ?? 'Your companion'}</h3><p className="cosmic-connection-journey">{journeyLabel(relationship.companion_journey)}</p></div><span className="cosmic-connection-status">Connected</span></div>
+                        <div className="cosmic-connection-card__header"><div className="cosmic-connection-avatar" aria-hidden="true">✿</div><div><p className="cosmic-eyebrow">{relationship.relationship_type === 'co_tracker' ? 'CO-TRACKING CONNECTION' : 'SUPPORT CONNECTION'}</p><h3>{relationship.companion_name ?? 'Your companion'}</h3><p className="cosmic-connection-journey">{journeyLabel(relationship.companion_journey, relationship.companion_role)}</p></div><span className="cosmic-connection-status">Connected</span></div>
                         <div className="cosmic-sharing-panel"><div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">YOUR PERMISSIONS</p><h4>What you choose to share</h4></div><span aria-hidden="true">♡</span></div><p className="cosmic-muted">These settings control what your companion can see from your profile. Their own settings are separate.</p><div className="cosmic-sharing-options">{sharingOptions.map(option => <button key={option.key} type="button" disabled={savingSharing === relationship.id} aria-pressed={relationship.sharing_preferences[option.key]} className={relationship.sharing_preferences[option.key] ? 'cosmic-sharing-option is-enabled' : 'cosmic-sharing-option'} onClick={() => void toggleSharing(relationship, option.key)}><span className="material-symbols-rounded">{option.icon}</span><span><strong>{option.title}</strong><small>{option.detail}</small></span><span className="cosmic-sharing-toggle">{relationship.sharing_preferences[option.key] ? 'On' : 'Off'}</span></button>)}</div></div>
                         <div className="cosmic-note-panel"><div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">A LITTLE NOTE FOR YOU</p><h4>{relationship.relationship_type === 'co_tracker' ? 'Our daily notes' : 'A note from the heart'}</h4></div><span className="cosmic-guide-stamp" aria-hidden="true">♡</span></div><p className="cosmic-muted">{relationship.relationship_type === 'co_tracker' ? 'Each of you can leave one note per day. You can edit your own note by saving again.' : 'The person who started this support connection can write one note per day. The support partner can read it and see when it was opened.'}</p>
                             {noteData?.can_write && <div className="cosmic-note-compose"><label htmlFor={'note-'+relationship.id}>Your note for today</label><textarea id={'note-'+relationship.id} maxLength={1200} rows={3} value={drafts[relationship.id] ?? noteData.today_note?.body ?? ''} onChange={event => setDrafts(current => ({ ...current, [relationship.id]: event.target.value }))} placeholder="A little note about how you’re feeling, or what would help today…" /><div><small>{(drafts[relationship.id] ?? noteData.today_note?.body ?? '').length}/1200 · One note per day</small><Button type="button" disabled={savingNote === relationship.id || !(drafts[relationship.id] ?? noteData.today_note?.body ?? '').trim()} onClick={() => void saveNote(relationship.id)}>{savingNote === relationship.id ? 'Saving…' : noteData.today_note ? 'Update today’s note' : 'Send today’s note'}</Button></div></div>}
