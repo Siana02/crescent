@@ -585,3 +585,28 @@
  .cosmic-day-ruler>small{font-size:7px!important}
  .cosmic-week-forecast-day .cosmic-weekday-ruler{flex-wrap:wrap}
 }
+
+/* Cosmic Atelier — responsive traditional planetary dignity atlas */
+.cosmic-dignity-guide{overflow:hidden;background:radial-gradient(ellipse at 100% 0,rgba(232,216,250,.42),transparent 35%),linear-gradient(145deg,#fffdfd,#fff8fc)!important}
+.cosmic-dignity-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-top:22px}
+.cosmic-dignity-card{min-width:0;padding:18px;border:1px solid #efe0f1;border-radius:22px;background:linear-gradient(145deg,#fff1f7,#fffdfd);box-shadow:0 9px 25px rgba(113,78,132,.045)}
+.cosmic-dignity-card--lilac{background:linear-gradient(145deg,#f1eaff,#fffdfd 82%)}
+.cosmic-dignity-card--butter{background:linear-gradient(145deg,#fff4d8,#fffdfd 82%)}
+.cosmic-dignity-card__head{display:grid;grid-template-columns:42px minmax(0,1fr);grid-template-rows:auto auto;column-gap:10px;align-items:center;margin-bottom:18px}
+.cosmic-dignity-card__head>span{grid-row:1/3;display:grid;place-items:center;width:42px;height:42px;border:1px solid rgba(255,255,255,.9);border-radius:15px;background:rgba(255,255,255,.8);color:#9b70a8;font-size:25px;box-shadow:0 5px 14px rgba(108,75,127,.07)}
+.cosmic-dignity-card__head h3{margin:0;color:#654970;font-family:var(--serif,Georgia,serif);font-size:21px;font-weight:400}
+.cosmic-dignity-card__head small{margin-top:3px;color:#a18aa7;font-size:7px;font-weight:800;letter-spacing:.13em}
+.cosmic-dignity-row{padding-top:12px;border-top:1px solid rgba(209,184,216,.35)}
+.cosmic-dignity-row+.cosmic-dignity-row{margin-top:12px}
+.cosmic-dignity-row>p{display:flex;align-items:center;gap:6px;margin:0 0 9px;color:#9b83a2;font-size:10px;font-weight:800}
+.cosmic-dignity-row>p>span{color:#b57caa;font-size:14px}
+.cosmic-zodiac-pills{display:flex;flex-wrap:wrap;gap:6px}
+.cosmic-zodiac-pill{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:6px 9px;border:1px solid #ead9ed;border-radius:99px;background:rgba(255,255,255,.8);color:#765782;font-size:10px;font-weight:700}
+.cosmic-zodiac-pill b{font-size:15px;line-height:1;color:#a67cb0}
+.cosmic-zodiac-pill.is-exalted{border-color:#e9c7db;background:#fff5fa;color:#956184}
+.cosmic-zodiac-pill.is-detriment{border-color:#dcd1ec;background:#f9f5ff;color:#7f6a99}
+.cosmic-dignity-note{display:flex;align-items:flex-start;gap:9px;margin:18px 0 0;padding:14px 16px;border:1px solid #efe3f1;border-radius:15px;background:rgba(255,255,255,.72);color:#9987a0;font-size:10px;line-height:1.7}
+.cosmic-dignity-note>span{flex:0 0 auto;color:#c18ab5;font-size:15px}
+.cosmic-dignity-note a{color:#896197;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:900px){.cosmic-dignity-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}}
+@media(max-width:560px){.cosmic-dignity-grid{grid-template-columns:minmax(0,1fr);gap:10px}.cosmic-dignity-card{padding:16px;border-radius:19px}.cosmic-dignity-card__head{margin-bottom:14px}.cosmic-dignity-note{padding:12px;font-size:9px}}
