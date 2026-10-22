@@ -206,11 +206,15 @@ class RelationshipInsightsController extends Controller
             }
         }
 
+        $primaryPreferences = $allPreferences[(string) $relationship->user_one_id] ?? $allPreferences;
+        $isPrimaryViewer = $userId === (int) $relationship->user_one_id;
+        $canUseCycleContext = $isPrimaryViewer || (bool) (($primaryPreferences['cycle_details'] ?? false) || ($primaryPreferences['wellbeing_updates'] ?? false));
+        $canUseSymptoms = $isPrimaryViewer || (bool) ($primaryPreferences['wellbeing_updates'] ?? false);
         $today = now('UTC')->toDateString();
         $cacheKey = 'crescent:relationship-insight:'.$relationship->id.':'.$today.':'.($shareAstrology ? 'astrology-on' : 'astrology-off').':'.hash('sha256', implode('|', [$mine?->birth_date?->format('Y-m-d') ?? '', $mine?->birth_time ?? '', $theirs?->birth_date?->format('Y-m-d') ?? '', $theirs?->birth_time ?? '']));
         $mineForInsight = $shareAstrology ? $mine : null;
         $theirsForInsight = $shareAstrology ? $theirs : null;
-        $insight = Cache::remember($cacheKey, now('UTC')->endOfDay(), function () use ($relationship, $mineForInsight, $theirsForInsight, $mineChart, $theirChart, $shareAstrology, $compatibility, $today) {
+        $insight = Cache::remember($cacheKey, now('UTC')->endOfDay(), function () use ($relationship, $mineForInsight, $theirsForInsight, $mineChart, $theirChart, $shareAstrology, $compatibility, $today, $canUseCycleContext, $canUseSymptoms) {
             $sky = $this->skySnapshot();
             $moon = collect($sky)->firstWhere('name', 'Moon');
             $venus = collect($sky)->firstWhere('name', 'Venus');
@@ -239,15 +243,45 @@ class RelationshipInsightsController extends Controller
             $checkin = $primary?->dailyCheckins()->whereDate('log_date', $localToday->toDateString())->first();
             $symptoms = array_map('strtolower', (array) ($checkin?->symptoms ?? []));
             $phaseTips = [
-                'menstrual' => ['A softer pace may help', 'Offer to handle one practical task, bring a warm drink or heat pack if wanted, and ask what kind of comfort feels good today.'],
-                'follicular' => ['Make room for a little adventure', 'If energy feels good, suggest a walk, a new recipe or an easy shared plan. Let your partner choose the pace.'],
-                'ovulatory-estimate' => ['Check in about closeness', 'Some people notice changes in desire around estimated ovulation and others do not. Ask openly what feels good; never assume interest or fertility from a calendar estimate.'],
-                'luteal' => ['Make comfort easy to ask for', 'Offer a favourite snack, help with a small task or make a quiet evening easier. Ask first instead of assuming what your partner needs.'],
-                'cycle-unknown' => ['Ask what support would feel useful', 'A simple check-in is more reliable than guessing: ask whether your partner would like practical help, company, listening or space.'],
+                'menstrual' => [
+                    ['A softer pace may help', 'Offer to handle one practical task, bring a warm drink or heat pack if wanted, and ask what kind of comfort feels good today.'],
+                    ['Comfort without assumptions', 'A favourite snack, a cosy evening or help with errands might be welcome. Ask what would help rather than guessing.'],
+                    ['Make rest easier to choose', 'Offer a low-effort plan and let your partner decide whether they want company, quiet or practical support.'],
+                ],
+                'follicular' => [
+                    ['Make room for a little adventure', 'If energy feels good, suggest a walk, a new recipe or an easy shared plan. Let your partner choose the pace.'],
+                    ['Try something side by side', 'Invite your partner to choose a small outing or shared activity, without treating higher energy as a requirement.'],
+                    ['Share the planning', 'Offer to organise a simple date or outdoor activity together, and keep an easy alternative if either of you feels tired.'],
+                ],
+                'ovulatory-estimate' => [
+                    ['Check in about closeness', 'Some people notice changes in desire around estimated ovulation and others do not. Ask openly what feels good; never assume interest or fertility from a calendar estimate.'],
+                    ['Talk about what you both want', 'If you are both trying to conceive, you can review the estimated fertile window together. Cycle estimates can be wrong and are not a guarantee of ovulation or pregnancy.'],
+                    ['Let your partner set the pace', 'Suggest affection or intimacy only if it feels welcome. A cycle estimate never tells you whether someone wants sex; ask and respect the answer.'],
+                ],
+                'luteal' => [
+                    ['Make comfort easy to ask for', 'Offer a favourite snack, help with a small task or make a quiet evening easier. Ask first instead of assuming what your partner needs.'],
+                    ['Take one thing off their plate', 'Offer to cook, tidy or handle a small errand. Let your partner choose whether that kind of help is useful today.'],
+                    ['Keep communication gentle', 'Check in without attributing feelings to hormones. Ask whether they want listening, practical help, affection or space.'],
+                ],
+                'cycle-unknown' => [
+                    ['Ask what support would feel useful', 'A simple check-in is more reliable than guessing: ask whether your partner would like practical help, company, listening or space.'],
+                    ['One thoughtful question', 'Try “What would make today a little easier?” and listen to the answer without assuming you already know.'],
+                    ['Offer, then let them choose', 'Suggest one specific act of care and make it easy to say no or ask for something different.'],
+                ],
             ];
-            $chosen = $phaseTips[$phase];
-            if (array_intersect($symptoms, ['bloating', 'bloated', 'cramps', 'cramping', 'fatigue', 'tired', 'headache'])) {
+            $tipChoices = $phaseTips[$phase] ?? $phaseTips['cycle-unknown'];
+            $tipIndex = $cycleDay !== null ? ($cycleDay + (int) $localToday->format('z')) % count($tipChoices) : (int) $localToday->format('z') % count($tipChoices);
+            $chosen = $tipChoices[$tipIndex];
+            if ($canUseSymptoms && array_intersect($symptoms, ['bloating', 'bloated', 'cramps', 'cramping', 'fatigue', 'tired', 'headache'])) {
                 $chosen = ['Notice what they logged today', 'Your partner logged '.implode(', ', array_slice(array_intersect($symptoms, ['bloating','bloated','cramps','cramping','fatigue','tired','headache']), 0, 3)).'. Offer a specific comfort or practical help, then let them tell you what would actually help.'];
+            }
+            if (!$canUseCycleContext) {
+                $phase = 'cycle-unknown';
+                $cycleDay = null;
+                $chosen = $phaseTips['cycle-unknown'][$tipIndex];
+            }
+            if (!$canUseSymptoms) {
+                $symptoms = [];
             }
             $chosen = ['title' => $chosen[0], 'tip' => $chosen[1]];
             $personalTransits = $shareAstrology ? array_merge(
@@ -263,7 +297,7 @@ class RelationshipInsightsController extends Controller
             if ($moonElement === 'water') $chosen['tip'] = 'Give feelings a little room before trying to solve them. '.$chosen['tip'];
             return [
                 'date' => $today,
-                'cycle_context' => ['phase' => $phase, 'cycle_day' => $cycleDay, 'based_on_primary_partner' => true],
+                'cycle_context' => ['phase' => $phase, 'cycle_day' => $cycleDay, 'based_on_primary_partner' => true, 'available' => $canUseCycleContext],
                 'title' => $chosen['title'],
                 'tip' => $chosen['tip'],
                 'transit_note' => $transitNote,
