@@ -16,14 +16,27 @@ class AuthController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::min(8)],
+            'relationship_role' => ['sometimes', 'in:tracker,support'],
         ]);
 
         $user = User::create($validated);
+        $role = $validated['relationship_role'] ?? 'tracker';
+        if ($role === 'support') {
+            $user->cycleProfile()->updateOrCreate([], [
+                'relationship_role' => 'support',
+                'onboarding_completed' => true,
+                'cycle_regularity' => 'unknown',
+                'timezone' => config('app.timezone', 'UTC'),
+                'primary_goal' => 'track_cycle',
+                'partner_preference' => 'solo',
+            ]);
+        }
         Auth::login($user);
         $request->session()->regenerate();
 
         return response()->json([
             'user' => ['name' => $user->name, 'email' => $user->email],
+            'relationship_role' => $role,
         ], 201);
     }
 
