@@ -912,3 +912,11 @@
 @keyframes cosmic-flower-bloom{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
 @media(max-width:650px){.cosmic-shared-space-card--note{grid-column:auto}.cosmic-shared-space-card--note .cosmic-shared-note-actions{align-items:flex-start;flex-direction:column}.cosmic-shared-space-card--note .cosmic-shared-note-actions button{width:100%}}
 @media(prefers-reduced-motion:reduce){.cosmic-floral-calendar__heading>span,.cosmic-floral-calendar__day--period .cosmic-floral-marker,.cosmic-floral-calendar__day--fertile .cosmic-floral-marker,.cosmic-floral-calendar__day--ovulation .cosmic-floral-marker,.cosmic-floral-calendar__day--lower .cosmic-floral-marker{animation:none}}
+
+/* Primary dashboard floral calendar: keep the legend and date action usable on narrow screens. */
+.cosmic-floral-calendar__selected{flex-wrap:wrap;align-items:center}
+.cosmic-floral-calendar__selected>div{flex:1 1 180px}
+.cosmic-floral-calendar__edit{flex:0 0 auto;padding:10px 14px;border:1px solid #e3cce8;border-radius:999px;background:linear-gradient(120deg,#fff0f7,#f0eaff);color:#805589;font:inherit;font-size:11px;font-weight:750;cursor:pointer}
+.cosmic-floral-calendar__edit:hover{border-color:#c69bd1;box-shadow:0 4px 12px rgba(119,78,133,.1)}
+@media(max-width:520px){.cosmic-floral-calendar__selected{align-items:flex-start}.cosmic-floral-calendar__edit{width:100%;margin-top:3px}.cosmic-floral-calendar{border-radius:19px}.cosmic-floral-calendar__heading{align-items:flex-start}.cosmic-floral-calendar__heading>span{width:39px;height:39px;flex:0 0 auto}}
+@media(prefers-reduced-motion:reduce){.cosmic-floral-calendar__edit{transition:none}}
