@@ -103,7 +103,7 @@ class AuthController extends Controller
             }
         }
 
-        $user = DB::transaction(function () use ($validated, $role, $intent, $relationship, $astrologyEnabled) {
+        $user = DB::transaction(function () use ($validated, $role, $intent, $relationship, &$astrologyEnabled) {
             if ($relationship) {
                 $lockedRelationship = Relationship::whereKey($relationship->id)->lockForUpdate()->first();
                 if (! $lockedRelationship || $lockedRelationship->status !== 'pending' || $lockedRelationship->user_two_id !== null || ! $lockedRelationship->expires_at?->isFuture()) {
@@ -112,6 +112,14 @@ class AuthController extends Controller
                     ]);
                 }
                 $relationship = $lockedRelationship;
+                $lockedPreferences = $relationship->sharing_preferences ?? [];
+                $lockedInitiatorPreferences = $lockedPreferences[(string) $relationship->user_one_id] ?? $lockedPreferences;
+                $astrologyEnabled = (bool) ($lockedInitiatorPreferences['astrology'] ?? false);
+                if (in_array($intent, ['support', 'co_tracker'], true) && $astrologyEnabled && empty($validated['birth_date'])) {
+                    throw ValidationException::withMessages([
+                        'birth_date' => 'Your partner has enabled astrology. Add your birth date to set up your shared sky reflections.',
+                    ]);
+                }
             }
 
             $user = User::create([
