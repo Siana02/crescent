@@ -1,0 +1,19 @@
+{
+  "name": "Crescent — Your cycle, your rhythm",
+  "short_name": "Crescent",
+  "description": "A gentle, private space to track your cycle and stay connected.",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#faf7f3",
+  "theme_color": "#d8bfdc",
+  "icons": [
+    {
+      "src": "/crescent-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

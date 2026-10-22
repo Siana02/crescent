@@ -833,3 +833,60 @@ a:focus-visible { outline: 3px solid #b88bbd; outline-offset: 4px; }
         transform: none;
     }
 }
+
+
+/* Crescent phone installation prompt and app-like mobile spacing */
+.crescent-install-prompt {
+    position: fixed;
+    z-index: 1000;
+    left: max(16px, env(safe-area-inset-left));
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 520px;
+    margin-left: auto;
+    padding: 14px 14px;
+    border: 1px solid #e8d8e7;
+    border-radius: 20px;
+    background: rgba(255, 252, 250, .97);
+    box-shadow: 0 12px 36px rgba(75, 52, 78, .16);
+    color: #4e4052;
+    backdrop-filter: blur(16px);
+}
+.crescent-install-mark {
+    display: grid;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #f2cadb, #d7c5ef 55%, #bfe0df);
+    color: #fffdfb;
+    font-size: 27px;
+}
+.crescent-install-copy { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 3px; font-size: 12px; line-height: 1.4; }
+.crescent-install-copy strong { font-size: 13px; }
+.crescent-install-prompt button {
+    min-height: 42px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(110deg, #e9c0d2, #cdbbe7);
+    color: #49394f;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+.crescent-install-prompt .crescent-install-dismiss { align-self: flex-start; min-height: 28px; padding: 0 5px; background: transparent; font-size: 20px; }
+@media (max-width: 520px) {
+    .crescent-install-prompt { left: 10px; right: 10px; bottom: max(10px, env(safe-area-inset-bottom)); gap: 9px; padding: 11px; border-radius: 17px; }
+    .crescent-install-mark { flex-basis: 36px; width: 36px; height: 36px; }
+    .crescent-install-copy { font-size: 11px; }
+    .crescent-install-copy strong { font-size: 12px; }
+    .crescent-install-prompt button { min-height: 40px; padding: 0 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .crescent-install-prompt * { scroll-behavior: auto !important; transition: none !important; }
+}
