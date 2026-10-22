@@ -447,3 +447,6 @@
 .cosmic-personal-transit-list span,.cosmic-synastry-aspects span{color:#a083a9;font-size:.7rem;white-space:nowrap}
 .cosmic-personal-transit-list p,.cosmic-synastry-aspects p{margin:7px 0 0;color:#85768d;font-size:.78rem;line-height:1.5}
 .cosmic-synastry-aspects>.cosmic-eyebrow{margin:0;color:#a17ca2;font-size:.68rem;letter-spacing:.14em}
+
+
+.cosmic-own-journey{display:inline-flex;align-items:center;margin:12px 0 0;padding:7px 12px;border:1px solid rgba(194,155,191,.35);border-radius:999px;background:rgba(255,255,255,.68);color:#826987;font-size:.8rem}
