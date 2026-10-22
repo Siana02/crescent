@@ -55,7 +55,13 @@ export default function AuthPage({ mode }: AuthPageProps) {
             setRelationshipRole(data.relationship_type === 'co_tracker' ? 'co_tracker' : 'support');
             setError('');
         } catch (exception) {
-            setError(exception instanceof Error ? exception.message : 'That invitation could not be checked.');
+            const message = exception instanceof Error ? exception.message : 'That invitation could not be checked.';
+            if (/not active|already been used|expired/i.test(message)) {
+                setInviteNeedsLogin(true);
+                setError('This invitation is no longer available. It may already have been accepted or may have expired. If you already created your account, sign in to continue. Otherwise, ask your partner to create a fresh code.');
+            } else {
+                setError(message);
+            }
         } finally { setCheckingInvite(false); }
     }
 
