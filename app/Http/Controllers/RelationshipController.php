@@ -128,7 +128,7 @@ class RelationshipController extends Controller
             unset($allPreferences[$key]);
         }
         $relationship->update(['sharing_preferences' => $allPreferences]);
-        if ($relationship->relationship_type === 'observer' && $request->user()->id === $relationship->user_one_id && array_key_exists('astrology', $validated)) {
+        if (array_key_exists('astrology', $validated) && ($relationship->relationship_type !== 'observer' || $request->user()->id === $relationship->user_one_id)) {
             $request->user()->cycleProfile()->updateOrCreate([], ['wants_astrology' => (bool) $validated['astrology']]);
         }
 
