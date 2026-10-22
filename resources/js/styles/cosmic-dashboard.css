@@ -843,3 +843,46 @@
 .cosmic-shared-partner-space.is-support-view .cosmic-shared-space-card--note{background:radial-gradient(ellipse at 100% 0,rgba(255,230,192,.7),transparent 44%),linear-gradient(145deg,#fff9ec,#fffafd 76%)}
 .cosmic-shared-partner-space.is-primary-view .cosmic-shared-space-card--note{background:radial-gradient(ellipse at 100% 0,rgba(255,231,199,.58),transparent 42%),linear-gradient(145deg,#fffaf0,#fff9fd 62%,#fbf6ff)}
 @media(max-width:650px){.cosmic-shared-space-card--note{grid-column:auto}}
+
+/* Floral cycle calendar shared by the editable primary view and read-only partner view. */
+.cosmic-floral-marker{display:inline-grid;place-items:center;flex:0 0 auto;width:23px;height:23px;border:1.5px solid currentColor;border-radius:50%;font-size:14px;line-height:1;background:rgba(255,255,255,.72);font-style:normal}
+.cosmic-floral-marker--period{color:#cf536b;background:#fff0f2;border-color:#df8290}
+.cosmic-floral-marker--fertile{color:#398c65;background:#e9f8ef;border-color:#72bd94}
+.cosmic-floral-marker--ovulation{color:#a05da9;background:#f7e9ff;border-color:#c18ed0}
+.cosmic-floral-marker--lower{color:#3f86b9;background:#e9f5ff;border-color:#8fc7ed}
+.cosmic-floral-calendar{position:relative;overflow:hidden;margin:15px 0 24px;padding:clamp(17px,3vw,25px);border:1px solid #e9d9ee;border-radius:25px;background:radial-gradient(ellipse at 100% 0,rgba(223,239,255,.85),transparent 38%),radial-gradient(ellipse at 0 100%,rgba(255,230,242,.72),transparent 42%),linear-gradient(145deg,#fffafd,#f9f8ff);box-shadow:0 12px 30px rgba(102,75,130,.06)}
+.cosmic-floral-calendar__heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.cosmic-floral-calendar__heading h3{margin:4px 0 5px;color:#684770;font:400 clamp(23px,3vw,31px)/1.2 var(--serif,Georgia,serif)}
+.cosmic-floral-calendar__heading p:not(.cosmic-eyebrow){margin:0;color:#8b7892;font-size:11px;line-height:1.7}
+.cosmic-floral-calendar__heading>span{display:grid;place-items:center;width:45px;height:45px;border-radius:50%;color:#ae77ac;background:linear-gradient(135deg,#f7e6ff,#ffe7f0);font-size:26px;box-shadow:0 0 0 7px rgba(255,255,255,.58)}
+.cosmic-floral-calendar__month{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:20px 0 12px;padding:8px 10px;border-radius:14px;background:rgba(255,255,255,.76);border:1px solid #efe5f2}
+.cosmic-floral-calendar__month strong{color:#71557d;font:400 17px var(--serif,Georgia,serif)}
+.cosmic-floral-calendar__month button{display:grid;place-items:center;width:34px;height:34px;border:1px solid #e6d6ed;border-radius:11px;background:#fff;color:#8e69a0;font-size:24px;cursor:pointer}
+.cosmic-floral-calendar__grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.cosmic-floral-calendar__weekday{padding:6px 0;text-align:center;color:#a28da8;font-size:10px;font-weight:700}
+.cosmic-floral-calendar__blank{min-height:53px}
+.cosmic-floral-calendar__day{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;min-height:57px;padding:4px 1px;border:1px solid transparent;border-radius:14px;background:rgba(255,255,255,.75);color:#735e7e;cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.cosmic-floral-calendar__day>span:first-child{font-size:12px;font-weight:650;line-height:1}
+.cosmic-floral-calendar__day .cosmic-floral-marker{width:22px;height:22px;font-size:13px}
+.cosmic-floral-calendar__day.is-selected{border-color:#b89bce;box-shadow:0 0 0 2px rgba(184,155,206,.18);background:#fff}
+.cosmic-floral-calendar__day.is-today:after{content:"";position:absolute;top:4px;right:5px;width:4px;height:4px;border-radius:50%;background:#bd8fc6}
+.cosmic-floral-calendar__day:hover{transform:translateY(-2px);box-shadow:0 6px 13px rgba(111,77,129,.09)}
+.cosmic-floral-calendar__legend{display:flex;flex-wrap:wrap;gap:9px 15px;margin-top:17px}
+.cosmic-floral-calendar__legend>span{display:inline-flex;align-items:center;gap:7px;color:#7c6987;font-size:10px;line-height:1.5}
+.cosmic-floral-calendar__legend .cosmic-floral-marker{width:20px;height:20px;font-size:12px}
+.cosmic-floral-calendar__selected{display:flex;align-items:flex-start;gap:11px;margin-top:16px;padding:13px;border:1px solid #e9dff0;border-radius:15px;background:rgba(255,255,255,.82)}
+.cosmic-floral-calendar__selected>div{min-width:0}
+.cosmic-floral-calendar__selected strong{color:#70527b;font:400 16px var(--serif,Georgia,serif)}
+.cosmic-floral-calendar__selected p{margin:4px 0 0;color:#8a7891;font-size:11px;line-height:1.65}
+.cosmic-floral-calendar__science{margin:12px 0 0;color:#92829a;font-size:10px;line-height:1.75}
+.cosmic-month-grid button.cosmic-floral-day{position:relative;overflow:visible;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:3px 1px;min-height:58px;border-radius:13px}
+.cosmic-month-grid button.cosmic-floral-day>span:first-child{line-height:1.15}
+.cosmic-month-grid button.cosmic-floral-day .cosmic-floral-marker{width:22px;height:22px;font-size:13px}
+.cosmic-month-grid button.cosmic-floral-day.is-period{background:#fff0f2!important;border-color:#df8290!important}
+.cosmic-month-grid button.cosmic-floral-day.is-fertile{background:#e9f8ef!important;border-color:#72bd94!important}
+.cosmic-month-grid button.cosmic-floral-day.is-ovulation{background:#f7e9ff!important;border-color:#c18ed0!important}
+.cosmic-month-grid button.cosmic-floral-day.is-lower-fertility{background:#e9f5ff!important;border-color:#8fc7ed!important}
+.cosmic-month-grid button.cosmic-floral-day.is-selected{box-shadow:0 0 0 2px rgba(155,113,177,.22);border-color:#9e7ab3!important}
+.cosmic-month-grid button.cosmic-floral-day .cosmic-month-ruler{font-size:9px;opacity:.65}
+@media(max-width:520px){.cosmic-floral-calendar__grid{gap:3px}.cosmic-floral-calendar__day{min-height:49px;border-radius:11px}.cosmic-floral-calendar__day .cosmic-floral-marker{width:19px;height:19px;font-size:11px}.cosmic-floral-calendar__blank{min-height:49px}.cosmic-floral-calendar__legend{gap:8px 11px}}
+@media(prefers-reduced-motion:reduce){.cosmic-floral-calendar__day{transition:none}.cosmic-floral-calendar__day:hover{transform:none}}
