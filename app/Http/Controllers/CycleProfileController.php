@@ -68,10 +68,8 @@ class CycleProfileController extends Controller
     public function astrologyConsent(Request $request): JsonResponse
     {
         $validated = $request->validate(['wants_astrology' => ['required', 'boolean']]);
-        $profile = $request->user()->cycleProfile()->firstOrCreate([], [
-            'timezone' => config('app.timezone', 'UTC'),
-            'cycle_regularity' => 'unknown',
-        ]);
+        $profile = $request->user()->cycleProfile;
+        abort_unless($profile, 409, 'Complete your profile setup before opting in to astrology.');
         $profile->update(['wants_astrology' => (bool) $validated['wants_astrology']]);
 
         return response()->json(['wants_astrology' => (bool) $profile->wants_astrology]);
