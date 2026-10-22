@@ -25,7 +25,7 @@ type DashboardData = {
  relationships?:{
   id:number;relationship_type:'observer'|'co_tracker';status:'pending'|'accepted'|'revoked';invite_code:string|null;companion_name:string|null;sharing_enabled:boolean;
   companion_journey:'cycle'|'fertility'|'pregnancy'|'postpartum'|null;
-  companion_cycle_summary:{last_period_start:string;cycle_day:number;estimated_next_period:string|null}|null;
+  companion_cycle_summary:{last_period_start:string;cycle_day:number;estimated_next_period:string|null;average_cycle_length:number|null;average_period_length:number|null;cycle_regularity:string;fertility_estimate_available:boolean;estimated_ovulation_date:string|null;estimated_fertile_start:string|null;estimated_fertile_end:string|null;period_history:{start_date:string;end_date:string|null}[]}|null;
   companion_pregnancy_summary:{status:string;due_date:string;gestational_week:number|null;trimester:number|null;days_until_due:number|null}|null;
   companion_wellbeing:{log_date:string;mood?:string[];symptoms?:string[];energy_level?:number|null;category?:string;notes?:string|null}|null;
   companion_sun_sign:string|null;companion_moon_sign:string|null;companion_rising_sign:string|null;
