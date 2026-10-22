@@ -155,9 +155,8 @@ class AstrologyController extends Controller
         $sign = Str::lower((string) $profile?->sun_sign);
         $allowed = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'];
         if (! in_array($sign, $allowed, true) && $profile?->birth_date && $profile?->birth_place) {
-            // The chart and weekly-feed requests can arrive in parallel on a
-            // first visit. Calculate the chart here once if its Sun sign has
-            // not yet been persisted, then re-read the profile before fallback.
+            // A first visit can reach this endpoint before the chart has saved its
+            // Sun sign. Calculate the chart once, then re-read the profile.
             $this->chart($request);
             $sign = Str::lower((string) $request->user()->cycleProfile()->first()?->sun_sign);
         }
@@ -210,8 +209,14 @@ class AstrologyController extends Controller
         // The seven-day overview can occasionally be unavailable while per-sign
         // weekly content is still live. Prefer the user's saved Sun sign as a
         // useful fallback instead of returning an empty card.
-        $sign = Str::lower((string) $request->user()->cycleProfile?->sun_sign);
+        $profile = $request->user()->cycleProfile;
+        $sign = Str::lower((string) $profile?->sun_sign);
         $allowed = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'];
+        if (! in_array($sign, $allowed, true) && $profile?->birth_date && $profile?->birth_place) {
+            // Chart and weekly requests can start together on the first visit.
+            $this->chart($request);
+            $sign = Str::lower((string) $request->user()->cycleProfile()->first()?->sun_sign);
+        }
         if (in_array($sign, $allowed, true)) {
             $weeklySign = $this->cachedGet(
                 'cosmyday:content:weekly-sign:'.$sign.':'.now()->format('o-W'),
