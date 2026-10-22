@@ -59,4 +59,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/pregnancy/return-to-cycle', [PregnancyController::class, 'returnToCycle']);
     Route::post('/api/relationships/invite', [RelationshipController::class, 'invite'])->middleware('throttle:10,1');
     Route::post('/api/relationships/accept', [RelationshipController::class, 'accept'])->middleware('throttle:10,1');
+    Route::patch('/api/relationships/{relationship}/sharing', [RelationshipController::class, 'sharing']);
+    Route::get('/api/relationships/{relationship}/notes', [RelationshipNotesController::class, 'index']);
+    Route::post('/api/relationships/{relationship}/notes', [RelationshipNotesController::class, 'store'])->middleware('throttle:20,1');
+    Route::get('/api/relationships/{relationship}/insights', [RelationshipInsightsController::class, 'show'])->middleware('throttle:20,1');
 });
