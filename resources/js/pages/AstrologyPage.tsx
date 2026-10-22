@@ -56,7 +56,8 @@ function HoroscopeLayout({content}:{content:DailyContent}) {
 }
 function WeeklyForecast({content}:{content:DailyContent}) {
  const normalized=unwrapContent(content);
- const days=Array.isArray(normalized?.days)?normalized!.days:Array.isArray(normalized?.forecast)?normalized!.forecast:Array.isArray(normalized?.weekly)?normalized!.weekly:[];
+ const rawDays=normalized?.days??normalized?.forecast??normalized?.weekly;
+ const days:unknown[]=Array.isArray(rawDays)?rawDays:[];
  const dayRows=days.map((day,index)=>{
   if(typeof day==='string')return {title:'Day '+(index+1),text:day};
   const d=day as Record<string,unknown>;
