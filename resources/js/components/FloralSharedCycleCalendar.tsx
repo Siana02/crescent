@@ -14,7 +14,7 @@ function dateFromKey(value:string){return new Date(value+'T12:00:00');}
 function label(value:string){return dateFromKey(value).toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric'});}
 function addDays(value:string,days:number){const d=dateFromKey(value);d.setDate(d.getDate()+days);return keyOf(d);}
 function Flower({tone}:{tone:'period'|'fertile'|'ovulation'|'lower'}){return <span className={'cosmic-floral-marker cosmic-floral-marker--'+tone} aria-hidden="true">✿</span>;}
-export default function FloralSharedCycleCalendar({cycle}:{cycle:CycleCalendarSummary}){
+export default function FloralSharedCycleCalendar({cycle,ownerName='your partner',viewerName}:{cycle:CycleCalendarSummary;ownerName?:string;viewerName?:string}){
  const [month,setMonth]=useState(()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),1);});
  const [selected,setSelected]=useState(()=>keyOf(new Date()));
  const days=useMemo(()=>{const first=new Date(month.getFullYear(),month.getMonth(),1);const count=new Date(month.getFullYear(),month.getMonth()+1,0).getDate();return [...Array((first.getDay()+6)%7).fill(null),...Array.from({length:count},(_,i)=>i+1)];},[month]);
@@ -26,7 +26,7 @@ export default function FloralSharedCycleCalendar({cycle}:{cycle:CycleCalendarSu
  const selectedKind=kind(selected);
  const detail=selectedKind==='period'?'Period day · recorded or estimated':selectedKind==='ovulation'?'Estimated ovulation day · often around day 14 in a typical 28-day cycle, but timing varies':selectedKind==='fertile'?'Estimated fertile window · pregnancy is more likely':selectedKind==='lower'?'Lower estimated fertility · not a guaranteed safe day':'Cycle estimate unavailable for this date';
  return <section className="cosmic-floral-calendar" aria-labelledby="floral-calendar-title">
-  <div className="cosmic-floral-calendar__heading"><div><p className="cosmic-eyebrow">A SHARED RHYTHM, IN BLOOM</p><h3 id="floral-calendar-title">Their cycle calendar</h3><p>View-only · dates are shared by your partner</p></div><span aria-hidden="true">✿</span></div>
+  <div className="cosmic-floral-calendar__heading"><div><p className="cosmic-eyebrow">A SHARED RHYTHM, IN BLOOM</p><h3 id="floral-calendar-title">{ownerName}'s cycle calendar</h3><p>View-only for {viewerName?.trim()||'you'} · {ownerName} controls their own cycle entries</p></div><span aria-hidden="true">✿</span></div>
   <div className="cosmic-floral-calendar__month"><button type="button" aria-label="Previous month" onClick={()=>setMonth(new Date(month.getFullYear(),month.getMonth()-1,1))}>‹</button><strong>{month.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</strong><button type="button" aria-label="Next month" onClick={()=>setMonth(new Date(month.getFullYear(),month.getMonth()+1,1))}>›</button></div>
   <div className="cosmic-floral-calendar__grid" role="group" aria-label="Read-only cycle calendar">
    {['M','T','W','T','F','S','S'].map((d,i)=><span className="cosmic-floral-calendar__weekday" key={d+i}>{d}</span>)}
