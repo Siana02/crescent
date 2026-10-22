@@ -139,3 +139,63 @@
 
 
 .pregnancy-size-comparison .pregnancy-size-note{color:#a394a8;font-size:7px;letter-spacing:0;line-height:1.5}
+
+.pregnancy-journey-nav{padding:11px clamp(18px,5vw,68px);display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff8fb;border-bottom:1px solid #f0e3ee}
+.pregnancy-journey-nav__label{font-size:9px;font-weight:800;letter-spacing:.16em;color:#b18ba9;white-space:nowrap}
+.pregnancy-journey-nav>div{display:flex;flex-wrap:wrap;gap:7px}
+.pregnancy-journey-nav a{padding:8px 12px;border-radius:999px;color:#866d8c;font-size:11px;text-decoration:none;transition:background .18s ease,color .18s ease}
+.pregnancy-journey-nav a:hover,.pregnancy-journey-nav a.is-active{background:#f0e5f3;color:#664d70}
+.pregnancy-extras{display:grid;gap:16px;margin:22px 0}
+.pregnancy-petal-card{position:relative;overflow:hidden;padding:clamp(20px,3vw,30px);border:1px solid #eadbe8;border-radius:23px;background:radial-gradient(ellipse at 100% 0,#f8eaf3 0,transparent 35%),linear-gradient(135deg,#fffdfd,#fff8fb);box-shadow:0 10px 32px rgba(119,82,121,.045)}
+.pregnancy-petal-card:after{content:'❀';position:absolute;right:17px;top:10px;color:#e6c9df;font-size:40px;opacity:.65;pointer-events:none}
+.pregnancy-petal-card h2{margin:5px 0 12px;color:#765a7d;font-family:var(--serif,Georgia,serif);font-size:clamp(23px,3vw,30px);font-weight:400;line-height:1.2}
+.pregnancy-petal-card>p:not(.pregnancy-eyebrow):not(.pregnancy-source-links){max-width:760px;color:#806f85;font-size:13px;line-height:1.8}
+.pregnancy-petal-card small{color:#a18fa6;font-size:10px;line-height:1.7}
+.pregnancy-floral-stamp{position:absolute;right:28px;top:26px;color:#c49cba;font-size:33px}
+.pregnancy-source-links{margin:12px 0 0;color:#a18da6;font-size:10px;line-height:1.7}
+.pregnancy-source-links a,.pregnancy-baby-atelier>a{color:#936b9b;text-decoration:underline;text-underline-offset:3px}
+.pregnancy-milestones{display:grid;gap:9px;margin-top:16px}
+.pregnancy-milestones article{display:grid;grid-template-columns:140px 1fr;gap:15px;padding:14px;border:1px solid #f0e4ef;border-radius:15px;background:#ffffffb8}
+.pregnancy-milestones article>span{color:#ad80a1;font-size:10px;font-weight:800;letter-spacing:.04em}
+.pregnancy-milestones h3{margin:0 0 5px;color:#795d82;font-size:13px;font-weight:700}
+.pregnancy-milestones p{margin:0;color:#8b7a90;font-size:11px;line-height:1.7}
+.pregnancy-gentle-note{padding:11px 13px;border-left:3px solid #d6a9c8;background:#fff3f8;border-radius:0 10px 10px 0}
+.pregnancy-reminder-form{display:grid;gap:12px;margin-top:16px}
+.pregnancy-reminder-form label{display:grid;gap:6px;color:#806887;font-size:11px;font-weight:700}
+.pregnancy-reminder-form input:not([type=checkbox]),.pregnancy-reminder-form select,.pregnancy-reminder-form textarea,.pregnancy-birth-form input{width:100%;padding:11px 12px;border:1px solid #e8d8e7;border-radius:12px;background:#fff;color:#67516e;font:inherit;font-weight:400;outline:none}
+.pregnancy-reminder-form input:focus,.pregnancy-reminder-form select:focus,.pregnancy-reminder-form textarea:focus,.pregnancy-birth-form input:focus{border-color:#bf94bd;box-shadow:0 0 0 3px #f2e3f1}
+.pregnancy-reminder-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pregnancy-reminder-share{display:flex!important;align-items:center;gap:9px!important;font-weight:500!important}
+.pregnancy-reminder-share input{accent-color:#ad83b3}
+.pregnancy-floral-button{justify-self:start;padding:11px 17px;border:1px solid #d8bad5;border-radius:999px;background:linear-gradient(120deg,#f4e5f3,#fff0f4);color:#76567e;font-size:12px;font-weight:800;cursor:pointer}
+.pregnancy-floral-button:disabled{opacity:.6;cursor:wait}
+.pregnancy-reminder-list{margin-top:22px;padding-top:16px;border-top:1px solid #f0e3ee}
+.pregnancy-reminder-list h3{margin:0 0 12px;color:#765a7d;font-family:var(--serif,Georgia,serif);font-size:19px;font-weight:400}
+.pregnancy-reminder-list>article{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f4eaf2}
+.pregnancy-reminder-list>article>span{display:grid;place-items:center;width:35px;height:35px;flex:0 0 35px;border-radius:50%;background:#f7eaf3;color:#b183a8}
+.pregnancy-reminder-list>article>div{display:grid;gap:4px}
+.pregnancy-reminder-list strong{color:#765b7e;font-size:12px}
+.pregnancy-reminder-list small{color:#a18ba4}
+.pregnancy-reminder-list p{margin:3px 0 0;color:#8b7a90;font-size:11px;line-height:1.6}
+.pregnancy-reminder-disclaimer{display:block;margin-top:14px}
+.pregnancy-baby-chart{display:flex;align-items:center;gap:15px;padding:16px;border:1px solid #ead8eb;border-radius:17px;background:linear-gradient(125deg,#f8effa,#fff0f5)}
+.pregnancy-baby-chart>span{font-size:34px;color:#b084bb}
+.pregnancy-baby-chart>div{display:grid;gap:3px}
+.pregnancy-baby-chart small{font-size:9px;font-weight:800;letter-spacing:.14em}
+.pregnancy-baby-chart strong{color:#77537f;font-family:var(--serif,Georgia,serif);font-size:22px;font-weight:400}
+.pregnancy-baby-chart p{margin:0!important;font-size:11px!important}
+.pregnancy-birth-form{display:grid;gap:13px;margin-top:18px;padding:18px;border:1px solid #ead9e8;border-radius:18px;background:#fffafd}
+.pregnancy-birth-form label{display:grid;gap:6px;color:#806887;font-size:11px;font-weight:700}
+.pregnancy-birth-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:720px){.pregnancy-journey-nav{align-items:flex-start;flex-direction:column}.pregnancy-journey-nav>div{gap:4px}.pregnancy-journey-nav a{padding:7px 9px;font-size:10px}.pregnancy-milestones article{grid-template-columns:1fr;gap:6px}.pregnancy-reminder-fields,.pregnancy-birth-fields{grid-template-columns:1fr}}
+
+.pregnancy-invite-form{display:grid;gap:12px;margin-top:16px}
+.pregnancy-invite-form>label{display:grid;gap:6px;color:#806887;font-size:11px;font-weight:700}
+.pregnancy-invite-form select{padding:11px 12px;border:1px solid #e8d8e7;border-radius:12px;background:#fff;color:#67516e;font:inherit}
+.pregnancy-invite-form>small{color:#a18ba4;font-size:10px;line-height:1.7}
+.pregnancy-invite-sharing{display:grid;gap:10px;padding:14px;border:1px solid #ebddec;border-radius:15px;background:#fffafd}
+.pregnancy-invite-sharing legend{padding:0 6px;color:#76577e;font-family:var(--serif,Georgia,serif);font-size:17px}
+.pregnancy-invite-sharing label{display:flex;align-items:flex-start;gap:9px;color:#826d89;font-size:11px;line-height:1.6}
+.pregnancy-invite-sharing input{margin-top:2px;accent-color:#ae84b6}
+.pregnancy-baby-development small a{color:#936b9b;text-decoration:underline;text-underline-offset:3px}
+.pregnancy-birth-actions{display:flex;flex-wrap:wrap;gap:9px}

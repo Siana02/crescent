@@ -7,6 +7,7 @@ import OnboardingPage from './pages/OnboardingPage';
 import ConnectionsPage from './pages/ConnectionsPage';
 import ProfileSettingsPage from './pages/ProfileSettingsPage';
 import AstrologyPage from './pages/AstrologyPage';
+import BabyAstrologyPage from './pages/BabyAstrologyPage';
 import './styles/app.css';
 
 const mount = document.getElementById('app');
@@ -16,7 +17,9 @@ if (!mount) {
 }
 
 const path = window.location.pathname;
-const page = path === '/astrology'
+const page = path === '/astrology' && new URLSearchParams(window.location.search).get('subject') === 'baby'
+    ? <BabyAstrologyPage />
+    : path === '/astrology'
     ? <AstrologyPage />
     : path === '/connections'
     ? <ConnectionsPage />
