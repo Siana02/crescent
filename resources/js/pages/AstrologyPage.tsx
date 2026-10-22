@@ -105,7 +105,7 @@ const WEEKDAY_RULERS=[
  {day:'Saturday',planet:'Saturn',symbol:'♄'},
 ];
 function weekdayRulerFor(title:string,index:number){
- const day=WEEKDAY_RULERS.find(item=>new RegExp('\\\\b'+item.day+'\\\\b','i').test(title));
+ const day=WEEKDAY_RULERS.find(item=>title.toLowerCase().includes(item.day.toLowerCase()));
  if(day)return day;
  const todayIndex=new Date().getDay();
  return WEEKDAY_RULERS[(todayIndex+index)%7];
