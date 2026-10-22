@@ -42,6 +42,21 @@ const sharingOptions: { key: SharingKey; title: string; detail: string; icon: st
     { key: 'wellbeing_updates', title: 'Wellbeing check-ins', detail: 'Mood and wellbeing updates chosen to share', icon: 'favorite' },
     { key: 'astrology', title: 'Astrology', detail: 'Natal signs for compatibility reflections', icon: 'auto_awesome' },
 ];
+const connectionWellbeingLabels: Record<string, { label: string; icon: string }> = {
+    calm: { label: 'Calm', icon: 'spa' }, zen: { label: 'At peace', icon: 'self_improvement' },
+    cramps: { label: 'Menstrual cramps', icon: 'healing' }, pelvic_pain: { label: 'Pelvic pain', icon: 'healing' },
+    painful_bowel_movement: { label: 'Painful bowel movements', icon: 'favorite' }, painful_urination: { label: 'Painful urination', icon: 'water_drop' },
+    dizziness: { label: 'Dizziness', icon: 'cyclone' }, breast_tenderness: { label: 'Breast tenderness', icon: 'health_and_safety' },
+    bloating: { label: 'Bloating', icon: 'spa' }, nausea: { label: 'Nausea', icon: 'medication' }, diarrhea: { label: 'Diarrhoea', icon: 'water_drop' },
+    gas: { label: 'Gas', icon: 'air' }, appetite_increase: { label: 'Increased appetite', icon: 'restaurant' },
+    sweet_cravings: { label: 'Sweet cravings', icon: 'cookie' }, savoury_cravings: { label: 'Savoury cravings', icon: 'lunch_dining' },
+    creamy_discharge: { label: 'Creamy discharge', icon: 'water_drop' }, fatigue: { label: 'Fatigue', icon: 'bedtime' },
+    libido_decrease: { label: 'Lower libido', icon: 'favorite' }, headache: { label: 'Headache', icon: 'psychology' },
+    migraine: { label: 'Migraine', icon: 'psychology' }, mood_swings: { label: 'Mood changes', icon: 'mood' },
+};
+function connectionWellbeingLabel(value: string) {
+    return connectionWellbeingLabels[value] ?? { label: value.replace(/[_-]+/g, ' ').replace(/\\b\\w/g, letter => letter.toUpperCase()), icon: 'spa' };
+}
 function csrf() { return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? ''; }
 async function readJson(response: Response) { return response.json().catch(() => ({})) as Promise<Record<string, any>>; }
 function journeyLabel(journey: Relationship['companion_journey'], role?: Relationship['companion_role']) {
@@ -260,7 +275,7 @@ export default function ConnectionsPage() {
                         {(relationship.companion_cycle_summary || relationship.companion_pregnancy_summary || relationship.companion_wellbeing) && <div className="cosmic-shared-summaries">
                             {relationship.companion_cycle_summary && <article><span className="material-symbols-rounded">water_drop</span><div><strong>{partnerName}'s cycle · Day {relationship.companion_cycle_summary.cycle_day}</strong><small>Last period began {dateLabel(relationship.companion_cycle_summary.last_period_start)}{relationship.companion_cycle_summary.estimated_next_period ? ' · Next estimate ' + dateLabel(relationship.companion_cycle_summary.estimated_next_period) : ''}</small></div></article>}
                             {relationship.companion_pregnancy_summary && <article><span className="material-symbols-rounded">child_care</span><div><strong>{relationship.companion_pregnancy_summary.status === 'postpartum' ? 'Postpartum journey' : 'Pregnancy · Week ' + (relationship.companion_pregnancy_summary.gestational_week ?? '—') + (relationship.companion_pregnancy_summary.trimester ? ' · Trimester ' + relationship.companion_pregnancy_summary.trimester : '')}</strong><small>{relationship.companion_pregnancy_summary.status === 'active' ? (relationship.companion_pregnancy_summary.days_until_due !== null && relationship.companion_pregnancy_summary.days_until_due !== undefined ? relationship.companion_pregnancy_summary.days_until_due + ' days to estimated due date · ' : '') + 'Due ' + dateLabel(relationship.companion_pregnancy_summary.due_date) : 'Shared by your companion'}</small></div></article>}
-                            {relationship.companion_wellbeing && <article><span className="material-symbols-rounded">favorite</span><div><strong>How {partnerName} is feeling · {dateLabel(relationship.companion_wellbeing.log_date)}</strong><small>{[...(relationship.companion_wellbeing.mood ?? []), ...(relationship.companion_wellbeing.symptoms ?? []), relationship.companion_wellbeing.category ?? '', relationship.companion_wellbeing.energy_level ? 'Energy ' + relationship.companion_wellbeing.energy_level + '/5' : ''].filter(Boolean).join(' · ') || relationship.companion_wellbeing.notes || 'A wellbeing update was shared.'}</small></div></article>}
+                            {relationship.companion_wellbeing && <article className="cosmic-connection-wellbeing-summary"><span className="material-symbols-rounded">favorite</span><div><strong>How {partnerName} is feeling · {dateLabel(relationship.companion_wellbeing.log_date)}</strong><div className="cosmic-support-tags cosmic-connection-wellbeing-tags">{[...(relationship.companion_wellbeing.mood ?? []), ...(relationship.companion_wellbeing.symptoms ?? []), relationship.companion_wellbeing.category ?? ''].filter((tag,index,all)=>Boolean(tag)&&all.indexOf(tag)===index).map(tag=>{const item=connectionWellbeingLabel(tag);return <span className="cosmic-wellbeing-pill" key={tag}><span className="material-symbols-rounded" aria-hidden="true">{item.icon}</span>{item.label}</span>;})}{relationship.companion_wellbeing.energy_level ? <span className="cosmic-wellbeing-pill"><span className="material-symbols-rounded" aria-hidden="true">bolt</span>Energy {relationship.companion_wellbeing.energy_level}/5</span> : null}</div>{relationship.companion_wellbeing.notes && <small>{relationship.companion_wellbeing.notes}</small>}</div></article>}
                         </div>}
                         {profileRole === 'support' && relationship.relationship_type === 'observer' ? <div className="cosmic-sharing-panel">
                             <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">YOUR PERMISSIONS</p><h4>What your partner chose to share</h4></div><span aria-hidden="true">♡</span></div>
