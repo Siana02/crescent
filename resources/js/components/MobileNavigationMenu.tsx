@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Home, LogOut, Settings, Sparkles, Users } from 'lucide-react';
+import { Home, LogOut, Menu, Settings, Sparkles, Users, X } from 'lucide-react';
 
 type Props = { onLogout?: () => void | Promise<void> };
 
@@ -43,7 +43,7 @@ export default function MobileNavigationMenu({ onLogout }: Props) {
 
   return <div className="cosmic-mobile-nav">
     <button className={`cosmic-mobile-nav__toggle${open ? ' is-open' : ''}`} type="button" aria-label={open ? 'Close navigation menu' : 'Open navigation menu'} aria-expanded={open} aria-controls="cosmic-mobile-menu" onClick={() => { setOpen(value => !value); setError(''); }}>
-      <span className="cosmic-menu-glyph" aria-hidden="true"><i /><i /><i /></span>
+      {open ? <X size={22} strokeWidth={1.8} aria-hidden="true" /> : <Menu size={22} strokeWidth={1.8} aria-hidden="true" />}
     </button>
     {open && <>
       <button type="button" className="cosmic-mobile-nav__scrim" aria-label="Close navigation menu" onClick={() => setOpen(false)} />
