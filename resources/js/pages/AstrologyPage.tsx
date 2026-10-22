@@ -14,7 +14,7 @@ function unwrapContent(value: unknown, depth = 0): ContentResponse | null {
  if (Array.isArray(value)) return { days: value };
  if (typeof value !== 'object') return null;
  const item=value as Record<string,unknown>;
- for (const key of ['data','result','output','content_data','forecast_data']) {
+ for (const key of ['data','result','output','content_data','forecast_data','week_ahead','weekAhead','weekly_forecast','weeklyForecast','article','horoscope']) {
   if (item[key] && typeof item[key] === 'object') {
    const nested=unwrapContent(item[key],depth+1);
    if(nested)return {...item,...nested};
@@ -25,11 +25,11 @@ function unwrapContent(value: unknown, depth = 0): ContentResponse | null {
 function horoscopeSections(content: DailyContent): { intro: string; sections: HoroscopeSection[] } {
  const raw=contentText(content,'Add your birthday in Profile & settings to discover your daily Sun-sign reading.');
  const patterns=[
-  {key:'overview',label:'The overview',re:/✨?\s*Overview\s*:/ig},
-  {key:'work',label:'Work & goals',re:/💼\s*Work\s*&\s*goals\s*:/ig},
-  {key:'relationships',label:'Relationships',re:/❤️\s*Relationships\s*:/ig},
-  {key:'energy',label:'Energy & mood',re:/⚡\s*Energy\s*&\s*mood\s*:/ig},
-  {key:'tip',label:"Today's tip",re:/🔮\s*Today'?s\s*tip\s*:/ig},
+  {key:'overview',label:'The overview',re:/(?:✨|🪐)?\s*Overview\s*:/ig},
+  {key:'work',label:'Work & goals',re:/(?:💼\s*)?Work\s*&\s*goals\s*:/ig},
+  {key:'relationships',label:'Relationships',re:/(?:❤️\s*)?Relationships\s*:/ig},
+  {key:'energy',label:'Energy & mood',re:/(?:⚡\s*)?Energy\s*&\s*mood\s*:/ig},
+  {key:'tip',label:"Today's tip",re:/(?:🔮\s*)?Today'?s\s*tip\s*:/ig},
  ];
  const matches:{key:string;label:string;start:number;end:number}[]=[];
  for(const pattern of patterns){pattern.re.lastIndex=0;let match:RegExpExecArray|null;while((match=pattern.re.exec(raw))){matches.push({key:pattern.key,label:pattern.label,start:match.index,end:pattern.re.lastIndex});}}
@@ -66,6 +66,14 @@ function WeeklyForecast({content}:{content:DailyContent}) {
   return <div className="cosmic-week-forecast-grid">{dayRows.slice(0,7).map((day,index)=><article key={day.title+'-'+index} className="cosmic-week-forecast-day"><span>{String(index+1).padStart(2,'0')}</span><h4>{day.title}</h4><p>{day.text}</p></article>)}</div>;
  }
  const text=contentText(normalized,'');
+ const markers:{label:string;start:number;end:number}[]=[];
+ const dayPattern=/\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Day\s*[1-7])(?:,?\s+[A-Z][a-z]+\s+\d{1,2})?\s*(?:[:—–-])\s*/gi;
+ let match:RegExpExecArray|null;
+ while((match=dayPattern.exec(text)))markers.push({label:match[1].replace(/\s+/g,' '),start:match.index,end:dayPattern.lastIndex});
+ if(markers.length>=2){
+  const rows=markers.map((marker,index)=>({title:marker.label,text:text.slice(marker.end,markers[index+1]?.start??text.length).trim()})).filter(row=>row.text);
+  return <div className="cosmic-week-forecast-grid">{rows.slice(0,7).map((day,index)=><article key={day.title+'-'+index} className="cosmic-week-forecast-day"><span>{String(index+1).padStart(2,'0')}</span><h4>{day.title}</h4><p>{day.text}</p></article>)}</div>;
+ }
  const paragraphs=text.split(/\n\s*\n/).map(p=>p.trim()).filter(Boolean);
  const fallback=paragraphs.length?paragraphs:[text].filter(Boolean);
  if(fallback.length)return <div className="cosmic-week-forecast-copy">{fallback.slice(0,7).map((paragraph,index)=><article key={index}><span>{String(index+1).padStart(2,'0')}</span><p>{paragraph}</p></article>)}</div>;
@@ -94,7 +102,7 @@ const HOUSE_GUIDE = [
 function contentText(content: DailyContent, fallback: string) {
  const item=unwrapContent(content)??content;
  if(!item)return fallback;
- const value=item.horoscope??item.text??item.body??(typeof item.content==='string'?item.content:undefined)??item.long??item.description??item.summary??item.prediction??item.short??item.overview??item.intro??item.message??item.forecast;
+ const value=item.horoscope??item.text??item.body??(typeof item.content==='string'?item.content:undefined)??item.long??item.description??item.summary??item.prediction??item.short??item.overview??item.intro??item.message??item.headline??item.forecast_text??item.forecastText??item.week_ahead??item.weekAhead??item.weekly_forecast??item.weeklyForecast??item.forecast;
  if(typeof value==='string'&&value.trim())return value.trim();
  if(Array.isArray(item.days))return item.days.map((day)=>typeof day==='string'?day:JSON.stringify(day)).join('\n\n');
  return fallback;
