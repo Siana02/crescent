@@ -20,6 +20,9 @@ type Relationship = {
     companion_sun_sign?: string | null;
     companion_moon_sign?: string | null;
     companion_rising_sign?: string | null;
+    companion_birth_date?: string | null;
+    companion_birth_time?: string | null;
+    companion_birth_place?: string | null;
     sharing_enabled: boolean;
     sharing_preferences: SharingPreferences;
     companion_sharing_preferences: SharingPreferences;
@@ -50,6 +53,9 @@ export default function ConnectionsPage() {
     const [profileRole, setProfileRole] = useState<'tracker' | 'support'>('tracker');
     const [ownJourney, setOwnJourney] = useState<Relationship['companion_journey']>('cycle');
     const [kind, setKind] = useState<RelationshipType>('observer');
+    const [sharingPreferences, setSharingPreferences] = useState<SharingPreferences>({ ...emptySharing });
+    const [birthDetails, setBirthDetails] = useState<Record<number, { birth_date: string; birth_time: string; birth_place: string }>>({});
+    const [savingBirth, setSavingBirth] = useState<number | null>(null);
     const [code, setCode] = useState(() => new URLSearchParams(window.location.search).get('code')?.trim().toUpperCase().slice(0, 8) ?? '');
     const [newCode, setNewCode] = useState('');
     const [busy, setBusy] = useState(false);
@@ -68,11 +74,17 @@ export default function ConnectionsPage() {
         if (!response.ok) throw new Error(data.message ?? 'Could not load your connections.');
         setProfileRole(data.profile?.relationship_role === 'support' ? 'support' : 'tracker');
         setOwnJourney(data.profile?.active_journey ?? 'cycle');
-        setRelationships((data.relationships ?? []).map((relationship: Partial<Relationship>) => ({
+        const normalized = (data.relationships ?? []).map((relationship: Partial<Relationship>) => ({
             ...relationship,
             sharing_preferences: { ...emptySharing, ...(relationship.sharing_preferences ?? {}) },
             companion_sharing_preferences: { ...emptySharing, ...(relationship.companion_sharing_preferences ?? {}) },
-        })) as Relationship[]);
+        })) as Relationship[];
+        setRelationships(normalized);
+        setBirthDetails(Object.fromEntries(normalized.map(relationship => [relationship.id, {
+            birth_date: relationship.companion_birth_date ?? '',
+            birth_time: relationship.companion_birth_time?.slice(0, 5) ?? '',
+            birth_place: relationship.companion_birth_place ?? '',
+        }])));
     }
 
     useEffect(() => { void load().catch(() => setError('Could not load your connections. Please refresh.')); }, []);
@@ -93,7 +105,7 @@ export default function ConnectionsPage() {
     async function invite(event: FormEvent) {
         event.preventDefault(); setBusy(true); setError(''); setNotice(''); setNewCode('');
         try {
-            const response = await fetch('/api/relationships/invite', { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() }, body: JSON.stringify({ relationship_type: kind }) });
+            const response = await fetch('/api/relationships/invite', { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() }, body: JSON.stringify({ relationship_type: kind, sharing_preferences: sharingPreferences }) });
             const data = await readJson(response);
             if (!response.ok) throw new Error(data.message ?? 'Could not create your invitation.');
             setNewCode(data.invite_code ?? '');
@@ -103,6 +115,25 @@ export default function ConnectionsPage() {
         finally { setBusy(false); }
     }
 
+    async function saveCompanionBirthDetails(event: FormEvent, relationship: Relationship) {
+        event.preventDefault();
+        const details = birthDetails[relationship.id] ?? { birth_date: '', birth_time: '', birth_place: '' };
+        if (!details.birth_date) { setError('Add your companion’s birth date to save their astrology details.'); return; }
+        setSavingBirth(relationship.id); setError(''); setNotice('');
+        try {
+            const response = await fetch('/api/relationships/' + relationship.id + '/companion-birth-details', {
+                method: 'PATCH', credentials: 'same-origin',
+                headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() },
+                body: JSON.stringify({ birth_date: details.birth_date, birth_time: details.birth_time || null, birth_place: details.birth_place.trim() || null }),
+            });
+            const data = await readJson(response);
+            if (!response.ok) throw new Error(data.message ?? data.errors?.birth_date?.[0] ?? 'Could not save birth details.');
+            setNotice('Your companion’s birth details have been updated.');
+            await load();
+        } catch (exception) { setError(exception instanceof Error ? exception.message : 'Could not save birth details.'); }
+        finally { setSavingBirth(null); }
+    }
+
     async function accept(event: FormEvent) {
         event.preventDefault(); setBusy(true); setError(''); setNotice('');
         try {
@@ -110,7 +141,7 @@ export default function ConnectionsPage() {
             const data = await readJson(response);
             if (!response.ok) throw new Error(data.message ?? 'Could not connect with that code.');
             setCode(''); window.history.replaceState({}, '', '/connections');
-            setNotice('You are connected. Each person controls what they share.');
+            setNotice('You are connected. Sharing permissions remain under the profile owner’s control.');
             await load();
         } catch (exception) { setError(exception instanceof Error ? exception.message : 'Could not accept that code.'); }
         finally { setBusy(false); }
@@ -155,6 +186,7 @@ export default function ConnectionsPage() {
                     <form className="cosmic-connection-form" onSubmit={invite}>
                         <button type="button" aria-pressed={kind === 'observer'} className={kind === 'observer' ? 'cosmic-connection-type is-selected' : 'cosmic-connection-type'} onClick={() => setKind('observer')}><span className="material-symbols-rounded">favorite</span><span><strong>Partner / support partner</strong><small>One-way daily notes from the person tracking their journey.</small></span><span className="cosmic-connection-check">{kind === 'observer' ? '✦' : '○'}</span></button>
                         <button type="button" aria-pressed={kind === 'co_tracker'} className={kind === 'co_tracker' ? 'cosmic-connection-type is-selected' : 'cosmic-connection-type'} onClick={() => setKind('co_tracker')}><span className="material-symbols-rounded">diversity_3</span><span><strong>Co-cycling / co-tracking partners</strong><small>Both people keep their own cycle, fertility or pregnancy profile.</small></span><span className="cosmic-connection-check">{kind === 'co_tracker' ? '✦' : '○'}</span></button>
+                        <div className="cosmic-invite-sharing"><p className="cosmic-eyebrow">SET YOUR BOUNDARIES FIRST</p><h3>What would you like to share?</h3><p className="cosmic-muted">Your choices will be saved with the invitation. Your companion cannot switch these on for you.</p>{sharingOptions.map(option => <button key={option.key} type="button" aria-pressed={sharingPreferences[option.key]} className={sharingPreferences[option.key] ? 'is-enabled' : ''} onClick={() => setSharingPreferences(current => ({ ...current, [option.key]: !current[option.key] }))}><span className="material-symbols-rounded">{option.icon}</span><span><strong>{option.title}</strong><small>{option.detail}</small></span><b>{sharingPreferences[option.key] ? 'On' : 'Off'}</b></button>)}</div>
                         <Button type="submit" disabled={busy}>{busy ? 'Preparing your code…' : 'Create invitation ✧'}</Button>
                     </form>
                     {newCode && <div className="cosmic-new-code"><span>Your Cosmic Sync Code</span><strong>{newCode}</strong><button type="button" onClick={() => { void navigator.clipboard?.writeText(newCode); setNotice('Code copied. Share it privately.'); }}>Copy code</button><small>Expires in seven days and can be accepted once.</small></div>}
@@ -174,7 +206,25 @@ export default function ConnectionsPage() {
                             {relationship.companion_pregnancy_summary && <article><span className="material-symbols-rounded">child_care</span><div><strong>{relationship.companion_pregnancy_summary.status === 'postpartum' ? 'Postpartum journey' : 'Pregnancy · Week ' + (relationship.companion_pregnancy_summary.gestational_week ?? '—') + (relationship.companion_pregnancy_summary.trimester ? ' · Trimester ' + relationship.companion_pregnancy_summary.trimester : '')}</strong><small>{relationship.companion_pregnancy_summary.status === 'active' ? (relationship.companion_pregnancy_summary.days_until_due !== null && relationship.companion_pregnancy_summary.days_until_due !== undefined ? relationship.companion_pregnancy_summary.days_until_due + ' days to estimated due date · ' : '') + 'Due ' + dateLabel(relationship.companion_pregnancy_summary.due_date) : 'Shared by your companion'}</small></div></article>}
                             {relationship.companion_wellbeing && <article><span className="material-symbols-rounded">favorite</span><div><strong>Latest wellbeing · {dateLabel(relationship.companion_wellbeing.log_date)}</strong><small>{[...(relationship.companion_wellbeing.mood ?? []), ...(relationship.companion_wellbeing.symptoms ?? []), relationship.companion_wellbeing.category ?? '', relationship.companion_wellbeing.energy_level ? 'Energy ' + relationship.companion_wellbeing.energy_level + '/5' : ''].filter(Boolean).join(' · ') || relationship.companion_wellbeing.notes || 'A wellbeing update was shared.'}</small></div></article>}
                         </div>}
-                        <div className="cosmic-sharing-panel"><div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">YOUR PERMISSIONS</p><h4>What you choose to share</h4></div><span aria-hidden="true">♡</span></div><p className="cosmic-muted">These settings control what your companion can see from your profile. Their own settings are separate.</p><div className="cosmic-sharing-options">{sharingOptions.map(option => <button key={option.key} type="button" disabled={savingSharing === relationship.id} aria-pressed={relationship.sharing_preferences[option.key]} className={relationship.sharing_preferences[option.key] ? 'cosmic-sharing-option is-enabled' : 'cosmic-sharing-option'} onClick={() => void toggleSharing(relationship, option.key)}><span className="material-symbols-rounded">{option.icon}</span><span><strong>{option.title}</strong><small>{option.detail}</small></span><span className="cosmic-sharing-toggle">{relationship.sharing_preferences[option.key] ? 'On' : 'Off'}</span></button>)}</div></div>
+                        {profileRole === 'support' && relationship.relationship_type === 'observer' ? <div className="cosmic-sharing-panel">
+                            <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">YOUR PERMISSIONS</p><h4>What your partner chose to share</h4></div><span aria-hidden="true">♡</span></div>
+                            <p className="cosmic-muted">Your partner selected these settings before creating your invitation. You can see their shared updates here, but only they can change these permissions.</p>
+                            <div className="cosmic-sharing-options">{sharingOptions.map(option => <div key={option.key} className={relationship.companion_sharing_preferences[option.key] ? 'cosmic-sharing-option is-enabled' : 'cosmic-sharing-option'}><span className="material-symbols-rounded">{option.icon}</span><span><strong>{option.title}</strong><small>{option.detail}</small></span><span className="cosmic-sharing-toggle">{relationship.companion_sharing_preferences[option.key] ? 'On' : 'Off'}</span></div>)}</div>
+                        </div> : <div className="cosmic-sharing-panel">
+                            <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">YOUR PERMISSIONS</p><h4>What you choose to share</h4></div><span aria-hidden="true">♡</span></div>
+                            <p className="cosmic-muted">These settings control what your companion can see from your profile. For a support connection, only the person who created the invitation can change them.</p>
+                            <div className="cosmic-sharing-options">{sharingOptions.map(option => <button key={option.key} type="button" disabled={savingSharing === relationship.id || (relationship.relationship_type === 'observer' && profileRole === 'support')} aria-pressed={relationship.sharing_preferences[option.key]} className={relationship.sharing_preferences[option.key] ? 'cosmic-sharing-option is-enabled' : 'cosmic-sharing-option'} onClick={() => void toggleSharing(relationship, option.key)}><span className="material-symbols-rounded">{option.icon}</span><span><strong>{option.title}</strong><small>{option.detail}</small></span><span className="cosmic-sharing-toggle">{relationship.sharing_preferences[option.key] ? 'On' : 'Off'}</span></button>)}</div>
+                        </div>}
+                        {profileRole !== 'support' && relationship.relationship_type === 'observer' && relationship.sharing_preferences.astrology && <div className="cosmic-birth-details-panel">
+                            <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">THEIR NATAL CHART</p><h4>Birth details for your companion</h4></div><span aria-hidden="true">✦</span></div>
+                            <p className="cosmic-muted">Because you enabled astrology, you can help update these details later too. Your companion can edit their own details; they cannot edit yours.</p>
+                            <form className="cosmic-companion-birth-form" onSubmit={event => void saveCompanionBirthDetails(event, relationship)}>
+                                <label>Birth date<input type="date" required max={new Date().toISOString().slice(0, 10)} value={birthDetails[relationship.id]?.birth_date ?? ''} onChange={event => setBirthDetails(current => ({ ...current, [relationship.id]: { ...(current[relationship.id] ?? { birth_date: '', birth_time: '', birth_place: '' }), birth_date: event.target.value } }))} /></label>
+                                <label>Birth time <small>Optional, improves rising sign and house estimates.</small><input type="time" value={birthDetails[relationship.id]?.birth_time ?? ''} onChange={event => setBirthDetails(current => ({ ...current, [relationship.id]: { ...(current[relationship.id] ?? { birth_date: '', birth_time: '', birth_place: '' }), birth_time: event.target.value } }))} /></label>
+                                <label>Birth place <small>Optional, helpful for location-sensitive placements.</small><input maxLength={160} placeholder="City, country" value={birthDetails[relationship.id]?.birth_place ?? ''} onChange={event => setBirthDetails(current => ({ ...current, [relationship.id]: { ...(current[relationship.id] ?? { birth_date: '', birth_time: '', birth_place: '' }), birth_place: event.target.value } }))} /></label>
+                                <Button type="submit" disabled={savingBirth === relationship.id}>{savingBirth === relationship.id ? 'Saving…' : 'Save birth details ✧'}</Button>
+                            </form>
+                        </div>}
                         <div className="cosmic-note-panel"><div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">A LITTLE NOTE FOR YOU</p><h4>{relationship.relationship_type === 'co_tracker' ? 'Our daily notes' : 'A note from the heart'}</h4></div><span className="cosmic-guide-stamp" aria-hidden="true">♡</span></div><p className="cosmic-muted">{relationship.relationship_type === 'co_tracker' ? 'Each of you can leave one note per day. You can edit your own note by saving again.' : 'The person who started this support connection can write one note per day. The support partner can read it and see when it was opened.'}</p>
                             {noteData?.can_write && <div className="cosmic-note-compose"><label htmlFor={'note-'+relationship.id}>Your note for today</label><textarea id={'note-'+relationship.id} maxLength={1200} rows={3} value={drafts[relationship.id] ?? noteData.today_note?.body ?? ''} onChange={event => setDrafts(current => ({ ...current, [relationship.id]: event.target.value }))} placeholder="A little note about how you’re feeling, or what would help today…" /><div><small>{(drafts[relationship.id] ?? noteData.today_note?.body ?? '').length}/1200 · One note per day</small><Button type="button" disabled={savingNote === relationship.id || !(drafts[relationship.id] ?? noteData.today_note?.body ?? '').trim()} onClick={() => void saveNote(relationship.id)}>{savingNote === relationship.id ? 'Saving…' : noteData.today_note ? 'Update today’s note' : 'Send today’s note'}</Button></div></div>}
                             <div className="cosmic-note-list">{(noteData?.notes ?? []).slice().reverse().slice(0, 4).map(note => <article key={note.id} className={note.is_mine ? 'cosmic-note is-mine' : 'cosmic-note'}><div><strong>{note.is_mine ? 'You' : note.author_name}</strong><small>{dateLabel(note.note_date)}</small></div><p>{note.body}</p><small className="cosmic-note-read">{note.is_mine ? note.read_at ? 'Read by your companion' : 'Not read yet' : note.read_at ? 'Read' : 'New note'}</small></article>)}{noteData && noteData.notes.length === 0 && <p className="cosmic-muted cosmic-note-empty">Your little notes will live here, one day at a time.</p>}</div>

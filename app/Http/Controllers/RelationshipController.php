@@ -15,6 +15,11 @@ class RelationshipController extends Controller
     {
         $validated = $request->validate([
             'relationship_type' => ['required', Rule::in(['observer', 'co_tracker'])],
+            'sharing_preferences' => ['sometimes', 'array'],
+            'sharing_preferences.cycle_details' => ['sometimes', 'boolean'],
+            'sharing_preferences.pregnancy_details' => ['sometimes', 'boolean'],
+            'sharing_preferences.wellbeing_updates' => ['sometimes', 'boolean'],
+            'sharing_preferences.astrology' => ['sometimes', 'boolean'],
         ]);
         if (($request->user()->cycleProfile?->relationship_role ?? 'tracker') === 'support') {
             throw ValidationException::withMessages([
@@ -22,12 +27,19 @@ class RelationshipController extends Controller
             ]);
         }
 
+        $sharing = array_merge([
+            'cycle_details' => false,
+            'pregnancy_details' => false,
+            'wellbeing_updates' => false,
+            'astrology' => false,
+        ], $validated['sharing_preferences'] ?? []);
+
         $relationship = Relationship::create([
             'user_one_id' => $request->user()->id,
             'relationship_type' => $validated['relationship_type'],
             'status' => 'pending',
             'invite_code' => Str::upper(Str::random(8)),
-            'sharing_preferences' => ['cycle_details' => false, 'pregnancy_details' => false, 'wellbeing_updates' => false, 'astrology' => false],
+            'sharing_preferences' => [(string) $request->user()->id => $sharing],
             'expires_at' => now()->addDays(7),
         ]);
 
@@ -46,6 +58,10 @@ class RelationshipController extends Controller
             && in_array($request->user()->id, [$relationship->user_one_id, $relationship->user_two_id], true),
             404
         );
+
+        if ($relationship->relationship_type === 'observer' && $request->user()->id !== $relationship->user_one_id) {
+            abort(403, 'Only the person who created this support invitation can change what they share.');
+        }
 
         $validated = $request->validate([
             'cycle_details' => ['sometimes', 'boolean'],
@@ -75,6 +91,69 @@ class RelationshipController extends Controller
         return response()->json(['sharing_preferences' => $preferences]);
     }
 
+    public function companionBirthDetails(Relationship $relationship, Request $request): JsonResponse
+    {
+        abort_unless(
+            $relationship->status === 'accepted'
+            && $relationship->relationship_type === 'observer'
+            && $request->user()->id === $relationship->user_one_id,
+            404
+        );
+
+        $preferences = $relationship->sharing_preferences ?? [];
+        $primaryPreferences = $preferences[(string) $relationship->user_one_id] ?? $preferences;
+        abort_unless((bool) ($primaryPreferences['astrology'] ?? false), 403, 'Enable astrology sharing before editing your companion’s birth details.');
+
+        $validated = $request->validate([
+            'birth_date' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
+            'birth_time' => ['nullable', 'date_format:H:i'],
+            'birth_place' => ['nullable', 'string', 'max:160'],
+        ]);
+
+        $companion = $relationship->companion;
+        abort_unless($companion, 404);
+        $profile = $companion->cycleProfile()->firstOrCreate([], [
+            'relationship_role' => 'support',
+            'onboarding_completed' => true,
+            'cycle_regularity' => 'unknown',
+            'timezone' => config('app.timezone', 'UTC'),
+        ]);
+        $profile->update([
+            'birth_date' => $validated['birth_date'],
+            'birth_time' => $validated['birth_time'] ?? null,
+            'birth_place' => $validated['birth_place'] ?? null,
+            'wants_astrology' => true,
+            'sun_sign' => $this->sunSign($validated['birth_date']),
+        ]);
+
+        return response()->json(['birth_details' => [
+            'birth_date' => $profile->birth_date?->format('Y-m-d'),
+            'birth_time' => $profile->birth_time,
+            'birth_place' => $profile->birth_place,
+            'sun_sign' => $profile->sun_sign,
+        ]]);
+    }
+
+    private function sunSign(string $date): string
+    {
+        $monthDay = (int) date('md', strtotime($date));
+
+        return match (true) {
+            $monthDay >= 321 && $monthDay <= 419 => 'Aries',
+            $monthDay >= 420 && $monthDay <= 520 => 'Taurus',
+            $monthDay >= 521 && $monthDay <= 620 => 'Gemini',
+            $monthDay >= 621 && $monthDay <= 722 => 'Cancer',
+            $monthDay >= 723 && $monthDay <= 822 => 'Leo',
+            $monthDay >= 823 && $monthDay <= 922 => 'Virgo',
+            $monthDay >= 923 && $monthDay <= 1022 => 'Libra',
+            $monthDay >= 1023 && $monthDay <= 1121 => 'Scorpio',
+            $monthDay >= 1122 && $monthDay <= 1221 => 'Sagittarius',
+            $monthDay >= 1222 || $monthDay <= 119 => 'Capricorn',
+            $monthDay >= 120 && $monthDay <= 218 => 'Aquarius',
+            default => 'Pisces',
+        };
+    }
+
     public function accept(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -93,6 +172,13 @@ class RelationshipController extends Controller
         }
 
         $profile = $request->user()->cycleProfile;
+        if ($relationship->relationship_type === 'observer'
+            && (($profile?->relationship_role ?? 'tracker') !== 'support')) {
+            throw ValidationException::withMessages([
+                'invite_code' => 'This is a support-partner invitation. Register or sign in with the support-partner role to join.',
+            ]);
+        }
+
         if ($relationship->relationship_type === 'co_tracker'
             && (($profile?->relationship_role ?? 'tracker') === 'support' || ! $profile?->onboarding_completed)) {
             throw ValidationException::withMessages([
@@ -119,7 +205,7 @@ class RelationshipController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Your Crescent spaces are now connected. You can review sharing preferences before sharing cycle details.',
+            'message' => 'Your Crescent spaces are connected. The person who created the invitation controls what they share.',
             'relationship_id' => $relationship->id,
             'relationship_type' => $relationship->relationship_type,
             'status' => $relationship->status,

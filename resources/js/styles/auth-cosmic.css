@@ -12,3 +12,15 @@
 .auth-role-picker button strong,.auth-role-picker button small{display:block}
 .auth-role-picker button strong{font-size:.82rem}
 .auth-role-picker button small{margin-top:3px;color:#95869a;font-size:.72rem;line-height:1.4}
+
+
+.auth-invite-setup{display:grid;gap:12px;margin:4px 0 2px;padding:14px;border:1px solid #eadce9;border-radius:16px;background:linear-gradient(145deg,#fffafd,#f8f3ff)}
+.auth-invite-setup>label,.auth-birth-fields label{display:grid;gap:6px;color:#695770;font-size:.8rem;font-weight:700}
+.auth-invite-setup label>small,.auth-birth-fields label>small{color:#97889c;font-size:.7rem;font-weight:500;line-height:1.4}
+.auth-invite-code-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.auth-invite-code-row input{min-width:0;text-transform:uppercase}
+.auth-invite-confirmation{margin:0;padding:10px 12px;border-radius:12px;background:#f3eef9;color:#765c83;font-size:.78rem;line-height:1.45}
+.auth-birth-fields{display:grid;gap:10px;margin:0;padding:12px;border:1px solid #e9dce9;border-radius:13px}
+.auth-birth-fields legend{padding:0 5px;color:#8c6b98;font-size:.8rem;font-weight:800}
+.auth-birth-fields input{width:100%;box-sizing:border-box}
+@media(max-width:480px){.auth-invite-code-row{grid-template-columns:1fr}.auth-invite-code-row button{width:100%}}

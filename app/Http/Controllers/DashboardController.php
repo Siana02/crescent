@@ -120,6 +120,9 @@ class DashboardController extends Controller
                 }
                 $companionProfile = $companion?->cycleProfile;
                 $companionRole = $companionProfile?->relationship_role ?? 'tracker';
+                $astrologyShared = $relationship->relationship_type === 'observer'
+                    ? (bool) ($myPreferences['astrology'] || $companionPreferences['astrology'])
+                    : (bool) $companionPreferences['astrology'];
                 $companionJourney = $companionRole === 'support' ? null : ($companionProfile?->active_journey ?? 'cycle');
                 $journeyIsShared = $companionJourney === null ? false : (
                     $companionJourney === 'pregnancy' || $companionJourney === 'postpartum'
@@ -220,9 +223,12 @@ class DashboardController extends Controller
                     'companion_cycle_summary' => $sharedCycleSummary,
                     'companion_pregnancy_summary' => $sharedPregnancySummary,
                     'companion_wellbeing' => $sharedWellbeing,
-                    'companion_sun_sign' => $companionPreferences['astrology'] ? $companionProfile?->sun_sign : null,
-                    'companion_moon_sign' => $companionPreferences['astrology'] ? $companionProfile?->moon_sign : null,
-                    'companion_rising_sign' => $companionPreferences['astrology'] ? $companionProfile?->rising_sign : null,
+                    'companion_sun_sign' => $astrologyShared ? $companionProfile?->sun_sign : null,
+                    'companion_moon_sign' => $astrologyShared ? $companionProfile?->moon_sign : null,
+                    'companion_rising_sign' => $astrologyShared ? $companionProfile?->rising_sign : null,
+                    'companion_birth_date' => $astrologyShared ? $companionProfile?->birth_date?->format('Y-m-d') : null,
+                    'companion_birth_time' => $astrologyShared ? $companionProfile?->birth_time : null,
+                    'companion_birth_place' => $astrologyShared ? $companionProfile?->birth_place : null,
                     'sharing_preferences' => $myPreferences,
                     'companion_sharing_preferences' => $companionPreferences,
                     'sharing_enabled' => (bool) ($companionPreferences['cycle_details'] || $companionPreferences['pregnancy_details']),

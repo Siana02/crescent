@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import PregnancyDashboard from './PregnancyDashboard';
 import PostpartumDashboard from './PostpartumDashboard';
 import CycleDashboardHome from './CycleDashboardHome';
+import SupportDashboard from './SupportDashboard';
 
 type PregnancyCheckin = { log_date:string; symptoms:string[]; mood:string|null; energy_level:string|null; notes:string|null };
 type PregnancySummary = {
@@ -15,13 +16,22 @@ type DashboardData = {
   average_cycle_length:number|null;average_period_length:number|null;cycle_regularity:'regular'|'irregular'|'unknown';timezone:string;
   birth_date:string|null;contraception_type:string|null;primary_goal:string;birth_time:string|null;birth_place:string|null;
   sun_sign:string|null;moon_sign:string|null;rising_sign:string|null;onboarding_completed:boolean;display_name:string|null;
-  wants_astrology:boolean;partner_preference:'solo'|'observer'|'co_tracker';active_journey:'cycle'|'fertility'|'pregnancy'|'postpartum';
+  wants_astrology:boolean;partner_preference:'solo'|'observer'|'co_tracker';active_journey:'cycle'|'fertility'|'pregnancy'|'postpartum';relationship_role:'tracker'|'support';
  };
  latest_period:{start_date:string;end_date:string|null}|null;
  period_history?:{start_date:string;end_date:string|null}[];
  cycle_day:number|null;estimated_next_period:string|null;days_until_estimate:number|null;
  fertility_window:{ovulation_date:string;start_date:string;end_date:string}|null;
- relationships?:{id:number;relationship_type:'observer'|'co_tracker';status:'pending'|'accepted'|'revoked';invite_code:string|null;companion_name:string|null;sharing_enabled:boolean}[];
+ relationships?:{
+  id:number;relationship_type:'observer'|'co_tracker';status:'pending'|'accepted'|'revoked';invite_code:string|null;companion_name:string|null;sharing_enabled:boolean;
+  companion_journey:'cycle'|'fertility'|'pregnancy'|'postpartum'|null;
+  companion_cycle_summary:{last_period_start:string;cycle_day:number;estimated_next_period:string|null}|null;
+  companion_pregnancy_summary:{status:string;due_date:string;gestational_week:number|null;trimester:number|null;days_until_due:number|null}|null;
+  companion_wellbeing:{log_date:string;mood?:string[];symptoms?:string[];energy_level?:number|null;category?:string;notes?:string|null}|null;
+  companion_sun_sign:string|null;companion_moon_sign:string|null;companion_rising_sign:string|null;
+  sharing_preferences:Record<'cycle_details'|'pregnancy_details'|'wellbeing_updates'|'astrology',boolean>;
+  companion_sharing_preferences:Record<'cycle_details'|'pregnancy_details'|'wellbeing_updates'|'astrology',boolean>;
+ }[];
  today_checkin:{log_date:string;energy_level:string|null;mood:string|null;symptoms:string[];notes:string|null}|null;
  pregnancy:PregnancySummary|null;
 };
@@ -42,6 +52,7 @@ export default function DashboardPage(){
  async function logout(){try{await fetch('/auth/logout',{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','X-CSRF-TOKEN':csrfToken()}});}finally{window.location.assign('/');}}
  if(isLoading)return <main className="dashboard-loading" aria-live="polite">Opening your little universe…</main>;
  if(!data)return <main className="dashboard-loading" role="alert">{error||'We could not open your dashboard. Please refresh and try again.'}</main>;
+ if(data.profile.relationship_role==='support')return <SupportDashboard data={data} onLogout={logout}/>;
  if(data.profile.active_journey==='pregnancy')return <PregnancyDashboard data={data} onLogout={logout} onRefresh={loadDashboard}/>;
  if(data.profile.active_journey==='postpartum')return <PostpartumDashboard data={data} onLogout={logout} onRefresh={loadDashboard}/>;
  return <CycleDashboardHome data={data} onLogout={logout} onRefresh={loadDashboard}/>;

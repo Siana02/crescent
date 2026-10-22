@@ -18,6 +18,7 @@ Route::view('/', 'welcome');
 Route::view('/login', 'welcome')->name('login');
 Route::view('/register', 'welcome')->name('register');
 
+Route::get('/auth/invitation-preview', [AuthController::class, 'invitationPreview'])->middleware('throttle:20,1');
 Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 
@@ -28,10 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', fn () => view('welcome'));
     Route::get('/dashboard', function (Request $request) {
         $profile = $request->user()->cycleProfile;
-        if (($profile?->relationship_role ?? 'tracker') === 'support') {
-            return redirect('/connections');
-        }
-        if (! $profile?->onboarding_completed) {
+        if (($profile?->relationship_role ?? 'tracker') !== 'support' && ! $profile?->onboarding_completed) {
             return redirect('/onboarding');
         }
 
@@ -66,6 +64,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/relationships/invite', [RelationshipController::class, 'invite'])->middleware('throttle:10,1');
     Route::post('/api/relationships/accept', [RelationshipController::class, 'accept'])->middleware('throttle:10,1');
     Route::patch('/api/relationships/{relationship}/sharing', [RelationshipController::class, 'sharing']);
+    Route::patch('/api/relationships/{relationship}/companion-birth-details', [RelationshipController::class, 'companionBirthDetails']);
     Route::get('/api/relationships/{relationship}/notes', [RelationshipNotesController::class, 'index']);
     Route::post('/api/relationships/{relationship}/notes', [RelationshipNotesController::class, 'store'])->middleware('throttle:20,1');
     Route::get('/api/relationships/{relationship}/insights', [RelationshipInsightsController::class, 'show'])->middleware('throttle:20,1');
