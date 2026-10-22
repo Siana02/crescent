@@ -77,7 +77,9 @@ function cycleDayAt(start:string|null|undefined,date:string){if(!start)return nu
 const protectionOptions=[['condom_external','External condom'],['condom_internal','Internal condom'],['pill','Birth control pill'],['iud','IUD'],['implant','Implant'],['injection','Injection'],['patch_ring','Patch / vaginal ring'],['withdrawal','Withdrawal'],['fertility_awareness','Fertility awareness'],['none','No protection / unprotected'],['other','Other / not sure']] as const;
 const flowOptions=[['spotting','A little spotting',1],['light','Light',2],['medium','Medium',3],['heavy','Heavy',4],['other','Not sure',0]] as const;
 function csrf(){return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content??'';}
-function dateKey(date:Date){return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');}\nfunction addDateDays(value:string,days:number){const d=new Date(value+'T12:00:00');d.setDate(d.getDate()+days);return dateKey(d);}
+function dateKey(date:Date){return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+}
+function addDateDays(value:string,days:number){const d=new Date(value+'T12:00:00');d.setDate(d.getDate()+days);return dateKey(d);}
 function labelDate(value:string|null|undefined,options:Intl.DateTimeFormatOptions={month:'short',day:'numeric'}){return value?new Intl.DateTimeFormat(undefined,options).format(new Date(value+'T12:00:00')):'Not available';}
 function moonSymbol(name:string){return ({'New moon':'🌑','Waxing crescent':'🌒','First quarter':'🌓','Waxing gibbous':'🌔','Full moon':'🌕','Waning gibbous':'🌖','Last quarter':'🌗','Waning crescent':'🌘'} as Record<string,string>)[name]??'🌑';}
 function errorText(result:{message?:string;errors?:Record<string,string[]>},fallback:string){return(result.errors?Object.values(result.errors)[0]?.[0]:undefined)??result.message??fallback;}
