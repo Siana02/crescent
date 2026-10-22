@@ -55,30 +55,38 @@ function HoroscopeLayout({content}:{content:DailyContent}) {
  </div>;
 }
 function WeeklyForecast({content,onRetry}:{content:DailyContent;onRetry:()=>void}) {
+ const [expanded,setExpanded]=useState(false);
  const normalized=unwrapContent(content);
  const rawDays=normalized?.days??normalized?.forecast??normalized?.weekly;
  const days:unknown[]=Array.isArray(rawDays)?rawDays:[];
- const dayRows=days.map((day,index)=>{
-  if(typeof day==='string')return {title:'Day '+(index+1),text:day};
+ let rows:{title:string;text:string}[]=days.map((day,index)=>{
+  if(typeof day==='string')return {title:'Day '+String(index+1).padStart(2,'0'),text:day};
   const d=day as Record<string,unknown>;
-  return {title:String(d.day_name??d.dayName??d.day??d.date??d.title??('Day '+(index+1))),text:String(d.summary??d.forecast??d.description??d.text??d.content??d.overview??'')};
- }).filter(day=>day.text.trim());
- if(dayRows.length){
-  return <div className="cosmic-week-forecast-grid">{dayRows.slice(0,7).map((day,index)=><article key={day.title+'-'+index} className="cosmic-week-forecast-day"><span>{String(index+1).padStart(2,'0')}</span><h4>{day.title}</h4><p>{day.text}</p></article>)}</div>;
+  return {title:String(d.day_name??d.dayName??d.day??d.date??d.title??('Day '+String(index+1).padStart(2,'0'))),text:String(d.summary??d.forecast??d.description??d.text??d.content??d.overview??'')};
+ }).filter(day=>day.text.trim()).slice(0,7);
+ if(!rows.length){
+  const text=contentText(normalized,'');
+  const markers:{label:string;start:number;end:number}[]=[];
+  const dayPattern=/\\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Day\\s*[1-7])(?:,?\\s+[A-Z][a-z]+\\s+\\d{1,2})?\\s*(?:[:—–-])\\s*/gi;
+  let match:RegExpExecArray|null;
+  while((match=dayPattern.exec(text)))markers.push({label:match[1].replace(/\\s+/g,' '),start:match.index,end:dayPattern.lastIndex});
+  if(markers.length>=2){
+   rows=markers.map((marker,index)=>({title:marker.label,text:text.slice(marker.end,markers[index+1]?.start??text.length).trim()})).filter(row=>row.text).slice(0,7);
+  } else {
+   const paragraphs=text.split(/\\n\\s*\\n/).map(p=>p.trim()).filter(Boolean);
+   rows=(paragraphs.length?paragraphs:[text].filter(Boolean)).slice(0,7).map((paragraph,index)=>({title:'Day '+String(index+1).padStart(2,'0'),text:paragraph}));
+  }
  }
- const text=contentText(normalized,'');
- const markers:{label:string;start:number;end:number}[]=[];
- const dayPattern=/\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Day\s*[1-7])(?:,?\s+[A-Z][a-z]+\s+\d{1,2})?\s*(?:[:—–-])\s*/gi;
- let match:RegExpExecArray|null;
- while((match=dayPattern.exec(text)))markers.push({label:match[1].replace(/\s+/g,' '),start:match.index,end:dayPattern.lastIndex});
- if(markers.length>=2){
-  const rows=markers.map((marker,index)=>({title:marker.label,text:text.slice(marker.end,markers[index+1]?.start??text.length).trim()})).filter(row=>row.text);
-  return <div className="cosmic-week-forecast-grid">{rows.slice(0,7).map((day,index)=><article key={day.title+'-'+index} className="cosmic-week-forecast-day"><span>{String(index+1).padStart(2,'0')}</span><h4>{day.title}</h4><p>{day.text}</p></article>)}</div>;
- }
- const paragraphs=text.split(/\n\s*\n/).map(p=>p.trim()).filter(Boolean);
- const fallback=paragraphs.length?paragraphs:[text].filter(Boolean);
- if(fallback.length)return <div className="cosmic-week-forecast-copy">{fallback.slice(0,7).map((paragraph,index)=><article key={index}><span>{String(index+1).padStart(2,'0')}</span><p>{paragraph}</p></article>)}</div>;
- return <div className="cosmic-week-forecast-empty"><p>The weekly forecast is temporarily unavailable. Your daily sky and upcoming-event notes remain available above.</p><Button variant="outline" onClick={onRetry}>Try the forecast again</Button></div>;
+ if(!rows.length)return <div className="cosmic-week-forecast-empty"><p>The weekly forecast is temporarily unavailable. Your daily sky and upcoming-event notes remain available above.</p><Button variant="outline" onClick={onRetry}>Try the forecast again</Button></div>;
+ const visibleRows=expanded?rows:rows.slice(0,1);
+ return <div className={'cosmic-week-forecast'+(expanded?' is-expanded':'')}>
+  <div className="cosmic-week-forecast-grid">{visibleRows.map((day,index)=><article key={day.title+'-'+index} className={'cosmic-week-forecast-day cosmic-week-forecast-day--'+(index+1)}>
+   <span>{String(index+1).padStart(2,'0')}</span><h4>{day.title}</h4><p>{day.text}</p>
+  </article>)}</div>
+  <button type="button" className="cosmic-week-forecast-toggle" aria-expanded={expanded} onClick={()=>setExpanded(value=>!value)}>
+   <span>{expanded?'Show day 01 only':'Read the full week'}</span><span className="cosmic-week-forecast-toggle__icon" aria-hidden="true">{expanded?'⌃':'⌄'}</span>
+  </button>
+ </div>;
 }
 type SkyResponse = { placements?: Placement[]; calculated_at?: string; note?: string; message?: string };
 type DailyContent = ContentResponse | null;
