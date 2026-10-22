@@ -6,6 +6,7 @@ export default function InstallAppPrompt() {
     const [installEvent, setInstallEvent] = useState<InstallPromptEvent | null>(null);
     const [installed, setInstalled] = useState(false);
     const [message, setMessage] = useState('');
+    const [helpOpen, setHelpOpen] = useState(false);
 
     useEffect(() => {
         if (window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone) {
@@ -34,9 +35,10 @@ export default function InstallAppPrompt() {
             return;
         }
         const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+        setHelpOpen(true);
         setMessage(isIOS
-            ? 'To install Crescent: tap Share in Safari, then “Add to Home Screen”.'
-            : 'Open your browser menu and choose “Install app” or “Add to Home screen”.');
+            ? 'On iPhone or iPad, open this page in Safari and use Share → Add to Home Screen.'
+            : 'If your browser supports installation, use its Install app option. Check the steps below if it is not offered.');
     };
 
     return <aside className="crescent-install-prompt" aria-label="Install Crescent">
@@ -45,6 +47,7 @@ export default function InstallAppPrompt() {
             <strong>Take Crescent with you</strong>
             <span>Install it on your phone for an app-like experience.</span>
             {message && <span role="status">{message}</span>}
+            {helpOpen && <div className="crescent-install-help"><strong>Install Crescent on your phone</strong><ol><li><b>Android (Chrome):</b> tap ⋮, then “Install app” or “Add to Home screen”.</li><li><b>iPhone/iPad:</b> open Crescent in Safari, tap Share, scroll to “Add to Home Screen”, then tap Add.</li><li>If no install option appears, update your browser and open the secure Crescent website directly—not inside another app.</li></ol><button type="button" onClick={() => setHelpOpen(false)}>Got it</button></div>}
         </div>
         <button type="button" onClick={install}>Install</button>
         <button type="button" className="crescent-install-dismiss" aria-label="Dismiss install prompt" onClick={() => setInstalled(true)}>×</button>
