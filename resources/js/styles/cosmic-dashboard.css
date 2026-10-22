@@ -450,3 +450,12 @@
 
 
 .cosmic-own-journey{display:inline-flex;align-items:center;margin:12px 0 0;padding:7px 12px;border:1px solid rgba(194,155,191,.35);border-radius:999px;background:rgba(255,255,255,.68);color:#826987;font-size:.8rem}
+
+
+.cosmic-shared-summaries{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0 0}
+.cosmic-shared-summaries article{display:flex;align-items:flex-start;gap:10px;padding:13px;border:1px solid #e8d8e9;border-radius:15px;background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(250,243,255,.9))}
+.cosmic-shared-summaries article>.material-symbols-rounded{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:10px;background:#f0e3f3;color:#9873a0;font-size:20px}
+.cosmic-shared-summaries strong,.cosmic-shared-summaries small{display:block}
+.cosmic-shared-summaries strong{color:#5f4c6a;font-size:.78rem;line-height:1.4}
+.cosmic-shared-summaries small{margin-top:5px;color:#8e7e97;font-size:.7rem;line-height:1.5}
+@media(max-width:850px){.cosmic-shared-summaries{grid-template-columns:1fr}}
