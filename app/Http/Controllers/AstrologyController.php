@@ -151,15 +151,8 @@ class AstrologyController extends Controller
 
     public function daily(Request $request): JsonResponse
     {
-        $profile = $request->user()->cycleProfile;
-        $sign = Str::lower((string) $profile?->sun_sign);
+        $sign = Str::lower((string) $request->user()->cycleProfile?->sun_sign);
         $allowed = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'];
-        if (! in_array($sign, $allowed, true) && $profile?->birth_date && $profile?->birth_place) {
-            // A first visit can reach this endpoint before the chart has saved its
-            // Sun sign. Calculate the chart once, then re-read the profile.
-            $this->chart($request);
-            $sign = Str::lower((string) $request->user()->cycleProfile()->first()?->sun_sign);
-        }
         if (! in_array($sign, $allowed, true)) {
             return response()->json(['message' => 'Add your birthday in Profile & settings to see your Sun-sign reading.'], 422);
         }
