@@ -50,7 +50,7 @@ class DashboardController extends Controller
         $fertilityWindow = null;
 
         if ($estimatedNext && $profile->contraception_type === 'none' && $profile->cycle_regularity !== 'irregular') {
-            $estimatedOvulation = $estimatedNext->subDays(14);
+            $estimatedOvulation = $estimatedNext->subDays(15);
             $fertilityWindow = [
                 'ovulation_date' => $estimatedOvulation->toDateString(),
                 'start_date' => $estimatedOvulation->subDays(5)->toDateString(),
@@ -140,20 +140,37 @@ class DashboardController extends Controller
                 $sharedWellbeing = null;
 
                 if ($companion && $companionJourney && in_array($companionJourney, ['cycle', 'fertility'], true) && $companionPreferences['cycle_details']) {
-                    $lastSharedPeriod = $companion->periodLogs()->orderByDesc('start_date')->first();
+                    $sharedPeriods = $companion->periodLogs()->orderByDesc('start_date')->limit(12)->get();
+                    $lastSharedPeriod = $sharedPeriods->first();
                     if ($lastSharedPeriod) {
                         $companionTimezone = $companionProfile?->timezone ?: config('app.timezone', 'UTC');
                         $todayForCompanion = CarbonImmutable::today($companionTimezone);
                         $periodStart = CarbonImmutable::parse($lastSharedPeriod->start_date->format('Y-m-d'), $companionTimezone)->startOfDay();
                         $hormonalMethods = ['pill', 'hormonal_iud', 'implant', 'injection', 'patch', 'ring'];
-                        $estimatedNext = $companionProfile?->average_cycle_length
-                            && ! in_array($companionProfile->contraception_type, $hormonalMethods, true)
-                            ? $periodStart->addDays($companionProfile->average_cycle_length)->toDateString()
+                        $canEstimateCycle = $companionProfile?->average_cycle_length
+                            && ! in_array($companionProfile->contraception_type, $hormonalMethods, true);
+                        $canEstimateFertility = $canEstimateCycle
+                            && $companionProfile?->contraception_type === 'none'
+                            && $companionProfile?->cycle_regularity !== 'irregular';
+                        $estimatedNextDate = $canEstimateCycle
+                            ? $periodStart->addDays((int) $companionProfile->average_cycle_length)
                             : null;
+                        $estimatedOvulation = $canEstimateFertility ? $estimatedNextDate?->subDays(15) : null;
                         $sharedCycleSummary = [
                             'last_period_start' => $lastSharedPeriod->start_date->format('Y-m-d'),
                             'cycle_day' => (int) $periodStart->diffInDays($todayForCompanion) + 1,
-                            'estimated_next_period' => $estimatedNext,
+                            'estimated_next_period' => $estimatedNextDate?->toDateString(),
+                            'average_cycle_length' => $companionProfile?->average_cycle_length,
+                            'average_period_length' => $companionProfile?->average_period_length,
+                            'cycle_regularity' => $companionProfile?->cycle_regularity ?? 'unknown',
+                            'fertility_estimate_available' => (bool) $canEstimateFertility,
+                            'estimated_ovulation_date' => $estimatedOvulation?->toDateString(),
+                            'estimated_fertile_start' => $estimatedOvulation?->subDays(5)->toDateString(),
+                            'estimated_fertile_end' => $estimatedOvulation?->addDay()->toDateString(),
+                            'period_history' => $sharedPeriods->map(fn ($period) => [
+                                'start_date' => $period->start_date->format('Y-m-d'),
+                                'end_date' => $period->end_date?->format('Y-m-d'),
+                            ])->values(),
                         ];
                     }
                 }
