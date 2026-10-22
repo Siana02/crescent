@@ -120,9 +120,11 @@ class DashboardController extends Controller
                 }
                 $companionProfile = $companion?->cycleProfile;
                 $companionRole = $companionProfile?->relationship_role ?? 'tracker';
+                $myProfile = $user->cycleProfile;
+                $primaryPreferences = $allPreferences[(string) $relationship->user_one_id] ?? $allPreferences;
                 $astrologyShared = $relationship->relationship_type === 'observer'
-                    ? (bool) ($myPreferences['astrology'] || $companionPreferences['astrology'])
-                    : (bool) $companionPreferences['astrology'];
+                    ? (bool) (($primaryPreferences['astrology'] ?? false) && $myProfile?->wants_astrology && $companionProfile?->wants_astrology)
+                    : (bool) ($myPreferences['astrology'] && $companionPreferences['astrology'] && $myProfile?->wants_astrology && $companionProfile?->wants_astrology);
                 $companionJourney = $companionRole === 'support' ? null : ($companionProfile?->active_journey ?? 'cycle');
                 $journeyIsShared = $companionJourney === null ? false : (
                     $companionJourney === 'pregnancy' || $companionJourney === 'postpartum'
