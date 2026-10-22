@@ -205,8 +205,8 @@ class RelationshipInsightsController extends Controller
             $index = (int) (crc32($today.'|'.$relationship->id.'|'.($mineForInsight?->sun_sign ?? '').'|'.($theirsForInsight?->sun_sign ?? '')) % count($themes));
             $chosen = $themes[$index];
             $personalTransits = $shareAstrology ? array_merge(
-                $this->aspects($sky, $mineChart['placements'] ?? [], true, (bool) ($mineChart['birth_time_known'] ?? false), true),
-                $this->aspects($sky, $theirChart['placements'] ?? [], true, (bool) ($theirChart['birth_time_known'] ?? false), true)
+                array_map(fn (array $aspect) => array_merge($aspect, ['chart_owner' => 'Your chart']), $this->aspects($sky, $mineChart['placements'] ?? [], true, (bool) ($mineChart['birth_time_known'] ?? false), true)),
+                array_map(fn (array $aspect) => array_merge($aspect, ['chart_owner' => 'Companion chart']), $this->aspects($sky, $theirChart['placements'] ?? [], true, (bool) ($theirChart['birth_time_known'] ?? false), true))
             ) : [];
             usort($personalTransits, fn (array $a, array $b) => $a['orb'] <=> $b['orb']);
             $personalTransits = array_slice($personalTransits, 0, 5);
