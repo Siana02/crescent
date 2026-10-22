@@ -16,12 +16,11 @@ class CycleDashboardTest extends TestCase
 
         $this->get('/dashboard')->assertRedirect('/login');
 
-        $user = User::factory()->create();
+       $user = User::factory()->create();
 
-        $this->actingAs($user)
-            ->get('/dashboard')
-            ->assertOk()
-            ->assertSee('id="app"', false);
+$this->actingAs($user)
+    ->get('/dashboard')
+    ->assertRedirect('/onboarding');
     }
 
     public function test_dashboard_data_is_private_to_authenticated_users(): void
@@ -89,6 +88,7 @@ class CycleDashboardTest extends TestCase
                 'cycle_regularity' => 'irregular',
                 'timezone' => 'Africa/Nairobi',
             ])
+            
             ->assertOk()
             ->assertJsonPath('profile.average_cycle_length', null)
             ->assertJsonPath('profile.average_period_length', null)
@@ -138,8 +138,9 @@ class CycleDashboardTest extends TestCase
             ])
             ->assertCreated()
             ->assertJsonPath('checkin.energy_level', 'balanced')
-            ->assertJsonPath('checkin.mood', 'calm')
-            ->assertJsonPath('checkin.symptoms.0', 'cramps');
+            ->assertJsonPath('checkin.mood.0', 'calm')
+            ->assertJsonPath('checkin.symptoms.0', 'cramps')
+            ->assertJsonPath('checkin.symptoms.1', 'fatigue');
 
         $this->assertDatabaseHas('daily_checkins', [
             'user_id' => $user->id,

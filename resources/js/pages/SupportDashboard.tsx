@@ -33,7 +33,6 @@ const labels: { key: SharingKey; title: string; icon: string }[] = [
 function dateLabel(value: string) {
     return new Date(value + 'T12:00:00').toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
 }
-function csrfToken() { return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? ''; }
 function cyclePhase(day: number | null) {
     if (!day || day < 1) return { key: 'unknown', label: 'Phase not available', title: 'Let them lead the rhythm', summary: 'Cycle timing is an estimate. Their own check-in is more useful than a calendar prediction.' };
     if (day <= 5) return { key: 'menstrual', label: 'Menstrual phase · estimated', title: 'Comfort first, plans flexible', summary: 'Bleeding days can come with cramps, fatigue or headaches for some people. Others feel well; ask what today feels like for them.' };

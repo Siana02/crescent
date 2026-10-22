@@ -106,8 +106,7 @@ export default function ConnectionsPage() {
     }
 
     useEffect(() => { void load().catch(() => setError('Could not load your connections. Please refresh.')); }, []);
-    useEffect(() => {
-        async function toggleAstrologyConsent(relationship: Relationship) {
+    async function toggleAstrologyConsent(relationship: Relationship) {
         const next = !astrologyOptIn;
         setSavingAstrologyOptIn(true); setError(''); setNotice('');
         try {
@@ -125,7 +124,8 @@ export default function ConnectionsPage() {
         finally { setSavingAstrologyOptIn(false); }
     }
 
-    const accepted = relationships.filter(relationship => relationship.status === 'accepted');
+    useEffect(() => {
+        const accepted = relationships.filter(relationship => relationship.status === 'accepted');
         accepted.forEach(relationship => {
             fetch('/api/relationships/' + relationship.id + '/notes', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
                 .then(readJson).then(data => {
@@ -235,7 +235,7 @@ export default function ConnectionsPage() {
             <section className="cosmic-welcome cosmic-connections-welcome"><div><p className="cosmic-eyebrow">YOUR SPACE, YOUR BOUNDARIES</p><h1>{displayName ? displayName + ', closer' : 'Closer'}, <em>on your terms.</em></h1><p>Two accounts, two personal journeys, one shared space when you choose. Cycle and pregnancy details stay private until their owner chooses to share.</p><div className="cosmic-connection-promise"><span>✧</span> Consent first · Separate journeys · Gentle connection</div><p className="cosmic-own-journey">{profileRole === 'support' ? 'Your role · Support partner' : 'Your journey · ' + journeyLabel(ownJourney)}</p></div><div className="cosmic-welcome__art"><span>💌</span><i>✦</i></div></section>
             {error && <p role="alert" className="cosmic-toast is-error">{error}</p>}{notice && <p role="status" className="cosmic-toast">{notice}</p>}
             <div className="cosmic-connections-grid">
-                {profileRole !== 'support' ? <section hidden={profileRole !== 'support' && relationships.some(item => item.relationship_type === 'observer' && (item.status === 'accepted' || (item.status === 'pending' && (!item.expires_at || new Date(item.expires_at).getTime() > Date.now()))))} className="cosmic-week-card cosmic-connection-action"><p className="cosmic-eyebrow">INVITE SOMEONE YOU TRUST</p><h2>Create a Cosmic Sync Code</h2><p className="cosmic-muted">Choose the connection that fits. You can change what you share after they accept.</p>
+                {profileRole !== 'support' ? <section hidden={relationships.some(item => item.relationship_type === 'observer' && (item.status === 'accepted' || (item.status === 'pending' && (!item.expires_at || new Date(item.expires_at).getTime() > Date.now()))))} className="cosmic-week-card cosmic-connection-action"><p className="cosmic-eyebrow">INVITE SOMEONE YOU TRUST</p><h2>Create a Cosmic Sync Code</h2><p className="cosmic-muted">Choose the connection that fits. You can change what you share after they accept.</p>
                     <form className="cosmic-connection-form" onSubmit={invite}>
                         <button type="button" aria-pressed={kind === 'observer'} className={kind === 'observer' ? 'cosmic-connection-type is-selected' : 'cosmic-connection-type'} onClick={() => setKind('observer')}><span className="material-symbols-rounded">favorite</span><span><strong>Partner / support partner</strong><small>One-way daily notes from the person tracking their journey.</small></span><span className="cosmic-connection-check">{kind === 'observer' ? '✦' : '○'}</span></button>
                         <button type="button" aria-pressed={kind === 'co_tracker'} className={kind === 'co_tracker' ? 'cosmic-connection-type is-selected' : 'cosmic-connection-type'} onClick={() => setKind('co_tracker')}><span className="material-symbols-rounded">diversity_3</span><span><strong>Co-cycling / co-tracking partners</strong><small>Both people keep their own cycle, fertility or pregnancy profile.</small></span><span className="cosmic-connection-check">{kind === 'co_tracker' ? '✦' : '○'}</span></button>
