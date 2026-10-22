@@ -20,6 +20,8 @@ function csrfToken(): string {
 export default function AuthPage({ mode }: AuthPageProps) {
     const isRegister = mode === 'register';
     const [name, setName] = useState('');
+    const [relationshipRole, setRelationshipRole] = useState<'tracker' | 'support'>(() => new URLSearchParams(window.location.search).get('role') === 'support' ? 'support' : 'tracker');
+    const inviteCode = new URLSearchParams(window.location.search).get('code')?.trim().toUpperCase() ?? '';
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [passwordConfirmation, setPasswordConfirmation] = useState('');
@@ -41,7 +43,7 @@ export default function AuthPage({ mode }: AuthPageProps) {
                     'X-CSRF-TOKEN': csrfToken(),
                 },
                 body: JSON.stringify({
-                    ...(isRegister ? { name, password_confirmation: passwordConfirmation } : {}),
+                    ...(isRegister ? { name, password_confirmation: passwordConfirmation, relationship_role: relationshipRole } : {}),
                     email,
                     password,
                 }),
@@ -54,7 +56,11 @@ export default function AuthPage({ mode }: AuthPageProps) {
                 return;
             }
 
-            window.location.assign('/dashboard');
+            const codeQuery = inviteCode ? `?code=${encodeURIComponent(inviteCode)}` : '';
+            if (isRegister && relationshipRole === 'support') window.location.assign(`/connections${codeQuery}`);
+            else if (isRegister) window.location.assign(`/onboarding${codeQuery}`);
+            else if (inviteCode) window.location.assign(`/connections${codeQuery}`);
+            else window.location.assign('/dashboard');
         } catch {
             setError('We could not reach Crescent. Check your connection and try again.');
         } finally {
@@ -83,6 +89,7 @@ export default function AuthPage({ mode }: AuthPageProps) {
                     </p>
 
                     <form className="auth-form" onSubmit={handleSubmit}>
+                        {isRegister && <fieldset className="auth-role-picker"><legend>How will you use Crescent?</legend><button type="button" className={relationshipRole === 'tracker' ? 'is-selected' : ''} aria-pressed={relationshipRole === 'tracker'} onClick={() => setRelationshipRole('tracker')}><span aria-hidden="true">🌙</span><span><strong>I’m tracking my own journey</strong><small>Cycle, fertility, pregnancy or postpartum.</small></span></button><button type="button" className={relationshipRole === 'support' ? 'is-selected' : ''} aria-pressed={relationshipRole === 'support'} onClick={() => setRelationshipRole('support')}><span aria-hidden="true">💌</span><span><strong>I’m here to support my partner</strong><small>A lighter setup, without reproductive tracking.</small></span></button></fieldset>}
                         {isRegister && (
                             <label>
                                 Your name
