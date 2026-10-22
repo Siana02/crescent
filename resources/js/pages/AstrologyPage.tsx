@@ -67,7 +67,7 @@ function WeeklyForecast({content,onRetry}:{content:DailyContent;onRetry:()=>void
  if(!rows.length){
   const text=contentText(normalized,'');
   const markers:{label:string;start:number;end:number}[]=[];
-  const dayPattern=/\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Day\s*[1-7])(?:,?\s+[A-Z][a-z]+\\s+\d{1,2})?\s*(?:[:—–-])\s*/gi;
+  const dayPattern=/\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Day\s*[1-7])(?:,?\s+[A-Z][a-z]+\s+\d{1,2})?\s*(?:[:—–-])\s*/gi;
   let match:RegExpExecArray|null;
   while((match=dayPattern.exec(text)))markers.push({label:match[1].replace(/\s+/g,' '),start:match.index,end:dayPattern.lastIndex});
   if(markers.length>=2){
