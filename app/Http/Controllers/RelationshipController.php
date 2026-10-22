@@ -205,7 +205,7 @@ class RelationshipController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Your Crescent spaces are now connected. You can review sharing preferences before sharing cycle details.',
+            'message' => 'Your Crescent spaces are connected. The person who created the invitation controls what they share.',
             'relationship_id' => $relationship->id,
             'relationship_type' => $relationship->relationship_type,
             'status' => $relationship->status,
