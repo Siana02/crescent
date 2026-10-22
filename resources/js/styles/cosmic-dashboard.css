@@ -438,3 +438,12 @@
 .cosmic-compatibility-themes p{margin:9px 0 0;color:#80728a;font-size:.77rem;line-height:1.55}
 @media(max-width:850px){.cosmic-connections-grid{grid-template-columns:1fr}.cosmic-sharing-options{grid-template-columns:1fr}.cosmic-compatibility-themes{grid-template-columns:1fr}.cosmic-connection-card:after{display:none}}
 @media(max-width:520px){.cosmic-connection-card__header{align-items:flex-start;flex-wrap:wrap}.cosmic-connection-status{margin-left:68px}.cosmic-sharing-panel,.cosmic-note-panel,.cosmic-daily-relationship,.cosmic-compatibility-panel{padding:14px}.cosmic-note-compose>div{align-items:flex-start;flex-direction:column}.cosmic-connection-type{grid-template-columns:36px minmax(0,1fr) 20px;padding:12px}.cosmic-connection-type>.material-symbols-rounded{width:36px;height:36px}}
+
+
+.cosmic-personal-transit-list,.cosmic-synastry-aspects{display:grid;gap:8px;margin:14px 0}
+.cosmic-personal-transit-list article,.cosmic-synastry-aspects article{padding:12px 14px;border:1px solid #e6d9ec;border-radius:14px;background:rgba(255,255,255,.75)}
+.cosmic-personal-transit-list article>div,.cosmic-synastry-aspects article>div{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.cosmic-personal-transit-list strong,.cosmic-synastry-aspects strong{color:#65506f;font-size:.8rem}
+.cosmic-personal-transit-list span,.cosmic-synastry-aspects span{color:#a083a9;font-size:.7rem;white-space:nowrap}
+.cosmic-personal-transit-list p,.cosmic-synastry-aspects p{margin:7px 0 0;color:#85768d;font-size:.78rem;line-height:1.5}
+.cosmic-synastry-aspects>.cosmic-eyebrow{margin:0;color:#a17ca2;font-size:.68rem;letter-spacing:.14em}
