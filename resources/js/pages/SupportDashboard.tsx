@@ -21,7 +21,7 @@ type SharedRelationship = {
 };
 type SupportDashboardData = {
     user: { name: string; email: string };
-    profile: { relationship_role: 'tracker' | 'support'; birth_date: string | null; sun_sign: string | null; moon_sign: string | null; rising_sign: string | null };
+    profile: { relationship_role: 'tracker' | 'support'; display_name?: string | null; birth_date: string | null; sun_sign: string | null; moon_sign: string | null; rising_sign: string | null };
     relationships?: SharedRelationship[];
 };
 const labels: { key: SharingKey; title: string; icon: string }[] = [
@@ -57,6 +57,8 @@ function careIdeas(wellbeing: SharedRelationship['companion_wellbeing']) {
 export default function SupportDashboard({ data, onLogout }: { data: SupportDashboardData; onLogout: () => void }) {
     const connection = (data.relationships ?? []).find(item => item.status === 'accepted' && item.relationship_type === 'observer');
     const permissions = connection?.companion_sharing_preferences ?? connection?.sharing_preferences;
+    const supportName = data.profile.display_name?.trim() || data.user.name?.trim().split(/\\s+/)[0] || 'there';
+    const primaryName = connection?.companion_name?.trim() || 'your partner';
     return <div className="cosmic-dashboard cosmic-support-dashboard">
         <header className="cosmic-header">
             <a className="cosmic-brand" href="/dashboard"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a>
@@ -65,8 +67,8 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
         </header>
         <main className="cosmic-main">
             <section className="cosmic-welcome cosmic-connections-welcome">
-                <div><p className="cosmic-eyebrow">A LITTLE SPACE TO SHOW UP</p><h1>Here for them, <em>with care.</em></h1>
-                    <p>{connection ? `Your shared Crescent space with ${connection.companion_name ?? 'your partner'} is ready. Here are the updates they chose to share with you.` : 'Your support space will appear here once you connect with your partner.'}</p>
+                <div><p className="cosmic-eyebrow">A LITTLE SPACE TO SHOW UP</p><h1>Hello, {supportName}. <em>You're invited to {primaryName}'s little Crescent universe.</em></h1>
+                    <p>{connection ? `${primaryName}'s shared Crescent space is ready for you. Explore the updates ${primaryName} chose to share, leave a note, and find small ways to show up with care.` : 'Your support space will feel more personal once you connect with your partner.'}</p>
                     <div className="cosmic-connection-promise"><span>✧</span> Their choices · Your own profile · Gentle connection</div>
                 </div><div className="cosmic-welcome__art"><span>💌</span><i>✦</i></div>
             </section>
@@ -75,18 +77,18 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
                 const phase = cyclePhase(summary.cycle_day);
                 return <section className={'cosmic-week-card cosmic-support-cycle-hero cosmic-support-cycle-hero--' + phase.key} aria-labelledby="support-cycle-title">
                     <span className="cosmic-support-cycle-spark cosmic-support-cycle-spark--one" aria-hidden="true">✧</span><span className="cosmic-support-cycle-spark cosmic-support-cycle-spark--two" aria-hidden="true">✿</span>
-                    <div className="cosmic-support-cycle-copy"><p className="cosmic-eyebrow">CYCLE JOURNEY · SHARED WITH YOU</p><span className="cosmic-support-phase-pill">☾ {phase.label}</span><h2 id="support-cycle-title">Day {summary.cycle_day}<span> of her rhythm</span></h2><p className="cosmic-support-cycle-lead">{phase.title}</p><p>{phase.summary}</p><div className="cosmic-support-cycle-dates"><div><span>♡</span><small>Last period began</small><strong>{dateLabel(summary.last_period_start)}</strong></div><div><span>✧</span><small>Next period estimate</small><strong>{summary.estimated_next_period ? dateLabel(summary.estimated_next_period) : 'Not available yet'}</strong></div></div><p className="cosmic-fineprint">Cycle day is based on shared dates; the phase is a rough guide using a typical cycle pattern. Neither predicts her mood, energy, fertility or needs.</p></div>
+                    <div className="cosmic-support-cycle-copy"><p className="cosmic-eyebrow">{primaryName.toUpperCase()}'S CYCLE JOURNEY · SHARED WITH YOU</p><span className="cosmic-support-phase-pill">☾ {phase.label}</span><h2 id="support-cycle-title">Day {summary.cycle_day}<span> of {primaryName}'s cycle</span></h2><p className="cosmic-support-cycle-lead">{phase.title}</p><p>{phase.summary}</p><div className="cosmic-support-cycle-dates"><div><span>♡</span><small>Last period began</small><strong>{dateLabel(summary.last_period_start)}</strong></div><div><span>✧</span><small>Next period estimate</small><strong>{summary.estimated_next_period ? dateLabel(summary.estimated_next_period) : 'Not available yet'}</strong></div></div><p className="cosmic-fineprint">Cycle day is based on shared dates; the phase is a rough guide using a typical cycle pattern. Neither predicts her mood, energy, fertility or needs.</p></div>
                     <div className="cosmic-support-cycle-orb" aria-hidden="true"><span>☾</span><strong>{summary.cycle_day}</strong><small>CYCLE DAY</small><i>✦</i></div>
                 </section>;
             })()}
-            {connection?.companion_cycle_summary && permissions?.cycle_details && <FloralSharedCycleCalendar cycle={connection.companion_cycle_summary} />}
+            {connection?.companion_cycle_summary && permissions?.cycle_details && <FloralSharedCycleCalendar cycle={connection.companion_cycle_summary} ownerName={primaryName} viewerName={supportName} />}
             {connection && permissions?.cycle_details && (() => {
                 const day = connection.companion_cycle_summary?.cycle_day ?? null;
                 const phase = cyclePhase(day);
                 return <section className="cosmic-week-card cosmic-support-care-guide">
-                    <div className="cosmic-support-care-heading"><div><p className="cosmic-eyebrow">YOUR GENTLE CARE GUIDE</p><h2>Small ways to make today softer</h2><p>Use these as ideas, not instructions. Her own words and preferences always come first.</p></div><span aria-hidden="true">♡</span></div>
+                    <div className="cosmic-support-care-heading"><div><p className="cosmic-eyebrow">YOUR GENTLE CARE GUIDE</p><h2>Small ways to make today softer</h2><p>Use these as ideas, not instructions. {primaryName}'s own words and preferences always come first.</p></div><span aria-hidden="true">♡</span></div>
                     <div className="cosmic-support-care-feature"><span aria-hidden="true">✿</span><div><small>PHASE-AWARE NOTE · {phase.label}</small><h3>{phase.title}</h3><p>{phase.summary}</p></div></div>
-                    <div className="cosmic-support-care-ideas"><article><span aria-hidden="true">☀</span><h3>If she has energy</h3><p>Ask whether she'd enjoy a walk, a favourite café, a picnic or an outing together. Let her choose the pace.</p></article><article><span aria-hidden="true">☾</span><h3>If she feels drained</h3><p>Offer dinner, a warm bath if she enjoys one, her favourite film, help with chores or a chance to sleep in.</p></article><article><span aria-hidden="true">♡</span><h3>If feelings run high</h3><p>Don't dismiss it as hormones or assume she's angry with you. Stay curious, listen, and ask whether she wants comfort, practical help or space.</p></article></div>
+                    <div className="cosmic-support-care-ideas"><article><span aria-hidden="true">☀</span><h3>If {primaryName} has energy</h3><p>Ask whether {primaryName} would enjoy a walk, a favourite café, a picnic or an outing together. Let {primaryName} choose the pace.</p></article><article><span aria-hidden="true">☾</span><h3>If {primaryName} feels drained</h3><p>Offer dinner, a warm bath if {primaryName} enjoys one, a favourite film, help with chores or a chance to sleep in.</p></article><article><span aria-hidden="true">♡</span><h3>If feelings run high</h3><p>Don't dismiss feelings as hormones or assume they're about you. Stay curious, listen, and ask whether {primaryName} wants comfort, practical help or space.</p></article></div>
                     <p className="cosmic-fineprint">Research-informed possibilities, not guarantees. PMS symptoms vary from person to person and from cycle to cycle.</p>
                 </section>;
             })()}
@@ -96,16 +98,16 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
                     <p className="cosmic-fineprint">Pregnancy timing is an estimate and does not replace advice from their care team.</p>
                 </section>}
                 {connection.companion_wellbeing && permissions?.wellbeing_updates && <section className="cosmic-week-card cosmic-support-shared-card cosmic-support-wellbeing-card">
-                    <p className="cosmic-eyebrow">A LITTLE WELLBEING CHECK-IN</p><h2>How they're feeling</h2><p className="cosmic-muted">Latest update · {dateLabel(connection.companion_wellbeing.log_date)}</p>
+                    <p className="cosmic-eyebrow">A LITTLE WELLBEING CHECK-IN</p><h2>How {primaryName} is feeling</h2><p className="cosmic-muted">Latest update · {dateLabel(connection.companion_wellbeing.log_date)}</p>
                     <div className="cosmic-support-tags">{[...(connection.companion_wellbeing.mood ?? []), ...(connection.companion_wellbeing.symptoms ?? []), connection.companion_wellbeing.category ?? '', connection.companion_wellbeing.energy_level ? `Energy ${connection.companion_wellbeing.energy_level}/5` : ''].filter(Boolean).map(tag => <span key={tag}>{tag}</span>)}</div>
                     {connection.companion_wellbeing.notes && <blockquote>{connection.companion_wellbeing.notes}</blockquote>}
                     <div className="cosmic-support-wellbeing-advice"><p className="cosmic-eyebrow">A FEW WAYS TO SHOW UP</p><div>{careIdeas(connection.companion_wellbeing).map((idea, index) => <p key={idea}><span aria-hidden="true">{['♡','✿','✧'][index]}</span>{idea}</p>)}</div></div>
-                    <p className="cosmic-fineprint">Her check-in is the best guide. These are invitations to offer care, never assumptions about what she needs.</p>
+                    <p className="cosmic-fineprint">{primaryName}'s check-in is the best guide. These are invitations to offer care, never assumptions about what she needs.</p>
                 </section>}
                 <SharedPartnerSpace />
                 <section className="cosmic-week-card cosmic-support-permissions">
-                    <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">YOUR PARTNER'S CHOICES</p><h2>What they share with you</h2></div><span className="cosmic-guide-stamp" aria-hidden="true">♡</span></div>
-                    <p className="cosmic-muted">These settings were chosen by your partner before they created the invitation. You can view them here; only they can change what is shared.</p>
+                    <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">{primaryName.toUpperCase()}'S SHARING CHOICES</p><h2>What {primaryName} shares with you</h2></div><span className="cosmic-guide-stamp" aria-hidden="true">♡</span></div>
+                    <p className="cosmic-muted">These settings were chosen by ${primaryName} before they created the invitation. You can view them here; only they can change what is shared.</p>
                     <div className="cosmic-support-permission-list">{labels.map(item => <article key={item.key} className={permissions?.[item.key] ? 'is-enabled' : ''}><span className="material-symbols-rounded">{item.icon}</span><div><strong>{item.title}</strong><small>{permissions?.[item.key] ? 'Your partner has enabled this update.' : 'Your partner has kept this private.'}</small></div><b>{permissions?.[item.key] ? 'Shared' : 'Private'}</b></article>)}</div>
                 </section>
                 {permissions?.astrology && <section className="cosmic-week-card cosmic-support-shared-card">
