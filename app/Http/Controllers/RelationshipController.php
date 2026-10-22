@@ -46,7 +46,9 @@ class RelationshipController extends Controller
             'astrology' => false,
         ], $validated['sharing_preferences'] ?? []);
 
-        $request->user()->cycleProfile()->updateOrCreate([], ['wants_astrology' => (bool) $sharing['astrology']]);
+        if ($sharing['astrology']) {
+            $request->user()->cycleProfile()->updateOrCreate([], ['wants_astrology' => true]);
+        }
 
         $relationship = Relationship::create([
             'user_one_id' => $request->user()->id,
