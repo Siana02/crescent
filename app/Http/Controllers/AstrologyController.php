@@ -228,6 +228,14 @@ class AstrologyController extends Controller
                     ?? data_get($allData, 'horoscopes.'.$sign)
                     ?? data_get($allData, 'signs.'.$sign)
                     ?? data_get($allData, 'data.'.$sign);
+                if ($reading === null && array_is_list($allData)) {
+                    foreach ($allData as $candidate) {
+                        if (is_array($candidate) && Str::lower((string) (data_get($candidate, 'sign') ?? data_get($candidate, 'zodiac_sign') ?? data_get($candidate, 'name'))) === $sign) {
+                            $reading = $candidate;
+                            break;
+                        }
+                    }
+                }
                 if (is_array($reading) || is_string($reading)) {
                     return response()->json([
                         'data' => $reading,
@@ -365,6 +373,12 @@ class AstrologyController extends Controller
                         ?? data_get($item, 'position.eclipticLongitude')
                         ?? data_get($item, 'position.lon')
                         ?? data_get($item, 'position.lng');
+                    if (is_array($longitude)) {
+                        $longitude = data_get($longitude, 'value') ?? data_get($longitude, 'degrees') ?? data_get($longitude, 'degree');
+                    }
+                    if (is_string($longitude) && preg_match('/-?\\d+(?:\\.\\d+)?/', $longitude, $longitudeMatches)) {
+                        $longitude = (float) $longitudeMatches[0];
+                    }
                     if ($sign === null && is_numeric($longitude)) {
                         $sign = $this->signFromLongitude((float) $longitude);
                     }
