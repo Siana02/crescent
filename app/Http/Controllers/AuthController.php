@@ -103,7 +103,7 @@ class AuthController extends Controller
             }
         }
 
-        $user = DB::transaction(function () use ($validated, $role, $relationship, $astrologyEnabled) {
+        $user = DB::transaction(function () use ($validated, $role, $intent, $relationship, $astrologyEnabled) {
             if ($relationship) {
                 $lockedRelationship = Relationship::whereKey($relationship->id)->lockForUpdate()->first();
                 if (! $lockedRelationship || $lockedRelationship->status !== 'pending' || $lockedRelationship->user_two_id !== null || ! $lockedRelationship->expires_at?->isFuture()) {
