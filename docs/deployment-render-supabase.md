@@ -10,7 +10,7 @@ This guide prepares Crescent for **test accounts and dummy data only**. Do not e
 - Apache serves Laravel from `public/`; requests are handled by Laravel's public front controller and rewrite rules.
 - Apache listens on Render's `PORT` environment variable (defaults to 10000).
 - Render terminates public HTTPS. Configure Laravel with production settings and secure cookies.
-- PostgreSQL stores application data, database-backed cache, database-backed queues, and database-backed sessions. A migration in this branch creates the `sessions` table.
+- PostgreSQL stores application data, database-backed cache, database-backed queues, and database-backed sessions. The existing initial users migration already creates the `sessions` table; no duplicate session migration is added.
 
 ## 1. Create a Supabase test project
 
@@ -67,7 +67,7 @@ Set `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` only when you a
    php artisan migrate --force
    ```
 
-   This applies the repository's migrations, including the session table, cache tables, and queue tables. If your current Render plan does not offer a shell, use a trusted local terminal with the same Render environment variables and a secure network connection to the test database, or a one-off migration job. Never place credentials in a committed script.
+   This applies the repository's migrations, including the existing session table, cache table, and queue tables. If your current Render plan does not offer a shell, use a trusted local terminal with the same Render environment variables and a secure network connection to the test database, or a one-off migration job. Never place credentials in a committed script.
 3. Check `https://YOUR-SERVICE.onrender.com/up`. Laravel should return a successful health response.
 4. If the service is configured before migrations have run, requests that need database sessions/cache may fail until migrations are applied.
 
