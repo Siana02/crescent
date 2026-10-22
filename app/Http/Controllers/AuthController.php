@@ -82,6 +82,11 @@ class AuthController extends Controller
                     'invite_code' => 'This is a support-partner invitation. Choose “I’m here to support my partner” before continuing.',
                 ]);
             }
+            if ($intent === 'tracker' && $relationship->relationship_type === 'co_tracker') {
+                throw ValidationException::withMessages([
+                    'invite_code' => 'This is a co-cycling invitation. Choose “I’m joining a co-cycling connection” before continuing.',
+                ]);
+            }
 
             $expectedType = $intent === 'co_tracker' ? 'co_tracker' : ($intent === 'support' ? 'observer' : null);
             if ($expectedType && $relationship->relationship_type !== $expectedType) {
