@@ -8,6 +8,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PeriodLogController;
 use App\Http\Controllers\PregnancyController;
 use App\Http\Controllers\RelationshipController;
+use App\Http\Controllers\RelationshipNotesController;
+use App\Http\Controllers\RelationshipInsightsController;
 use App\Http\Controllers\SexLogController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -25,7 +27,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', fn () => view('welcome'));
     Route::get('/settings', fn () => view('welcome'));
     Route::get('/dashboard', function (Request $request) {
-        if (! $request->user()->cycleProfile?->onboarding_completed) {
+        $profile = $request->user()->cycleProfile;
+        if (($profile?->relationship_role ?? 'tracker') === 'support') {
+            return redirect('/connections');
+        }
+        if (! $profile?->onboarding_completed) {
             return redirect('/onboarding');
         }
 
@@ -59,4 +65,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/pregnancy/return-to-cycle', [PregnancyController::class, 'returnToCycle']);
     Route::post('/api/relationships/invite', [RelationshipController::class, 'invite'])->middleware('throttle:10,1');
     Route::post('/api/relationships/accept', [RelationshipController::class, 'accept'])->middleware('throttle:10,1');
+    Route::patch('/api/relationships/{relationship}/sharing', [RelationshipController::class, 'sharing']);
+    Route::get('/api/relationships/{relationship}/notes', [RelationshipNotesController::class, 'index']);
+    Route::post('/api/relationships/{relationship}/notes', [RelationshipNotesController::class, 'store'])->middleware('throttle:20,1');
+    Route::get('/api/relationships/{relationship}/insights', [RelationshipInsightsController::class, 'show'])->middleware('throttle:20,1');
 });

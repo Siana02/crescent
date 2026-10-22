@@ -353,3 +353,109 @@
  .cosmic-modal--period .cosmic-flow-choice{min-height:88px}
 }
 @media(prefers-reduced-motion:reduce){.cosmic-icon-choice,.cosmic-icon-choice__check{transition:none}.cosmic-icon-choice:hover{transform:none}}
+
+
+/* Connections: layered, ornamented relationship space */
+.cosmic-connections-page .cosmic-connections-welcome{position:relative;overflow:hidden;background:radial-gradient(circle at 85% 18%,rgba(255,210,226,.58),transparent 28%),radial-gradient(circle at 10% 95%,rgba(218,207,255,.52),transparent 32%),linear-gradient(135deg,#fff8f5 0%,#f8f3ff 54%,#f2f8ff 100%);border:1px solid rgba(193,157,190,.25);box-shadow:0 22px 70px rgba(94,68,117,.09)}
+.cosmic-connection-promise{display:inline-flex;align-items:center;gap:9px;margin-top:16px;padding:10px 14px;border:1px solid rgba(176,135,173,.28);border-radius:999px;background:rgba(255,255,255,.62);color:#71566f;font-size:.82rem}
+.cosmic-connection-promise span{color:#b46d99}
+.cosmic-connections-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin:22px 0}
+.cosmic-connection-action{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(255,247,251,.96));border:1px solid rgba(197,162,190,.3);box-shadow:0 14px 38px rgba(90,69,113,.07)}
+.cosmic-connection-action:before{content:"✧  ✦  ❀  ♡  ✿";display:block;margin:-4px 0 14px;color:#c18cad;letter-spacing:.48rem;font-size:.9rem;opacity:.82}
+.cosmic-connection-form{display:grid;gap:12px;margin-top:20px}
+.cosmic-connection-type{display:grid;grid-template-columns:42px minmax(0,1fr) 24px;align-items:center;gap:12px;text-align:left;padding:15px;border:1px solid #e9dce9;border-radius:18px;background:linear-gradient(135deg,#fff,#fff8fb);color:#473b53;cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.cosmic-connection-type:hover{transform:translateY(-2px);border-color:#d2a8ca;box-shadow:0 8px 20px rgba(138,93,138,.1)}
+.cosmic-connection-type.is-selected{border-color:#bb8bb9;background:linear-gradient(135deg,#fff0f7,#f1edff);box-shadow:inset 0 0 0 1px rgba(183,127,176,.18),0 8px 20px rgba(138,93,138,.08)}
+.cosmic-connection-type>.material-symbols-rounded{display:grid;place-items:center;width:42px;height:42px;border-radius:14px;background:linear-gradient(145deg,#f5dce9,#e6e0ff);color:#8c5c91;font-size:25px}
+.cosmic-connection-type strong,.cosmic-connection-type small{display:block}
+.cosmic-connection-type strong{font-size:.93rem}
+.cosmic-connection-type small{margin-top:4px;color:#817489;font-size:.78rem;line-height:1.45}
+.cosmic-connection-check{color:#ad79a7;font-size:1.1rem;text-align:center}
+.cosmic-connection-code-field{display:grid;gap:8px;color:#65566f;font-size:.85rem;font-weight:650}
+.cosmic-connection-code-field input{width:100%;box-sizing:border-box;padding:14px 16px;border:1px solid #e2d5e6;border-radius:14px;background:#fff;color:#473b53;letter-spacing:.16em;font-weight:750;text-transform:uppercase}
+.cosmic-new-code{display:grid;gap:7px;margin-top:18px;padding:18px;border:1px dashed #cda4c8;border-radius:18px;background:linear-gradient(135deg,#fff4f8,#f4f0ff);text-align:center}
+.cosmic-new-code>span{color:#8d6b8b;font-size:.8rem}
+.cosmic-new-code>strong{color:#593f68;font-size:1.8rem;letter-spacing:.2em}
+.cosmic-new-code button{justify-self:center;padding:7px 13px;border:1px solid #d7b8d5;border-radius:999px;background:#fff;color:#76547d;cursor:pointer}
+.cosmic-new-code small{color:#8a7a91;font-size:.76rem}
+.cosmic-circle-section{margin-top:20px}
+.cosmic-connections-empty{padding:40px 20px;text-align:center;border:1px dashed #ddcbe1;border-radius:22px;background:radial-gradient(circle at 50% 0%,#fff0f7,transparent 65%)}
+.cosmic-connections-empty>span{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 12px;border-radius:50%;background:linear-gradient(145deg,#f3d7e8,#e5ddff);color:#875f91;font-size:1.8rem}
+.cosmic-connections-empty h3{margin:0 0 8px;color:#55445f}
+.cosmic-connections-empty p{max-width:470px;margin:0 auto;color:#87798f;line-height:1.6}
+.cosmic-pending-relationship{display:flex;gap:14px;align-items:flex-start;margin:14px 0;padding:17px;border:1px solid #ebd8e7;border-radius:18px;background:linear-gradient(130deg,#fff9fc,#f8f5ff)}
+.cosmic-pending-relationship>.material-symbols-rounded{display:grid;place-items:center;width:42px;height:42px;border-radius:14px;background:#f1e3f1;color:#986e9a}
+.cosmic-pending-relationship strong{color:#5c4b66}
+.cosmic-pending-relationship p,.cosmic-pending-relationship small{margin:4px 0;color:#8b7b93;font-size:.82rem}
+.cosmic-connection-list{display:grid;gap:22px;margin-top:20px}
+.cosmic-connection-card{position:relative;overflow:hidden;padding:clamp(17px,3vw,28px);border:1px solid rgba(196,163,196,.34);border-radius:25px;background:linear-gradient(155deg,#fff 0%,#fff9fc 45%,#f8f5ff 100%);box-shadow:0 18px 46px rgba(91,69,111,.08)}
+.cosmic-connection-card:after{content:"✧  ❀  ✦";position:absolute;right:20px;top:14px;color:#d7b3d2;letter-spacing:.45rem;opacity:.7;pointer-events:none}
+.cosmic-connection-card__header{display:flex;align-items:center;gap:14px;padding-bottom:20px;border-bottom:1px solid #f0e4ee}
+.cosmic-connection-avatar{display:grid;place-items:center;flex:0 0 54px;width:54px;height:54px;border:1px solid #e6c8e0;border-radius:19px;background:linear-gradient(145deg,#f9dce9,#e8e1ff);color:#9c6c9b;font-size:1.8rem;box-shadow:inset 0 0 0 4px rgba(255,255,255,.6)}
+.cosmic-connection-card__header h3{margin:2px 0 3px;color:#4e4059;font-size:1.2rem}
+.cosmic-connection-card__header .cosmic-eyebrow{margin:0;color:#a17ca2;font-size:.66rem;letter-spacing:.13em}
+.cosmic-connection-journey{margin:0;color:#85768d;font-size:.83rem}
+.cosmic-connection-status{margin-left:auto;padding:6px 10px;border:1px solid #d8e8d9;border-radius:999px;background:#f3fbf2;color:#628267;font-size:.72rem;white-space:nowrap}
+.cosmic-sharing-panel,.cosmic-note-panel,.cosmic-daily-relationship,.cosmic-compatibility-panel{position:relative;margin-top:20px;padding:19px;border:1px solid rgba(221,201,222,.7);border-radius:20px;background:rgba(255,255,255,.78)}
+.cosmic-sharing-panel{background:linear-gradient(140deg,#fff8fb,#fbf7ff)}
+.cosmic-sharing-panel .cosmic-section-heading,.cosmic-note-panel .cosmic-section-heading,.cosmic-daily-relationship .cosmic-section-heading,.cosmic-compatibility-panel .cosmic-section-heading{margin-bottom:8px}
+.cosmic-sharing-panel h4,.cosmic-note-panel h4,.cosmic-daily-relationship h4,.cosmic-compatibility-panel h4{margin:0;color:#55465f;font-size:1.05rem}
+.cosmic-sharing-panel .cosmic-section-heading>span{font-size:1.35rem;color:#b887b0}
+.cosmic-sharing-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:15px}
+.cosmic-sharing-option{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:10px;padding:12px;border:1px solid #e8dfe9;border-radius:15px;background:#fff;text-align:left;cursor:pointer;color:#594d62;transition:background .18s ease,border-color .18s ease}
+.cosmic-sharing-option>.material-symbols-rounded{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:#f2e9f4;color:#9c76a3;font-size:21px}
+.cosmic-sharing-option strong,.cosmic-sharing-option small{display:block}
+.cosmic-sharing-option strong{font-size:.83rem}
+.cosmic-sharing-option small{margin-top:3px;color:#93869a;font-size:.71rem;line-height:1.35}
+.cosmic-sharing-option.is-enabled{border-color:#c5a4d2;background:linear-gradient(135deg,#fff3f8,#f5f0ff)}
+.cosmic-sharing-toggle{padding:4px 7px;border-radius:999px;background:#f1edf2;color:#938497;font-size:.7rem}
+.cosmic-sharing-option.is-enabled .cosmic-sharing-toggle{background:#e7d8f1;color:#775586}
+.cosmic-note-panel{background:linear-gradient(140deg,#fff9f5,#fff6fb 56%,#f8f5ff)}
+.cosmic-note-compose{display:grid;gap:9px;margin-top:14px}
+.cosmic-note-compose label{color:#715e78;font-size:.82rem;font-weight:700}
+.cosmic-note-compose textarea{box-sizing:border-box;width:100%;resize:vertical;padding:13px 15px;border:1px solid #e6d5e5;border-radius:14px;background:rgba(255,255,255,.92);color:#4c4057;line-height:1.55}
+.cosmic-note-compose>div{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.cosmic-note-compose small{color:#9b8aa0;font-size:.72rem}
+.cosmic-note-list{display:grid;gap:10px;margin-top:16px}
+.cosmic-note{padding:13px 15px;border:1px solid #ecdfeb;border-radius:15px;background:rgba(255,255,255,.82)}
+.cosmic-note.is-mine{border-color:#e1d6f1;background:linear-gradient(135deg,#fff,#f7f3ff)}
+.cosmic-note>div{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.cosmic-note>div strong{color:#5c4c66;font-size:.82rem}
+.cosmic-note>div small,.cosmic-note-read{color:#a08fa5;font-size:.7rem}
+.cosmic-note p{margin:9px 0;color:#66576e;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.cosmic-note-empty{padding:10px 0}
+.cosmic-daily-relationship{background:radial-gradient(circle at 100% 0%,rgba(247,218,235,.52),transparent 40%),linear-gradient(130deg,#fff9f2,#fff7fb)}
+.cosmic-daily-relationship>p{color:#64566e;line-height:1.7}
+.cosmic-transit-chips{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0}
+.cosmic-transit-chips span{padding:5px 9px;border:1px solid #ead8e9;border-radius:999px;background:rgba(255,255,255,.7);color:#8a6e8e;font-size:.72rem}
+.cosmic-daily-relationship>small,.cosmic-compatibility-panel>small{display:block;color:#9b8da2;font-size:.72rem;line-height:1.5}
+.cosmic-compatibility-panel{background:linear-gradient(145deg,#fdfaff,#f8f5ff 50%,#fff8fb)}
+.cosmic-compatibility-themes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:15px 0}
+.cosmic-compatibility-themes article{padding:13px;border:1px solid #e5d9ed;border-radius:15px;background:rgba(255,255,255,.82)}
+.cosmic-compatibility-themes article>div{display:grid;gap:5px}
+.cosmic-compatibility-themes strong{color:#5e4b6b;font-size:.8rem}
+.cosmic-compatibility-themes span{color:#9b79a2;font-size:.74rem}
+.cosmic-compatibility-themes p{margin:9px 0 0;color:#80728a;font-size:.77rem;line-height:1.55}
+@media(max-width:850px){.cosmic-connections-grid{grid-template-columns:1fr}.cosmic-sharing-options{grid-template-columns:1fr}.cosmic-compatibility-themes{grid-template-columns:1fr}.cosmic-connection-card:after{display:none}}
+@media(max-width:520px){.cosmic-connection-card__header{align-items:flex-start;flex-wrap:wrap}.cosmic-connection-status{margin-left:68px}.cosmic-sharing-panel,.cosmic-note-panel,.cosmic-daily-relationship,.cosmic-compatibility-panel{padding:14px}.cosmic-note-compose>div{align-items:flex-start;flex-direction:column}.cosmic-connection-type{grid-template-columns:36px minmax(0,1fr) 20px;padding:12px}.cosmic-connection-type>.material-symbols-rounded{width:36px;height:36px}}
+
+
+.cosmic-personal-transit-list,.cosmic-synastry-aspects{display:grid;gap:8px;margin:14px 0}
+.cosmic-personal-transit-list article,.cosmic-synastry-aspects article{padding:12px 14px;border:1px solid #e6d9ec;border-radius:14px;background:rgba(255,255,255,.75)}
+.cosmic-personal-transit-list article>div,.cosmic-synastry-aspects article>div{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.cosmic-personal-transit-list strong,.cosmic-synastry-aspects strong{color:#65506f;font-size:.8rem}
+.cosmic-personal-transit-list span,.cosmic-synastry-aspects span{color:#a083a9;font-size:.7rem;white-space:nowrap}
+.cosmic-personal-transit-list p,.cosmic-synastry-aspects p{margin:7px 0 0;color:#85768d;font-size:.78rem;line-height:1.5}
+.cosmic-synastry-aspects>.cosmic-eyebrow{margin:0;color:#a17ca2;font-size:.68rem;letter-spacing:.14em}
+
+
+.cosmic-own-journey{display:inline-flex;align-items:center;margin:12px 0 0;padding:7px 12px;border:1px solid rgba(194,155,191,.35);border-radius:999px;background:rgba(255,255,255,.68);color:#826987;font-size:.8rem}
+
+
+.cosmic-shared-summaries{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0 0}
+.cosmic-shared-summaries article{display:flex;align-items:flex-start;gap:10px;padding:13px;border:1px solid #e8d8e9;border-radius:15px;background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(250,243,255,.9))}
+.cosmic-shared-summaries article>.material-symbols-rounded{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:10px;background:#f0e3f3;color:#9873a0;font-size:20px}
+.cosmic-shared-summaries strong,.cosmic-shared-summaries small{display:block}
+.cosmic-shared-summaries strong{color:#5f4c6a;font-size:.78rem;line-height:1.4}
+.cosmic-shared-summaries small{margin-top:5px;color:#8e7e97;font-size:.7rem;line-height:1.5}
+@media(max-width:850px){.cosmic-shared-summaries{grid-template-columns:1fr}}

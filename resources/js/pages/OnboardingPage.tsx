@@ -170,7 +170,7 @@ export default function OnboardingPage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
     const [inviteCode, setInviteCode] = useState('');
-    const [acceptCode, setAcceptCode] = useState('');
+    const [acceptCode, setAcceptCode] = useState(() => new URLSearchParams(window.location.search).get('code')?.trim().toUpperCase().slice(0, 8) ?? '');
     const [connectionNotice, setConnectionNotice] = useState('');
     const [pregnancyDateSource, setPregnancyDateSource] = useState<PregnancyDateSource>('due_date');
     const [pregnancyDueDate, setPregnancyDueDate] = useState('');
@@ -266,6 +266,7 @@ export default function OnboardingPage() {
                     cycle_regularity: pregnancyJourney ? 'unknown' : regularity,
                     contraception_type: pregnancyJourney ? 'prefer_not_to_say' : contraception,
                     partner_preference: partnerPreference,
+                    relationship_role: 'tracker',
                     timezone,
                     onboarding_completed: !pregnancyJourney,
                 }),

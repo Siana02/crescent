@@ -16,13 +16,18 @@ class RelationshipController extends Controller
         $validated = $request->validate([
             'relationship_type' => ['required', Rule::in(['observer', 'co_tracker'])],
         ]);
+        if (($request->user()->cycleProfile?->relationship_role ?? 'tracker') === 'support') {
+            throw ValidationException::withMessages([
+                'relationship_type' => 'Support-partner accounts join an invitation rather than create a tracking connection.',
+            ]);
+        }
 
         $relationship = Relationship::create([
             'user_one_id' => $request->user()->id,
             'relationship_type' => $validated['relationship_type'],
             'status' => 'pending',
             'invite_code' => Str::upper(Str::random(8)),
-            'sharing_preferences' => ['cycle_details' => false],
+            'sharing_preferences' => ['cycle_details' => false, 'pregnancy_details' => false, 'wellbeing_updates' => false, 'astrology' => false],
             'expires_at' => now()->addDays(7),
         ]);
 
@@ -32,6 +37,42 @@ class RelationshipController extends Controller
             'relationship_type' => $relationship->relationship_type,
             'status' => $relationship->status,
         ], 201);
+    }
+
+    public function sharing(Relationship $relationship, Request $request): JsonResponse
+    {
+        abort_unless(
+            $relationship->status === 'accepted'
+            && in_array($request->user()->id, [$relationship->user_one_id, $relationship->user_two_id], true),
+            404
+        );
+
+        $validated = $request->validate([
+            'cycle_details' => ['sometimes', 'boolean'],
+            'pregnancy_details' => ['sometimes', 'boolean'],
+            'wellbeing_updates' => ['sometimes', 'boolean'],
+            'astrology' => ['sometimes', 'boolean'],
+        ]);
+        $defaults = [
+            'cycle_details' => false,
+            'pregnancy_details' => false,
+            'wellbeing_updates' => false,
+            'astrology' => false,
+        ];
+        $allPreferences = $relationship->sharing_preferences ?? [];
+        $userKey = (string) $request->user()->id;
+        $existing = $allPreferences[$userKey] ?? [];
+        if ($existing === [] && array_key_exists('cycle_details', $allPreferences)) {
+            $existing = $allPreferences;
+        }
+        $preferences = array_merge($defaults, $existing, $validated);
+        $allPreferences[$userKey] = $preferences;
+        foreach (['cycle_details', 'pregnancy_details', 'wellbeing_updates', 'astrology'] as $key) {
+            unset($allPreferences[$key]);
+        }
+        $relationship->update(['sharing_preferences' => $allPreferences]);
+
+        return response()->json(['sharing_preferences' => $preferences]);
     }
 
     public function accept(Request $request): JsonResponse
@@ -48,6 +89,14 @@ class RelationshipController extends Controller
         if (! $relationship) {
             throw ValidationException::withMessages([
                 'invite_code' => 'That Cosmic Sync Code is not active. Ask your companion for a fresh one.',
+            ]);
+        }
+
+        $profile = $request->user()->cycleProfile;
+        if ($relationship->relationship_type === 'co_tracker'
+            && (($profile?->relationship_role ?? 'tracker') === 'support' || ! $profile?->onboarding_completed)) {
+            throw ValidationException::withMessages([
+                'invite_code' => 'Complete your own cycle or pregnancy setup before joining a co-tracking connection.',
             ]);
         }
 

@@ -18,6 +18,7 @@ class CycleProfileController extends Controller
             'display_name' => ['nullable', 'string', 'max:100'],
             'wants_astrology' => ['sometimes', 'boolean'],
             'partner_preference' => ['sometimes', Rule::in(['solo', 'observer', 'co_tracker'])],
+            'relationship_role' => ['sometimes', Rule::in(['tracker', 'support'])],
             'birth_date' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
             'contraception_type' => ['nullable', Rule::in(['none', 'pill', 'hormonal_iud', 'copper_iud', 'implant', 'injection', 'patch', 'ring', 'other', 'prefer_not_to_say'])],
             'primary_goal' => ['sometimes', Rule::in(['track_cycle', 'predict_moon', 'manage_symptoms', 'cosmic_cycle', 'fertility_support', 'trying_to_conceive', 'pregnancy_support', 'postpartum_support'])],
@@ -53,6 +54,7 @@ class CycleProfileController extends Controller
                 'display_name' => $profile->display_name,
                 'wants_astrology' => $profile->wants_astrology,
                 'partner_preference' => $profile->partner_preference,
+                'relationship_role' => $profile->relationship_role ?? 'tracker',
                 'active_journey' => $profile->active_journey ?? 'cycle',
             ],
         ]);

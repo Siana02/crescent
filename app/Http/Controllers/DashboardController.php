@@ -110,6 +110,101 @@ class DashboardController extends Controller
             ->map(function (Relationship $relationship) use ($user) {
                 $isInitiator = $relationship->user_one_id === $user->id;
                 $companion = $isInitiator ? $relationship->companion : $relationship->initiator;
+                $allPreferences = $relationship->sharing_preferences ?? [];
+                $defaults = ['cycle_details' => false, 'pregnancy_details' => false, 'wellbeing_updates' => false, 'astrology' => false];
+                $myPreferences = array_merge($defaults, $allPreferences[(string) $user->id] ?? []);
+                $companionPreferences = array_merge($defaults, $allPreferences[(string) ($companion?->id ?? 0)] ?? []);
+                // Older connections used one shared flat preference object; preserve it as a conservative fallback.
+                if (! array_key_exists((string) ($companion?->id ?? 0), $allPreferences) && array_key_exists('cycle_details', $allPreferences)) {
+                    $companionPreferences = array_merge($defaults, $allPreferences);
+                }
+                $companionProfile = $companion?->cycleProfile;
+                $companionRole = $companionProfile?->relationship_role ?? 'tracker';
+                $companionJourney = $companionRole === 'support' ? null : ($companionProfile?->active_journey ?? 'cycle');
+                $journeyIsShared = $companionJourney === null ? false : (
+                    $companionJourney === 'pregnancy' || $companionJourney === 'postpartum'
+                        ? $companionPreferences['pregnancy_details']
+                        : $companionPreferences['cycle_details']
+                );
+                $sharedCycleSummary = null;
+                $sharedPregnancySummary = null;
+                $sharedWellbeing = null;
+
+                if ($companion && $companionJourney && in_array($companionJourney, ['cycle', 'fertility'], true) && $companionPreferences['cycle_details']) {
+                    $lastSharedPeriod = $companion->periodLogs()->orderByDesc('start_date')->first();
+                    if ($lastSharedPeriod) {
+                        $companionTimezone = $companionProfile?->timezone ?: config('app.timezone', 'UTC');
+                        $todayForCompanion = CarbonImmutable::today($companionTimezone);
+                        $periodStart = CarbonImmutable::parse($lastSharedPeriod->start_date->format('Y-m-d'), $companionTimezone)->startOfDay();
+                        $hormonalMethods = ['pill', 'hormonal_iud', 'implant', 'injection', 'patch', 'ring'];
+                        $estimatedNext = $companionProfile?->average_cycle_length
+                            && ! in_array($companionProfile->contraception_type, $hormonalMethods, true)
+                            ? $periodStart->addDays($companionProfile->average_cycle_length)->toDateString()
+                            : null;
+                        $sharedCycleSummary = [
+                            'last_period_start' => $lastSharedPeriod->start_date->format('Y-m-d'),
+                            'cycle_day' => (int) $periodStart->diffInDays($todayForCompanion) + 1,
+                            'estimated_next_period' => $estimatedNext,
+                        ];
+                    }
+                }
+
+                if ($companion && in_array($companionJourney, ['pregnancy', 'postpartum'], true) && $companionPreferences['pregnancy_details']) {
+                    $pregnancyStatus = $companionJourney === 'postpartum' ? 'postpartum' : 'active';
+                    $sharedPregnancy = $companion->pregnancies()->where('status', $pregnancyStatus)->latest()->first();
+                    if ($sharedPregnancy) {
+                        $companionTimezone = $companionProfile?->timezone ?: config('app.timezone', 'UTC');
+                        $todayForCompanion = CarbonImmutable::today($companionTimezone);
+                        $dueDate = CarbonImmutable::parse($sharedPregnancy->due_date->format('Y-m-d'), $companionTimezone)->startOfDay();
+                        $daysUntilDue = $todayForCompanion->diffInDays($dueDate, false);
+                        $gestationalDays = max(0, 280 - $daysUntilDue);
+                        $gestationalWeek = max(1, (int) floor($gestationalDays / 7));
+                        $sharedPregnancySummary = [
+                            'status' => $sharedPregnancy->status,
+                            'due_date' => $sharedPregnancy->due_date->format('Y-m-d'),
+                            'gestational_week' => $sharedPregnancy->status === 'active' ? $gestationalWeek : null,
+                            'trimester' => $sharedPregnancy->status === 'active' ? ($gestationalWeek <= 13 ? 1 : ($gestationalWeek <= 27 ? 2 : 3)) : null,
+                            'days_until_due' => $sharedPregnancy->status === 'active' ? $daysUntilDue : null,
+                        ];
+                    }
+                }
+
+                $pregnancyJourneyShared = ! in_array($companionJourney, ['pregnancy', 'postpartum'], true) || $companionPreferences['pregnancy_details'];
+                if ($companion && $companionPreferences['wellbeing_updates'] && $pregnancyJourneyShared) {
+                    if (in_array($companionJourney, ['pregnancy', 'postpartum'], true)) {
+                        $wellbeingPregnancy = $companion->pregnancies()->where('status', $companionJourney === 'postpartum' ? 'postpartum' : 'active')->latest()->first();
+                        if ($companionJourney === 'postpartum' && $wellbeingPregnancy) {
+                            $postpartumLog = $wellbeingPregnancy->postpartumLogs()->latest('log_date')->first();
+                            if ($postpartumLog) {
+                                $sharedWellbeing = [
+                                    'log_date' => $postpartumLog->log_date->format('Y-m-d'),
+                                    'category' => $postpartumLog->category,
+                                    'notes' => $postpartumLog->notes,
+                                ];
+                            }
+                        } else {
+                            $latestSharedCheckin = $wellbeingPregnancy?->checkins()->latest('log_date')->first();
+                            if ($latestSharedCheckin) {
+                                $sharedMood = $latestSharedCheckin->mood ?? null;
+                                $sharedWellbeing = [
+                                    'log_date' => $latestSharedCheckin->log_date->format('Y-m-d'),
+                                    'mood' => is_string($sharedMood) ? explode(',', $sharedMood) : ($sharedMood ?? []),
+                                    'symptoms' => $latestSharedCheckin->symptoms ?? [],
+                                    'energy_level' => $latestSharedCheckin->energy_level ?? null,
+                                ];
+                            }
+                        }
+                    } else {
+                        $latestSharedCheckin = $companion->dailyCheckins()->latest('log_date')->first();
+                        if ($latestSharedCheckin) {
+                            $sharedWellbeing = [
+                                'log_date' => $latestSharedCheckin->log_date->format('Y-m-d'),
+                                'mood' => $latestSharedCheckin->mood ? explode(',', $latestSharedCheckin->mood) : [],
+                                'symptoms' => $latestSharedCheckin->symptoms ?? [],
+                            ];
+                        }
+                    }
+                }
 
                 return [
                     'id' => $relationship->id,
@@ -117,9 +212,20 @@ class DashboardController extends Controller
                     'status' => $relationship->status,
                     'invite_code' => $isInitiator && $relationship->status === 'pending' ? $relationship->invite_code : null,
                     'companion_name' => $relationship->status === 'accepted'
-                        ? ($companion?->cycleProfile?->display_name ?: $companion?->name)
+                        ? ($companionProfile?->display_name ?: $companion?->name)
                         : null,
-                    'sharing_enabled' => (bool) ($relationship->sharing_preferences['cycle_details'] ?? false),
+                    'companion_role' => $companionRole,
+                    'companion_journey' => $journeyIsShared ? $companionJourney : null,
+                    'companion_goal' => $journeyIsShared ? $companionProfile?->primary_goal : null,
+                    'companion_cycle_summary' => $sharedCycleSummary,
+                    'companion_pregnancy_summary' => $sharedPregnancySummary,
+                    'companion_wellbeing' => $sharedWellbeing,
+                    'companion_sun_sign' => $companionPreferences['astrology'] ? $companionProfile?->sun_sign : null,
+                    'companion_moon_sign' => $companionPreferences['astrology'] ? $companionProfile?->moon_sign : null,
+                    'companion_rising_sign' => $companionPreferences['astrology'] ? $companionProfile?->rising_sign : null,
+                    'sharing_preferences' => $myPreferences,
+                    'companion_sharing_preferences' => $companionPreferences,
+                    'sharing_enabled' => (bool) ($companionPreferences['cycle_details'] || $companionPreferences['pregnancy_details']),
                 ];
             })
             ->values();
@@ -143,6 +249,7 @@ class DashboardController extends Controller
                 'display_name' => $profile->display_name,
                 'wants_astrology' => $profile->wants_astrology,
                 'partner_preference' => $profile->partner_preference,
+                'relationship_role' => $profile->relationship_role ?? 'tracker',
                 'active_journey' => $profile->active_journey ?? 'cycle',
                 'cycle_tracking_started_at' => $profile->cycle_tracking_started_at?->format('Y-m-d'),
             ],
