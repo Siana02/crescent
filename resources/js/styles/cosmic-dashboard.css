@@ -1071,3 +1071,14 @@
  .cosmic-mobile-nav__panel{right:12px!important;width:min(340px,calc(100vw - 24px))!important}
 }
 @media(prefers-reduced-motion:reduce){.cosmic-menu-glyph i{transition:none}.cosmic-mobile-nav__panel{animation:none!important}}
+
+
+/* Shared check-ins use the same readable icon pills as the primary dashboard. */
+.cosmic-shared-checkin-tags{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 10px}
+.cosmic-shared-checkin-tags .cosmic-wellbeing-pill,
+.cosmic-connection-wellbeing-tags .cosmic-wellbeing-pill{display:inline-flex;align-items:center;gap:7px;max-width:100%;padding:8px 12px;border:1px solid #ead9f1;border-radius:999px;background:linear-gradient(135deg,#fff5fa,#f4efff);color:#76547e;font-size:12px;font-weight:650;line-height:1.3;white-space:normal}
+.cosmic-shared-checkin-tags .material-symbols-rounded,
+.cosmic-connection-wellbeing-tags .material-symbols-rounded{font-size:17px;line-height:1;color:#b46f9d}
+.cosmic-connection-wellbeing-summary>div{min-width:0;flex:1}
+.cosmic-connection-wellbeing-tags{margin:10px 0 0}
+.cosmic-connection-wellbeing-summary>div>small{display:block;margin-top:8px;overflow-wrap:anywhere}
