@@ -90,7 +90,8 @@ const WEEKLY_DEVELOPMENT = [
  'The baby continues final maturation and may be born at any time. Your care team can explain what to do if your due date passes.',
  'Around 40 weeks is the estimated due date, not a deadline. Follow your maternity team’s advice about monitoring and next steps.',
 ];
-\nconst PARTNER_CARE = [
+
+const PARTNER_CARE = [
  { title:'Ask before trying to fix it', text:'Try “Would comfort, practical help, company or quiet feel best today?” Listen to the answer and follow their lead.' },
  { title:'Take one task off their plate', text:'Offer to prepare a meal, refill water, handle an errand or arrange transport to an appointment. Be specific and make it easy to say no.' },
  { title:'Make appointments easier', text:'Ask whether they want company, help writing questions, transport or someone to remember the plan. They decide what support they want.' },
