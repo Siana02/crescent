@@ -48,13 +48,24 @@ class RelationshipController extends Controller
             'wellbeing_updates' => ['sometimes', 'boolean'],
             'astrology' => ['sometimes', 'boolean'],
         ]);
-        $preferences = array_merge([
+        $defaults = [
             'cycle_details' => false,
             'pregnancy_details' => false,
             'wellbeing_updates' => false,
             'astrology' => false,
-        ], $relationship->sharing_preferences ?? [], $validated);
-        $relationship->update(['sharing_preferences' => $preferences]);
+        ];
+        $allPreferences = $relationship->sharing_preferences ?? [];
+        $userKey = (string) $request->user()->id;
+        $existing = $allPreferences[$userKey] ?? [];
+        if ($existing === [] && array_key_exists('cycle_details', $allPreferences)) {
+            $existing = $allPreferences;
+        }
+        $preferences = array_merge($defaults, $existing, $validated);
+        $allPreferences[$userKey] = $preferences;
+        foreach (['cycle_details', 'pregnancy_details', 'wellbeing_updates', 'astrology'] as $key) {
+            unset($allPreferences[$key]);
+        }
+        $relationship->update(['sharing_preferences' => $allPreferences]);
 
         return response()->json(['sharing_preferences' => $preferences]);
     }
