@@ -134,8 +134,14 @@ export default function AstrologyPage(){
    }
   };
   try{
-   const [c,e,t,h,s,m,w]=await Promise.all([
-    getJson('/api/astrology/chart'),
+   // Load the natal chart first so the controller can persist the Sun sign
+   // before the daily and weekly sign-specific fallbacks are requested.
+   const c=await getJson('/api/astrology/chart');
+   if(c.status===401){window.location.assign('/login');return;}
+   const cd=c.data as ChartResponse;
+   setChart(cd);
+   if(!c.ok&&!cd.needs_birth_details)setError(cd.message??'Your birth chart could not be loaded.');
+   const [e,t,h,s,m,w]=await Promise.all([
     getJson('/api/astrology/events?days=30&min_importance=40&limit=24'),
     getJson('/api/astrology/transit'),
     getJson('/api/astrology/horoscope'),
@@ -143,10 +149,6 @@ export default function AstrologyPage(){
     getJson('/api/astrology/moon'),
     getJson('/api/astrology/week-ahead'),
    ]);
-   const cd=c.data as ChartResponse;
-   if(c.status===401){window.location.assign('/login');return;}
-   if(!c.ok&&!cd.needs_birth_details)throw new Error(cd.message??'Your birth chart could not be loaded.');
-   setChart(cd);
    if(e.ok){
     const ed=e.data as Record<string,unknown>;
     const raw=ed.data;
