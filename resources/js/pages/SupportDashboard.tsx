@@ -36,9 +36,9 @@ function dateLabel(value: string) {
 function csrfToken() { return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? ''; }
 function cyclePhase(day: number | null) {
     if (!day || day < 1) return { key: 'unknown', label: 'Phase not available', title: 'Let them lead the rhythm', summary: 'Cycle timing is an estimate. Their own check-in is more useful than a calendar prediction.' };
-    if (day <= 5) return { key: 'menstrual', label: 'Menstrual phase · estimated', title: 'Comfort first, plans flexible', summary: 'Bleeding days can come with cramps, fatigue or headaches for some people. Others feel well; ask what today feels like for her.' };
+    if (day <= 5) return { key: 'menstrual', label: 'Menstrual phase · estimated', title: 'Comfort first, plans flexible', summary: 'Bleeding days can come with cramps, fatigue or headaches for some people. Others feel well; ask what today feels like for them.' };
     if (day <= 13) return { key: 'follicular', label: 'Follicular phase · estimated', title: 'Make room for what feels good', summary: 'Energy may rise for some people after menstruation, but there is no universal energy pattern. Offer a walk, a fun plan or a quiet day—their call.' };
-    if (day <= 16) return { key: 'ovulatory', label: 'Around ovulation · estimated', title: 'Follow her lead, not the calendar', summary: 'Some people notice changes in energy, cervical fluid or desire around ovulation; others notice nothing. Ask what they feel like doing.' };
+    if (day <= 16) return { key: 'ovulatory', label: 'Around ovulation · estimated', title: 'Follow their lead, not the calendar', summary: 'Some people notice changes in energy, cervical fluid or desire around ovulation; others notice nothing. Ask what they feel like doing.' };
     return { key: 'luteal', label: 'Luteal phase · estimated', title: 'A little extra thoughtfulness goes far', summary: 'Some people notice PMS symptoms such as irritability, low mood, tiredness, bloating or cravings before a period. Never assume or take feelings personally—listen and ask what would help.' };
 }
 function careIdeas(wellbeing: SharedRelationship['companion_wellbeing'], partnerName: string) {
@@ -67,7 +67,7 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
         </header>
         <main className="cosmic-main">
             <section className="cosmic-welcome cosmic-connections-welcome">
-                <div><p className="cosmic-eyebrow">A LITTLE SPACE TO SHOW UP</p><h1>Hello, {supportName}. <em>You're invited to {primaryName}'s little Crescent universe.</em></h1>
+                <div><p className="cosmic-eyebrow">A LITTLE SPACE TO SHOW UP</p><h1>Hello, {supportName}. <em>{connection ? `You're invited to ${primaryName}'s little Crescent universe.` : 'Your little Crescent universe is waiting for its first connection.'}</em></h1>
                     <p>{connection ? `${primaryName}'s shared Crescent space is ready for you. Explore the updates ${primaryName} chose to share, leave a note, and find small ways to show up with care.` : 'Your support space will feel more personal once you connect with your partner.'}</p>
                     <div className="cosmic-connection-promise"><span>✧</span> Their choices · Your own profile · Gentle connection</div>
                 </div><div className="cosmic-welcome__art"><span>💌</span><i>✦</i></div>
