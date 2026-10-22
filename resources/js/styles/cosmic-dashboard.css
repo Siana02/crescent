@@ -833,3 +833,13 @@
 .cosmic-support-profile-ideas article>p{grid-column:2;margin:7px 0 0;color:#84728b;font-size:11px;line-height:1.75}
 @media(max-width:600px){.cosmic-support-profile-ideas{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){.cosmic-support-profile-ideas article{transition:none}.cosmic-support-profile-ideas article:hover{transform:none}}
+
+/* Shared-space restoration: give notes room to breathe and distinguish care from astrology. */
+.cosmic-shared-space-card--note{grid-column:1/-1;background:radial-gradient(ellipse at 100% 0,rgba(255,231,199,.58),transparent 42%),linear-gradient(145deg,#fffaf0 0%,#fff9fd 62%,#fbf6ff 100%)}
+.cosmic-shared-space-card--note .cosmic-shared-note-history article{padding:15px 16px;border-radius:17px;background:rgba(255,255,255,.94);box-shadow:0 5px 15px rgba(127,86,129,.045)}
+.cosmic-shared-space-card--note .cosmic-shared-note-history article p{font-size:13px;color:#654c70}
+.cosmic-shared-space-card--compatibility{background:radial-gradient(ellipse at 100% 0,rgba(224,211,255,.7),transparent 46%),linear-gradient(145deg,#f9f4ff,#fffafd 75%);border-top:3px solid #c5afea}
+.cosmic-shared-space-card--daily{background:radial-gradient(ellipse at 100% 0,rgba(255,224,239,.72),transparent 45%),linear-gradient(145deg,#fff4f8,#fbf7ff 80%);border-top:3px solid #d5b5e7}
+.cosmic-shared-partner-space.is-support-view .cosmic-shared-space-card--note{background:radial-gradient(ellipse at 100% 0,rgba(255,230,192,.7),transparent 44%),linear-gradient(145deg,#fff9ec,#fffafd 76%)}
+.cosmic-shared-partner-space.is-primary-view .cosmic-shared-space-card--note{background:radial-gradient(ellipse at 100% 0,rgba(255,231,199,.58),transparent 42%),linear-gradient(145deg,#fffaf0,#fff9fd 62%,#fbf6ff)}
+@media(max-width:650px){.cosmic-shared-space-card--note{grid-column:auto}}
