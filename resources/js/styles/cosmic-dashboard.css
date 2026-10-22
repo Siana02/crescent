@@ -695,3 +695,72 @@
 .postpartum-baby-keepsake p:not(.pregnancy-eyebrow){color:#897790;font-size:12px}
 .postpartum-baby-keepsake a{color:#936b9b;font-size:11px;text-decoration:underline;text-underline-offset:3px}
 @media(max-width:700px){.co-cycling-portal-banner{align-items:flex-start;flex-direction:column;padding:18px}.baby-atelier-big-three{grid-template-columns:1fr}.baby-atelier-placements{grid-template-columns:1fr}}
+
+
+/* Shared partner space: maximalist celestial florals, with a clear reading hierarchy. */
+.cosmic-shared-partner-space{position:relative;isolation:isolate;overflow:hidden;margin:30px 0 34px;padding:clamp(18px,3vw,32px);border:1px solid #e5c9e6;border-radius:30px;background:radial-gradient(ellipse at 0 0,rgba(255,220,237,.9),transparent 36%),radial-gradient(ellipse at 100% 8%,rgba(218,211,255,.8),transparent 34%),radial-gradient(ellipse at 72% 100%,rgba(255,239,200,.42),transparent 36%),linear-gradient(145deg,#fffafd 0%,#fbf5ff 50%,#fff8fc 100%);box-shadow:0 20px 55px rgba(111,71,129,.12),inset 0 0 0 5px rgba(255,255,255,.52);animation:cosmic-shared-arrive .7s cubic-bezier(.2,.75,.2,1) both}
+.cosmic-shared-partner-space:before,.cosmic-shared-partner-space:after{position:absolute;z-index:-1;pointer-events:none;color:#c68fbd;opacity:.32;font-family:Georgia,serif}
+.cosmic-shared-partner-space:before{content:'✿  ✧  ❀';top:12px;left:18px;font-size:22px;letter-spacing:13px;transform:rotate(-8deg)}
+.cosmic-shared-partner-space:after{content:'✧  ♡  ✦';right:18px;bottom:8px;font-size:21px;letter-spacing:10px;transform:rotate(7deg)}
+.cosmic-shared-orbit{position:absolute;z-index:-1;pointer-events:none;animation:cosmic-shared-float 5s ease-in-out infinite}
+.cosmic-shared-orbit--one{top:18%;right:5%;color:#b18acb;font-size:22px}
+.cosmic-shared-orbit--two{top:52%;right:1.5%;color:#d9a3c8;font-size:26px;animation-delay:-2s}
+.cosmic-shared-orbit--three{bottom:18%;left:2%;color:#dba0bb;font-size:18px;animation-delay:-1s}
+.cosmic-shared-hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,220px);align-items:center;gap:24px;min-height:185px;margin-bottom:20px;padding:clamp(18px,3vw,29px);overflow:hidden;border:1px solid rgba(224,198,230,.85);border-radius:24px;background:radial-gradient(ellipse at 95% 0,rgba(235,215,255,.86),transparent 42%),radial-gradient(ellipse at 0 100%,rgba(255,221,236,.8),transparent 44%),linear-gradient(120deg,rgba(255,255,255,.9),rgba(255,248,253,.82));box-shadow:inset 0 1px 0 #fff}
+.cosmic-shared-hero__copy{position:relative;z-index:1;max-width:680px}
+.cosmic-shared-hero h2{margin:9px 0 10px;color:#62416f;font-family:var(--serif,Georgia,serif);font-size:clamp(29px,4vw,43px);font-weight:400;line-height:1.05;letter-spacing:-.035em}
+.cosmic-shared-hero__copy>p:not(.cosmic-eyebrow){max-width:620px;margin:0;color:#806b8b;font-size:13px;line-height:1.85}
+.cosmic-shared-hero__promise{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:16px;color:#936b99;font-size:10px;font-weight:800}
+.cosmic-shared-hero__promise span{color:#d18bb2;font-size:15px}
+.cosmic-shared-hero__art{position:relative;min-height:145px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.8);border-radius:47% 53% 46% 54%;background:radial-gradient(circle at 48% 44%,#fff7d5 0 12%,#f4d3ee 13% 32%,#dfd2fa 33% 54%,#f9dbe9 55% 70%,rgba(255,255,255,.15) 71%);box-shadow:0 12px 35px rgba(130,85,145,.14),inset 0 0 0 7px rgba(255,255,255,.25);transform:rotate(4deg)}
+.cosmic-shared-hero__art span{position:absolute;display:block;filter:drop-shadow(0 3px 5px #8c62942b)}
+.cosmic-shared-hero__moon{top:16px;left:23px;color:#fff9d8;font-size:28px}
+.cosmic-shared-hero__heart{font-size:56px;color:#c47aa8;animation:cosmic-shared-heartbeat 3.4s ease-in-out infinite}
+.cosmic-shared-hero__flower{right:18px;bottom:17px;color:#fff7fb;font-size:28px;animation:cosmic-shared-spin 18s linear infinite}
+.cosmic-shared-hero__spark{top:21px;right:28px;color:#fff;font-size:25px;animation:cosmic-shared-twinkle 2.6s ease-in-out infinite}
+.cosmic-shared-hero__star{left:27px;bottom:25px;color:#fff0bc;font-size:20px}
+.cosmic-shared-space-grid{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.cosmic-shared-space-card{position:relative;min-width:0;overflow:hidden;padding:22px;border:1px solid #ebdced;border-radius:22px;background:linear-gradient(145deg,rgba(255,255,255,.94),rgba(255,250,255,.86));box-shadow:0 8px 22px rgba(117,76,133,.055);transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease}
+.cosmic-shared-space-card:hover{transform:translateY(-4px);border-color:#d9b8df;box-shadow:0 14px 28px rgba(117,76,133,.12)}
+.cosmic-shared-space-card:after{content:'✧';position:absolute;right:14px;bottom:6px;color:#cda8d0;font-size:24px;opacity:.5;pointer-events:none}
+.cosmic-shared-space-card--checkin{background:linear-gradient(140deg,#fff6fa,#fffdfd 70%);border-top:3px solid #e5a9cb}
+.cosmic-shared-space-card--compatibility{background:linear-gradient(140deg,#f8f2ff,#fffafd 75%);border-top:3px solid #c5afea}
+.cosmic-shared-space-card--daily{background:linear-gradient(140deg,#fff4f8,#f8f3ff 72%);border-top:3px solid #d5b5e7}
+.cosmic-shared-space-card--note{background:linear-gradient(140deg,#fff9ec,#fff8fd 70%);border-top:3px solid #e8c6a6}
+.cosmic-shared-card-icon{display:grid;place-items:center;width:39px;height:39px;margin-bottom:13px;border:1px solid rgba(255,255,255,.9);border-radius:50%;background:linear-gradient(145deg,#ffe1ef,#e6dcff);box-shadow:0 5px 14px rgba(154,102,165,.12);color:#a66e9c;font-size:22px}
+.cosmic-shared-space-card .cosmic-eyebrow{font-size:9px;letter-spacing:.15em}
+.cosmic-shared-space-card h3{margin:7px 0 10px;color:#60416d;font-family:var(--serif,Georgia,serif);font-size:clamp(19px,2vw,24px);font-weight:400;line-height:1.2}
+.cosmic-shared-space-card>p:not(.cosmic-eyebrow){margin:0;color:#7d6985;font-size:12px;line-height:1.8;overflow-wrap:anywhere}
+.cosmic-shared-space-card .cosmic-shared-highlight{display:inline-block;margin:2px 0 0!important;padding:9px 12px;border:1px solid #f0d9e8;border-radius:13px;background:#fff;color:#805b80;font-weight:700}
+.cosmic-shared-space-card>small{display:block;margin-top:12px;color:#9a829f;font-size:10px;line-height:1.7}
+.cosmic-shared-space-card .cosmic-shared-date{color:#a66e9c;font-weight:700}
+.cosmic-shared-space-card>a{display:inline-flex;align-items:center;gap:7px;margin-top:15px;padding:10px 13px;border:1px solid #e6d2eb;border-radius:999px;background:rgba(255,255,255,.78);color:#83558e;font-size:11px;font-weight:800;text-decoration:none;transition:background .2s,transform .2s}
+.cosmic-shared-space-card>a:hover{background:#fff;transform:translateY(-2px)}
+.cosmic-shared-space-card--daily>small{padding-top:10px;border-top:1px solid #ead9ed}
+.cosmic-shared-note-form{gap:10px;margin:13px 0 15px}
+.cosmic-shared-note-form textarea{min-height:104px;padding:13px;border:1px solid #e6d3e8;border-radius:15px;background:rgba(255,255,255,.92);color:#5f4b67;font-size:12px;line-height:1.7;transition:border-color .2s,box-shadow .2s}
+.cosmic-shared-note-form textarea:focus{outline:none;border-color:#c39bd2;box-shadow:0 0 0 4px rgba(195,155,210,.18)}
+.cosmic-shared-note-actions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.cosmic-shared-note-actions>small{margin:0;color:#a18ba5;font-size:10px}
+.cosmic-shared-note-form button{display:inline-flex;align-items:center;gap:8px;justify-self:start;padding:11px 16px;background:linear-gradient(120deg,#efc5dc,#d8c8fa 58%,#f6dfb4);box-shadow:0 5px 14px rgba(154,102,165,.15);transition:transform .2s,box-shadow .2s}
+.cosmic-shared-note-form button:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 9px 20px rgba(154,102,165,.23)}
+.cosmic-shared-note-form button:focus-visible,.cosmic-shared-space-card>a:focus-visible{outline:3px solid #b991d1;outline-offset:3px}
+.cosmic-shared-note-history{gap:10px;max-height:420px;padding-right:3px}
+.cosmic-shared-note-history article{border-color:#f0e2ee;border-radius:15px;background:rgba(255,255,255,.9);transition:border-color .2s,transform .2s}
+.cosmic-shared-note-history article:hover{border-color:#dfc1df;transform:translateX(2px)}
+.cosmic-shared-note-history article>div{align-items:center;color:#88658f}
+.cosmic-shared-note-history article>div strong{font-size:11px}
+.cosmic-shared-note-history article>div small{color:#aa96ae;font-size:9px}
+.cosmic-shared-note-history article p{font-size:12px;line-height:1.8}
+.cosmic-support-dashboard #shared-partner-space{margin-top:8px;margin-bottom:27px;scroll-margin-top:22px}
+.cosmic-support-dashboard .cosmic-shared-hero{grid-template-columns:minmax(0,1fr) 190px}
+.cosmic-support-dashboard .cosmic-shared-space-card--checkin{background:linear-gradient(140deg,#fff0f6,#fffdfd 75%)}
+.cosmic-support-dashboard .cosmic-shared-space-card--note{background:linear-gradient(140deg,#fff8e8,#fff8fc 75%)}
+@keyframes cosmic-shared-arrive{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cosmic-shared-float{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-9px) rotate(8deg)}}
+@keyframes cosmic-shared-heartbeat{0%,100%{transform:scale(1)}12%{transform:scale(1.08)}22%{transform:scale(1)}32%{transform:scale(1.05)}44%{transform:scale(1)}}
+@keyframes cosmic-shared-spin{to{transform:rotate(360deg)}}
+@keyframes cosmic-shared-twinkle{0%,100%{opacity:.7;transform:scale(.85)}50%{opacity:1;transform:scale(1.2)}}
+@media(max-width:700px){.cosmic-shared-hero{grid-template-columns:minmax(0,1fr) 110px;gap:10px;padding:18px}.cosmic-shared-hero__art{min-height:110px}.cosmic-shared-hero__heart{font-size:40px}.cosmic-shared-hero__copy>p:not(.cosmic-eyebrow){font-size:12px}.cosmic-shared-space-grid{gap:11px}.cosmic-shared-space-card{padding:17px}}
+@media(max-width:480px){.cosmic-shared-hero{grid-template-columns:minmax(0,1fr);padding:19px}.cosmic-shared-hero__art{display:none}.cosmic-shared-partner-space{padding:15px;border-radius:23px}.cosmic-shared-space-grid{grid-template-columns:minmax(0,1fr)}.cosmic-shared-space-card{padding:18px}.cosmic-shared-partner-space:before{font-size:16px}.cosmic-shared-orbit--one{right:8%}}
+@media(prefers-reduced-motion:reduce){.cosmic-shared-partner-space,.cosmic-shared-orbit,.cosmic-shared-hero__heart,.cosmic-shared-hero__flower,.cosmic-shared-hero__spark{animation:none!important}.cosmic-shared-space-card,.cosmic-shared-space-card>a,.cosmic-shared-note-history article{transition:none!important}.cosmic-shared-space-card:hover,.cosmic-shared-space-card>a:hover{transform:none}}
