@@ -1,5 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import Button from '../components/Button';
+import JourneyNavigation from '../components/JourneyNavigation';
+import SharedPartnerSpace from '../components/SharedPartnerSpace';
+import PregnancyJourneyExtras from '../components/PregnancyJourneyExtras';
 import '../styles/pregnancy.css';
 
 type PostpartumLog = { id: number; log_date: string; category: string; notes: string };
@@ -8,6 +11,7 @@ type PostpartumData = {
     profile: { display_name: string | null; active_journey: string; wants_astrology: boolean };
     pregnancy: {
         due_date: string; status: string; gestational_week: number; trimester: number;
+        baby_name?: string|null; baby_birth_date?: string|null; baby_birth_time?: string|null; baby_birth_place?: string|null;
         days_until_due: number; today_checkin: { log_date: string; symptoms: string[]; mood: string | null; energy_level: string | null; notes: string | null } | null; postpartum_logs_today: PostpartumLog[];
     } | null;
 };
@@ -93,6 +97,7 @@ export default function PostpartumDashboard({ data, onLogout, onRefresh }: Props
             <a className="pregnancy-brand" href="/" aria-label="Crescent home"><span>☾</span> crescent<span>.</span></a>
             <div className="pregnancy-header__actions"><span>A softer space for {firstName}</span><Button variant="outline" onClick={onLogout}>Sign out</Button></div>
         </header>
+        <JourneyNavigation active="dashboard" journey="postpartum" />
         <main className="pregnancy-main">
             <section className="pregnancy-hero postpartum-hero">
                 <div className="pregnancy-hero__sparkles" aria-hidden="true"><span>✦</span><span>✧</span><span>☾</span><span>❀</span></div>
@@ -103,6 +108,7 @@ export default function PostpartumDashboard({ data, onLogout, onRefresh }: Props
             </section>
 
             <section className="postpartum-welcome">
+                {data.pregnancy?.baby_birth_date && <div className="postpartum-baby-keepsake"><span aria-hidden="true">✿</span><div><p className="pregnancy-eyebrow">YOUR BABY’S FIRST SKY</p><h2>{data.pregnancy.baby_name?.trim() ? data.pregnancy.baby_name + '’s little universe' : 'A little keepsake for your newborn'}</h2><p>Born {new Intl.DateTimeFormat(undefined,{dateStyle:'long'}).format(new Date(data.pregnancy.baby_birth_date+'T12:00:00'))}{data.pregnancy.baby_birth_place ? ' · '+data.pregnancy.baby_birth_place : ''}</p><a href="/astrology">Visit Cosmic Atelier ↗</a></div></div>}
                 <div className="postpartum-welcome__icon" aria-hidden="true">🌷</div>
                 <div><p className="pregnancy-eyebrow">A GENTLE REMINDER</p><h2>You do not have to track everything.</h2><p>Use these notes only when they help. Crescent will not automatically return you to period or fertility predictions; you can choose what comes next when you feel ready.</p></div>
             </section>
@@ -122,6 +128,8 @@ export default function PostpartumDashboard({ data, onLogout, onRefresh }: Props
                 {logs.length ? <div className="postpartum-log-list">{logs.map(log => <article key={log.id}><span>{CATEGORIES.find(item => item.value === log.category)?.icon ?? '✧'}</span><div><strong>{CATEGORIES.find(item => item.value === log.category)?.label ?? 'Note'}</strong><small>{log.notes}</small></div></article>)}</div> : <p className="postpartum-empty">Nothing logged today — and that is completely okay. This space will be here when you need it.</p>}
             </section>
 
+            <PregnancyJourneyExtras week={data.pregnancy?.gestational_week ?? 1} trimester={data.pregnancy?.trimester ?? 1} postpartum baby={data.pregnancy ? {name:data.pregnancy.baby_name,birth_date:data.pregnancy.baby_birth_date,birth_time:data.pregnancy.baby_birth_time,birth_place:data.pregnancy.baby_birth_place} : null} />
+            <SharedPartnerSpace />
             <section className="pregnancy-companion">
                 <div><p className="pregnancy-eyebrow">YOUR PEOPLE, YOUR CHOICE</p><h2>Invite someone into this chapter</h2><p>You can invite a partner or companion whenever you are ready. Connecting never switches sharing on automatically.</p></div>
                 <form onSubmit={createInvite}><label>Choose a companion role<select value={inviteType} onChange={event => setInviteType(event.target.value as 'observer' | 'co_tracker')}><option value="observer">Partner or observer</option><option value="co_tracker">Co-tracking companion</option></select></label><Button type="submit" disabled={isInviting}>{isInviting ? 'Creating code…' : 'Create a Cosmic Sync Code ✧'}</Button></form>
