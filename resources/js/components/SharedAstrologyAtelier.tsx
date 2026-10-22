@@ -11,7 +11,10 @@ export default function SharedAstrologyAtelier(){
  const relation=dashboard?.relationships.find(item=>item.status==='accepted');
  if(!relation)return null;
  const mine=dashboard?.profile;const charts=insight?.compatibility.charts;
- const rows=[['Sun',mine?.sun_sign,relation.companion_sun_sign],['Moon',mine?.moon_sign,relation.companion_moon_sign],['Rising',mine?.rising_sign,relation.companion_rising_sign]];
+ const themes=insight?.compatibility.themes??[];
+ const signTheme=(label:string)=>themes.find(theme=>theme.label===label);
+ const sun=signTheme('Sun signs');const moon=signTheme('Moon signs');const rising=signTheme('Rising signs');
+ const rows=[['Sun',sun?.left??mine?.sun_sign,sun?.right??relation.companion_sun_sign],['Moon',moon?.left??mine?.moon_sign,moon?.right??relation.companion_moon_sign],['Rising',rising?.left??mine?.rising_sign,rising?.right??relation.companion_rising_sign]];
  return <section className="cosmic-week-card cosmic-shared-atelier" id="shared-compatibility">
   <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">THE TWO OF YOU, CELESTIALLY</p><h2>Your shared sky</h2><p className="cosmic-muted">A side-by-side, opt-in look at your natal signatures and the relationship themes they traditionally symbolise.</p></div><span className="cosmic-guide-stamp" aria-hidden="true">☾</span></div>
   <div className="cosmic-shared-chart-head"><article><small>YOUR CHART</small><h3>You</h3></article><span aria-hidden="true">✧</span><article><small>COMPANION'S CHART</small><h3>{relation.companion_name??'Your companion'}</h3></article></div>
