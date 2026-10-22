@@ -60,6 +60,8 @@ Route::middleware(['auth', 'active.account'])->group(function () {
     Route::put('/api/pregnancy', [PregnancyController::class, 'update']);
     Route::post('/api/pregnancy/checkins', [PregnancyController::class, 'checkin'])->middleware('throttle:30,1');
     Route::post('/api/pregnancy/postpartum', [PregnancyController::class, 'transitionPostpartum']);
+    Route::get('/api/pregnancy/reminders', [PregnancyController::class, 'reminders']);
+    Route::post('/api/pregnancy/reminders', [PregnancyController::class, 'storeReminder'])->middleware('throttle:20,1');
     Route::post('/api/pregnancy/postpartum-checkins', [PregnancyController::class, 'postpartumCheckin'])->middleware('throttle:30,1');
     Route::post('/api/pregnancy/return-to-cycle', [PregnancyController::class, 'returnToCycle']);
     Route::post('/api/relationships/invite', [RelationshipController::class, 'invite'])->middleware('throttle:10,1');
