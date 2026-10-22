@@ -110,6 +110,19 @@ class DashboardController extends Controller
             ->map(function (Relationship $relationship) use ($user) {
                 $isInitiator = $relationship->user_one_id === $user->id;
                 $companion = $isInitiator ? $relationship->companion : $relationship->initiator;
+                $allPreferences = $relationship->sharing_preferences ?? [];
+                $defaults = ['cycle_details' => false, 'pregnancy_details' => false, 'wellbeing_updates' => false, 'astrology' => false];
+                $myPreferences = array_merge($defaults, $allPreferences[(string) $user->id] ?? []);
+                $companionPreferences = array_merge($defaults, $allPreferences[(string) ($companion?->id ?? 0)] ?? []);
+                // Older connections used one shared flat preference object; preserve it as a conservative fallback.
+                if (! array_key_exists((string) ($companion?->id ?? 0), $allPreferences) && array_key_exists('cycle_details', $allPreferences)) {
+                    $companionPreferences = array_merge($defaults, $allPreferences);
+                }
+                $companionProfile = $companion?->cycleProfile;
+                $companionJourney = $companionProfile?->active_journey ?? 'cycle';
+                $journeyIsShared = $companionJourney === 'pregnancy' || $companionJourney === 'postpartum'
+                    ? $companionPreferences['pregnancy_details']
+                    : $companionPreferences['cycle_details'];
 
                 return [
                     'id' => $relationship->id,
@@ -117,9 +130,16 @@ class DashboardController extends Controller
                     'status' => $relationship->status,
                     'invite_code' => $isInitiator && $relationship->status === 'pending' ? $relationship->invite_code : null,
                     'companion_name' => $relationship->status === 'accepted'
-                        ? ($companion?->cycleProfile?->display_name ?: $companion?->name)
+                        ? ($companionProfile?->display_name ?: $companion?->name)
                         : null,
-                    'sharing_enabled' => (bool) ($relationship->sharing_preferences['cycle_details'] ?? false),
+                    'companion_journey' => $journeyIsShared ? $companionJourney : null,
+                    'companion_goal' => $journeyIsShared ? $companionProfile?->primary_goal : null,
+                    'companion_sun_sign' => $companionPreferences['astrology'] ? $companionProfile?->sun_sign : null,
+                    'companion_moon_sign' => $companionPreferences['astrology'] ? $companionProfile?->moon_sign : null,
+                    'companion_rising_sign' => $companionPreferences['astrology'] ? $companionProfile?->rising_sign : null,
+                    'sharing_preferences' => $myPreferences,
+                    'companion_sharing_preferences' => $companionPreferences,
+                    'sharing_enabled' => (bool) ($companionPreferences['cycle_details'] || $companionPreferences['pregnancy_details']),
                 ];
             })
             ->values();
