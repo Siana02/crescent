@@ -131,6 +131,7 @@ class AuthController extends Controller
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'password' => $validated['password'],
+                'is_active' => true,
             ]);
 
             if ($role === 'support') {
