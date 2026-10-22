@@ -170,13 +170,38 @@ class DashboardController extends Controller
                 }
 
                 if ($companion && $companionPreferences['wellbeing_updates']) {
-                    $latestSharedCheckin = $companion->dailyCheckins()->latest('log_date')->first();
-                    if ($latestSharedCheckin) {
-                        $sharedWellbeing = [
-                            'log_date' => $latestSharedCheckin->log_date->format('Y-m-d'),
-                            'mood' => $latestSharedCheckin->mood ? explode(',', $latestSharedCheckin->mood) : [],
-                            'symptoms' => $latestSharedCheckin->symptoms ?? [],
-                        ];
+                    if (in_array($companionJourney, ['pregnancy', 'postpartum'], true)) {
+                        $wellbeingPregnancy = $companion->pregnancies()->where('status', $companionJourney === 'postpartum' ? 'postpartum' : 'active')->latest()->first();
+                        if ($companionJourney === 'postpartum' && $wellbeingPregnancy) {
+                            $postpartumLog = $wellbeingPregnancy->postpartumLogs()->latest('log_date')->first();
+                            if ($postpartumLog) {
+                                $sharedWellbeing = [
+                                    'log_date' => $postpartumLog->log_date->format('Y-m-d'),
+                                    'category' => $postpartumLog->category,
+                                    'notes' => $postpartumLog->notes,
+                                ];
+                            }
+                        } else {
+                            $latestSharedCheckin = $wellbeingPregnancy?->checkins()->latest('log_date')->first();
+                            if ($latestSharedCheckin) {
+                                $sharedMood = $latestSharedCheckin->mood ?? null;
+                                $sharedWellbeing = [
+                                    'log_date' => $latestSharedCheckin->log_date->format('Y-m-d'),
+                                    'mood' => is_string($sharedMood) ? explode(',', $sharedMood) : ($sharedMood ?? []),
+                                    'symptoms' => $latestSharedCheckin->symptoms ?? [],
+                                    'energy_level' => $latestSharedCheckin->energy_level ?? null,
+                                ];
+                            }
+                        }
+                    } else {
+                        $latestSharedCheckin = $companion->dailyCheckins()->latest('log_date')->first();
+                        if ($latestSharedCheckin) {
+                            $sharedWellbeing = [
+                                'log_date' => $latestSharedCheckin->log_date->format('Y-m-d'),
+                                'mood' => $latestSharedCheckin->mood ? explode(',', $latestSharedCheckin->mood) : [],
+                                'symptoms' => $latestSharedCheckin->symptoms ?? [],
+                            ];
+                        }
                     }
                 }
 
