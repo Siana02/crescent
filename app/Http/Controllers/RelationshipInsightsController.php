@@ -249,7 +249,7 @@ class RelationshipInsightsController extends Controller
             $symptoms = array_map('strtolower', (array) ($checkin?->symptoms ?? []));
             $phaseTips = [
                 'menstrual' => [
-                    ['A softer pace may help', 'Offer to handle one practical task, bring a warm drink or heat pack if wanted, and ask what kind of comfort feels good today.'],
+                    ['A softer pace may help', 'Offer to handle one practical task, bring a warm drink or heat pack, or pick up their usual pain relief if they ask. Ask what kind of comfort feels good today.'],
                     ['Comfort without assumptions', 'A favourite snack, a cosy evening or help with errands might be welcome. Ask what would help rather than guessing.'],
                     ['Make rest easier to choose', 'Offer a low-effort plan and let your partner decide whether they want company, quiet or practical support.'],
                 ],
@@ -278,7 +278,7 @@ class RelationshipInsightsController extends Controller
             $tipIndex = $cycleDay !== null ? ($cycleDay + (int) $localToday->format('z')) % count($tipChoices) : (int) $localToday->format('z') % count($tipChoices);
             $chosen = $tipChoices[$tipIndex];
             if ($canUseSymptoms && array_intersect($symptoms, ['bloating', 'bloated', 'cramps', 'cramping', 'fatigue', 'tired', 'headache'])) {
-                $chosen = ['Notice what they logged today', 'Your partner logged '.implode(', ', array_slice(array_intersect($symptoms, ['bloating','bloated','cramps','cramping','fatigue','tired','headache']), 0, 3)).'. Offer a specific comfort or practical help, then let them tell you what would actually help.'];
+                $chosen = ['Notice what they logged today', 'Your partner logged '.implode(', ', array_slice(array_intersect($symptoms, ['bloating','bloated','cramps','cramping','fatigue','tired','headache']), 0, 3)).'. Offer a heat pack, comfy clothes, a kind compliment if welcome, or one practical task. Ask what would actually help and do not dismiss their discomfort.'];
             }
             if (!$canUseCycleContext) {
                 $phase = 'cycle-unknown';
