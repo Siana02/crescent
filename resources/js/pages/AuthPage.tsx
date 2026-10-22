@@ -72,7 +72,7 @@ export default function AuthPage({ mode }: AuthPageProps) {
         if (isRegister && relationshipRole !== 'tracker' && !invitePreview) {
             setError('Check your Cosmic Sync Code before creating your account.'); setIsSubmitting(false); return;
         }
-        if (isRegister && relationshipRole === 'support' && invitePreview?.astrology_enabled && !birthDate) {
+        if (isRegister && relationshipRole !== 'tracker' && invitePreview?.astrology_enabled && !birthDate) {
             setError('Your partner has enabled astrology. Please add your birth date.'); setIsSubmitting(false); return;
         }
 
@@ -92,7 +92,7 @@ export default function AuthPage({ mode }: AuthPageProps) {
                         relationship_role: relationshipRole === 'support' ? 'support' : 'tracker',
                         registration_intent: relationshipRole,
                         ...(inviteCode ? { invite_code: inviteCode.trim().toUpperCase() } : {}),
-                        ...(relationshipRole === 'support' && invitePreview?.astrology_enabled ? {
+                        ...(relationshipRole !== 'tracker' && invitePreview?.astrology_enabled ? {
                             birth_date: birthDate || null,
                             birth_time: birthTime || null,
                             birth_place: birthPlace.trim() || null,
@@ -154,7 +154,7 @@ export default function AuthPage({ mode }: AuthPageProps) {
                             <label htmlFor="auth-invite-code">Cosmic Sync Code {relationshipRole === 'tracker' ? <small>(optional unless you’re joining someone)</small> : <small>(required)</small>}</label>
                             <div className="auth-invite-code-row"><input id="auth-invite-code" value={inviteCode} onChange={event => { setInviteCode(event.target.value.toUpperCase().slice(0, 8)); setInvitePreview(null); }} maxLength={8} placeholder="e.g. MOONSTAR" autoCapitalize="characters" /><Button type="button" variant="outline" disabled={checkingInvite || inviteCode.trim().length !== 8} onClick={() => void checkInvitation()}>{checkingInvite ? 'Checking…' : 'Check code'}</Button></div>
                             {invitePreview && <p className="auth-invite-confirmation" role="status">{invitePreview.relationship_type === 'co_tracker' ? 'Co-cycling invitation found.' : 'Support invitation found.'} {invitePreview.astrology_enabled ? 'Astrology is enabled, so we’ll set up your birth details too.' : 'Birth details can be added later in Profile & settings.'}</p>}
-                            {relationshipRole === 'support' && invitePreview?.astrology_enabled && <fieldset className="auth-birth-fields"><legend>Your birth details for shared astrology</legend>
+                            {relationshipRole !== 'tracker' && invitePreview?.astrology_enabled && <fieldset className="auth-birth-fields"><legend>Your birth details for shared astrology</legend>
                                 <label>Birth date<input type="date" value={birthDate} onChange={event => setBirthDate(event.target.value)} required max={new Date().toISOString().slice(0, 10)} /></label>
                                 <label>Birth time <small>Optional, but helpful for rising sign and houses.</small><input type="time" value={birthTime} onChange={event => setBirthTime(event.target.value)} /></label>
                                 <label>Birth place <small>Optional, but improves location-sensitive chart calculations.</small><input value={birthPlace} onChange={event => setBirthPlace(event.target.value)} maxLength={160} placeholder="City, country" /></label>
