@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'user_id', 'average_cycle_length', 'average_period_length', 'cycle_regularity', 'timezone',
     'birth_date', 'contraception_type', 'primary_goal', 'birth_time', 'birth_place',
     'sun_sign', 'moon_sign', 'rising_sign', 'onboarding_completed',
-    'display_name', 'wants_astrology', 'partner_preference', 'active_journey', 'cycle_tracking_started_at',
+    'display_name', 'wants_astrology', 'partner_preference', 'relationship_role', 'active_journey', 'cycle_tracking_started_at',
 ])]
 class CycleProfile extends Model
 {
