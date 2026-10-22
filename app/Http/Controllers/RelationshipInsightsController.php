@@ -93,6 +93,21 @@ class RelationshipInsightsController extends Controller
         return $sign * 30 + (float) $degree;
     }
 
+    private function chartSign(array $placements, string $target): ?string
+    {
+        foreach ($placements as $placement) {
+            $name = strtolower((string) ($placement['name'] ?? ''));
+            $matches = $target === 'rising'
+                ? (str_contains($name, 'ascendant') || $name === 'rising' || $name === 'asc')
+                : str_contains($name, $target);
+            if ($matches && ! empty($placement['sign'])) {
+                return (string) $placement['sign'];
+            }
+        }
+
+        return null;
+    }
+
     private function aspects(array $first, array $second, bool $firstTimeKnown = true, bool $secondTimeKnown = true, bool $transitMode = false): array
     {
         $rules = [
@@ -175,9 +190,9 @@ class RelationshipInsightsController extends Controller
         ];
         if ($shareAstrology && $mine && $theirs) {
             $pairs = [
-                ['label' => 'Sun signs', 'left' => $mine->sun_sign, 'right' => $theirs->sun_sign],
-                ['label' => 'Moon signs', 'left' => ($mineChart['birth_time_known'] ?? false) ? $mine->moon_sign : null, 'right' => ($theirChart['birth_time_known'] ?? false) ? $theirs->moon_sign : null],
-                ['label' => 'Rising signs', 'left' => ($mineChart['birth_time_known'] ?? false) ? $mine->rising_sign : null, 'right' => ($theirChart['birth_time_known'] ?? false) ? $theirs->rising_sign : null],
+                ['label' => 'Sun signs', 'left' => $this->chartSign($mineChart['placements'] ?? [], 'sun') ?? $mine->sun_sign, 'right' => $this->chartSign($theirChart['placements'] ?? [], 'sun') ?? $theirs->sun_sign],
+                ['label' => 'Moon signs', 'left' => ($mineChart['birth_time_known'] ?? false) ? ($this->chartSign($mineChart['placements'] ?? [], 'moon') ?? $mine->moon_sign) : null, 'right' => ($theirChart['birth_time_known'] ?? false) ? ($this->chartSign($theirChart['placements'] ?? [], 'moon') ?? $theirs->moon_sign) : null],
+                ['label' => 'Rising signs', 'left' => ($mineChart['birth_time_known'] ?? false) ? ($this->chartSign($mineChart['placements'] ?? [], 'rising') ?? $mine->rising_sign) : null, 'right' => ($theirChart['birth_time_known'] ?? false) ? ($this->chartSign($theirChart['placements'] ?? [], 'rising') ?? $theirs->rising_sign) : null],
             ];
             foreach ($pairs as $pair) {
                 $tone = $this->signTone($pair['left'], $pair['right']);
