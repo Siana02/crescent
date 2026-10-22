@@ -8,6 +8,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PeriodLogController;
 use App\Http\Controllers\PregnancyController;
 use App\Http\Controllers\RelationshipController;
+use App\Http\Controllers\RelationshipNotesController;
+use App\Http\Controllers\RelationshipInsightsController;
 use App\Http\Controllers\SexLogController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
