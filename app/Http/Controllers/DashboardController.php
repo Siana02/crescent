@@ -169,7 +169,8 @@ class DashboardController extends Controller
                     }
                 }
 
-                if ($companion && $companionPreferences['wellbeing_updates']) {
+                $pregnancyJourneyShared = ! in_array($companionJourney, ['pregnancy', 'postpartum'], true) || $companionPreferences['pregnancy_details'];
+                if ($companion && $companionPreferences['wellbeing_updates'] && $pregnancyJourneyShared) {
                     if (in_array($companionJourney, ['pregnancy', 'postpartum'], true)) {
                         $wellbeingPregnancy = $companion->pregnancies()->where('status', $companionJourney === 'postpartum' ? 'postpartum' : 'active')->latest()->first();
                         if ($companionJourney === 'postpartum' && $wellbeingPregnancy) {
