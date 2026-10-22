@@ -481,3 +481,23 @@
   width:17px;
   height:17px;
 }
+
+
+.cosmic-invite-sharing{display:grid;gap:8px;margin:12px 0 8px;padding:15px;border:1px solid #e8dce9;border-radius:18px;background:linear-gradient(145deg,#fffafd,#f8f3ff)}
+.cosmic-invite-sharing h3{margin:0;color:#594760;font-size:1rem}
+.cosmic-invite-sharing>p.cosmic-muted{margin:0 0 4px;font-size:.8rem;line-height:1.5}
+.cosmic-invite-sharing>button{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:10px;width:100%;padding:10px;border:1px solid #eadfeb;border-radius:13px;background:#fff;text-align:left;color:#65536c;cursor:pointer}
+.cosmic-invite-sharing>button.is-enabled{border-color:#bd94c4;background:linear-gradient(120deg,#fff0f8,#f1edff)}
+.cosmic-invite-sharing>button>span:first-child{font-size:1.1rem}
+.cosmic-invite-sharing>button strong,.cosmic-invite-sharing>button small{display:block}
+.cosmic-invite-sharing>button strong{font-size:.8rem}
+.cosmic-invite-sharing>button small{margin-top:3px;color:#95869a;font-size:.7rem;line-height:1.35}
+.cosmic-invite-sharing>button b{font-size:.72rem;color:#8f7c96}
+.cosmic-birth-details-panel{margin-top:18px;padding:18px;border:1px solid #e8dce9;border-radius:18px;background:linear-gradient(145deg,#fffafd,#f8f3ff)}
+.cosmic-companion-birth-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+.cosmic-companion-birth-form label{display:grid;gap:6px;color:#6c5a73;font-size:.8rem;font-weight:700}
+.cosmic-companion-birth-form label small{color:#96869b;font-size:.68rem;font-weight:500;line-height:1.4}
+.cosmic-companion-birth-form input{width:100%;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #e7dbe9;border-radius:10px;background:#fff;color:#57455f}
+.cosmic-companion-birth-form button{grid-column:1/-1;justify-self:start}
+.cosmic-sharing-option:where(div){cursor:default}
+@media(max-width:760px){.cosmic-companion-birth-form{grid-template-columns:1fr}.cosmic-companion-birth-form button{width:100%}}
