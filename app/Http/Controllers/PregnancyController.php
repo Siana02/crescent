@@ -210,6 +210,25 @@ class PregnancyController extends Controller
         return response()->json(['message' => $reminder->share_with_partner ? 'Reminder saved and shared with your connected partner.' : 'Reminder saved in your private pregnancy planner.', 'reminder' => $reminder], 201);
     }
 
+    public function updateBabyDetails(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'baby_name' => ['nullable', 'string', 'max:80'],
+            'baby_birth_date' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
+            'baby_birth_time' => ['nullable', 'date_format:H:i'],
+            'baby_birth_place' => ['nullable', 'string', 'max:180'],
+        ]);
+        $pregnancy = $request->user()->pregnancies()->where('status', 'postpartum')->latest()->firstOrFail();
+        $pregnancy->update([
+            'baby_name' => $validated['baby_name'] ?? null,
+            'baby_birth_date' => $validated['baby_birth_date'],
+            'baby_birth_time' => $validated['baby_birth_time'] ?? null,
+            'baby_birth_place' => $validated['baby_birth_place'] ?? null,
+        ]);
+
+        return response()->json(['message' => 'Your baby’s keepsake details have been updated.']);
+    }
+
     public function postpartumCheckin(Request $request): JsonResponse
     {
         $pregnancy = $request->user()->pregnancies()->where('status', 'postpartum')->latest()->firstOrFail();
