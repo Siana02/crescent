@@ -48,7 +48,49 @@ const WEEKLY_NUTRITION = [
  'This week, choose one small food routine that feels sustainable. If you have concerns about growth, appetite or supplements, bring them to your maternity team.',
 ];
 
-const PARTNER_CARE = [
+const WEEKLY_DEVELOPMENT = [
+ 'Pregnancy weeks are counted from the first day of the last menstrual period; in a typical cycle, fertilisation has not happened during week 1.',
+ 'The body is in the early part of the cycle used to date pregnancy. Ovulation and conception timing can vary, especially when cycles are irregular.',
+ 'Around this stage, fertilisation may occur in a typical cycle and the early cell cluster travels toward the uterus. Dating can vary.',
+ 'The developing blastocyst may implant in the uterus. Early pregnancy tests may begin to detect hCG, but timing differs.',
+ 'Early structures that will form the brain, spinal cord and heart are beginning to develop. A clinician can advise on dating and next steps.',
+ 'The neural tube is developing and early heart structures are forming. Take supplements only as advised by your maternity clinician.',
+ 'Early limb buds are developing and the heart is developing rapidly. Ultrasound visibility and heartbeat timing vary.',
+ 'The embryo is developing arms, legs, hands and feet; the head is still proportionally large. Size comparisons are approximate.',
+ 'Facial features and small limb structures continue to develop. Symptoms differ widely from person to person.',
+ 'The embryo is entering the fetal stage in medical terminology; fingers and toes are developing and organs continue to mature.',
+ 'The head and body continue changing proportions and early movements may occur, though they are usually not felt yet.',
+ 'Fingers, toes and facial features continue to develop. Screening and scan options depend on local services and personal choices.',
+ 'The second trimester is approaching in common dating systems; bones and movement continue developing.',
+ 'Facial muscles and limb movements develop further. You may not feel movement yet, especially in a first pregnancy.',
+ 'The skeleton continues to develop and the body grows. Individual measurements vary, so app comparisons are not growth checks.',
+ 'The baby can move arms and legs; some people begin to notice early movement in the coming weeks, but timing varies.',
+ 'Movement and body proportions continue developing. Ask your care team what to expect for your pregnancy.',
+ 'The ears and nervous system continue developing; some people begin noticing movements around this period, others later.',
+ 'Sensory development continues and the baby may respond to sounds, though this cannot be judged from an app.',
+ 'Around mid-pregnancy, an anatomy scan is commonly offered to assess structures. It does not detect every condition.',
+ 'Movement and swallowing continue, and the skin is developing. A scan may be offered around this time depending on local guidance.',
+ 'The lungs and brain continue developing, but they are not mature yet. The baby’s movement pattern can become more familiar.',
+ 'The baby continues growing and practicing movements; clinicians may discuss movement awareness appropriate to your stage.',
+ 'The lungs and nervous system continue maturing. Ask your care team when and how to monitor movements.',
+ 'The baby’s skin and body continue changing as fat begins to accumulate. Growth varies between pregnancies.',
+ 'Eyes and other sensory structures continue developing; many changes happen gradually rather than on a single day.',
+ 'The brain and lungs continue developing. If you have concerns about symptoms or movement, contact your maternity team.',
+ 'The baby continues gaining weight and practicing breathing movements, though the lungs still need further maturation.',
+ 'Brain growth and nervous-system development continue, alongside increasing body fat.',
+ 'The baby is gaining weight and may respond to familiar sounds; movement space can feel different as pregnancy advances.',
+ 'The lungs and brain continue maturing and the body is building reserves for after birth.',
+ 'The baby continues gaining fat and practicing movements; a due date is only an estimate.',
+ 'Bones are developed but remain relatively flexible, and the baby continues preparing for life outside the uterus.',
+ 'The baby is continuing to mature and gain weight; the head may move toward a birth-ready position, but timing varies.',
+ 'The lungs and other systems continue maturing. Your care team can explain the signs of labour and when to call.',
+ 'The baby is often getting ready for birth, but position and timing vary. Keep your birth and transport plan flexible.',
+ 'The baby continues to gain weight and mature. Follow your clinician’s guidance about appointments and fetal movement.',
+ 'The baby is considered early term from 37 weeks, but individual birth timing varies; seek advice if labour signs or concerns arise.',
+ 'The baby continues final maturation and may be born at any time. Your care team can explain what to do if your due date passes.',
+ 'Around 40 weeks is the estimated due date, not a deadline. Follow your maternity team’s advice about monitoring and next steps.',
+];
+\nconst PARTNER_CARE = [
  { title:'Ask before trying to fix it', text:'Try “Would comfort, practical help, company or quiet feel best today?” Listen to the answer and follow their lead.' },
  { title:'Take one task off their plate', text:'Offer to prepare a meal, refill water, handle an errand or arrange transport to an appointment. Be specific and make it easy to say no.' },
  { title:'Make appointments easier', text:'Ask whether they want company, help writing questions, transport or someone to remember the plan. They decide what support they want.' },
@@ -83,7 +125,8 @@ export default function PregnancyJourneyExtras({week,trimester,postpartum=false,
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState('');
  const [notice,setNotice]=useState('');
- const care=PARTNER_CARE[Math.max(0,week)%PARTNER_CARE.length];
+ const care=PARTNER_CARE[(Math.max(0,week)+new Date().getDate())%PARTNER_CARE.length];
+ const development=WEEKLY_DEVELOPMENT[Math.min(39,Math.max(0,week-1))];
  const nutrition=useMemo(()=>WEEKLY_NUTRITION[Math.max(0,week-1)%WEEKLY_NUTRITION.length],[week]);
  useEffect(()=>{let live=true;fetch('/api/pregnancy/reminders',{credentials:'same-origin',headers:{Accept:'application/json'}}).then(r=>r.ok?r.json():{reminders:[]}).then(data=>{if(live)setReminders(data.reminders??[])}).catch(()=>{});return()=>{live=false}},[]);
  async function saveReminder(event:FormEvent<HTMLFormElement>){
@@ -124,7 +167,8 @@ export default function PregnancyJourneyExtras({week,trimester,postpartum=false,
    <p>{partnerView?care.text:'Your partner can ask what would help, take practical tasks off your hands, accompany you if invited, and listen without assuming what you need. You get to set the pace.'}</p>
    {partnerView&&<p className="pregnancy-gentle-note">The pregnant person’s comfort, autonomy and care come first. Ask, listen and respect their choices.</p>}
   </section>
-  {baby?.birth_date&&<section className="pregnancy-petal-card pregnancy-baby-atelier">
+  {!postpartum&&<section className="pregnancy-petal-card pregnancy-baby-development"><p className="pregnancy-eyebrow">{partnerView?'GETTING TO KNOW THE BABY':'A LITTLE NOTE ON DEVELOPMENT'}</p><h2>Week {Math.min(40,Math.max(1,week))}: {week===1?'The dating clock begins':'A new stage of growth'}</h2><p>{development}</p><small>Milestones are approximate, not a check of your baby’s health or growth. Development and dating can vary. <a href="https://www.nhs.uk/best-start-in-life/pregnancy/week-by-week-guide-to-pregnancy/" target="_blank" rel="noreferrer">Read the NHS week-by-week guide ↗</a></small></section>}
+    {baby?.birth_date&&<section className="pregnancy-petal-card pregnancy-baby-atelier">
    <p className="pregnancy-eyebrow">A TINY COSMIC ATELIER</p><h2>{baby.name?.trim()?baby.name+'’s little universe':'Your little one’s first sky'}</h2>
    <div className="pregnancy-baby-chart"><span aria-hidden="true">✧</span><div><small>SUN SIGN</small><strong>{signForDate(baby.birth_date)}</strong><p>Born {new Intl.DateTimeFormat(undefined,{dateStyle:'long'}).format(new Date(baby.birth_date+'T12:00:00'))}</p></div></div>
    <p>{baby.birth_time&&baby.birth_place? `Birth details saved: ${baby.birth_time} · ${baby.birth_place}. `:'You can add a birth time and birthplace in Profile & settings to keep a fuller record. '}The Sun sign is date-based and approximate near sign boundaries; a complete natal chart needs accurate birth details and an astrology calculation.</p>
