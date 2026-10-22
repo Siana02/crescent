@@ -5,6 +5,7 @@ import SharedPartnerSpace from '../components/SharedPartnerSpace';
 import FloralSharedCycleCalendar from '../components/FloralSharedCycleCalendar';
 import { getMoonPhase } from '../utils/moonPhase';
 import '../styles/cosmic-dashboard.css';
+import MobileNavigationMenu from '../components/MobileNavigationMenu';
 
 type DashboardData = {
  user:{name:string;email:string};
@@ -160,7 +161,7 @@ export default function CycleDashboardHome({data,onLogout,onRefresh}:Props){
  const articleOffset=data.cycle_day==null?0:data.cycle_day<=5?1:data.cycle_day<=14?2:data.cycle_day<=17?0:3;
  const recommendedArticles=[...articles.slice(articleOffset),...articles.slice(0,articleOffset)];
  return <div className="cosmic-dashboard">
- <header className="cosmic-header"><a className="cosmic-brand" href="/" aria-label="Crescent home"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a><nav><a className="is-active" href="/dashboard">Home</a><a href="#moon-calendar">Moon & cycle</a><a href="#read-next">Read & explore</a><a href="/astrology">The Cosmic Atelier</a><a href="/connections">Connections</a><a href="/profile">Profile & settings</a></nav><div className="cosmic-header__right"><span>✦ Just for you</span><button onClick={()=>void onLogout()}>Sign out</button></div></header>
+ <header className="cosmic-header"><a className="cosmic-brand" href="/" aria-label="Crescent home"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a><nav><a className="is-active" href="/dashboard">Home</a><a href="#moon-calendar">Moon & cycle</a><a href="#read-next">Read & explore</a><a href="/astrology">The Cosmic Atelier</a><a href="/connections">Connections</a><a href="/profile">Profile & settings</a></nav><div className="cosmic-header__right"><span>✦ Just for you</span><button onClick={()=>void onLogout()}>Sign out</button></div><MobileNavigationMenu onLogout={onLogout} /></header>
  <main className="cosmic-main">
  <section className="cosmic-welcome"><div><p className="cosmic-eyebrow">YOUR LITTLE UNIVERSE · {new Intl.DateTimeFormat(undefined,{weekday:'long',month:'long',day:'numeric'}).format(new Date())}</p><h1>Hello, {firstName}<em>let's tune in.</em></h1><p>Your body isn't a mystery to solve. It's a story you get to know, one day at a time.</p></div><div className="cosmic-welcome__art" aria-hidden="true"><span>🌙</span><i>✦</i><b>✿</b></div></section>
  {data.profile.partner_preference==='co_tracker'&&<section className="co-cycling-portal-banner"><div><p className="cosmic-eyebrow">YOUR CO-CYCLING SPACE · TWO RHYTHMS, ONE SHARED JOURNEY</p><h2>Your cycles, your boundaries, your shared space.</h2><p>Keep your own cycle history private by default, choose what to share in Connections, and use your shared space for check-ins, notes and care that works for both of you.</p></div><a href="/connections">Manage your connection ↗</a></section>}
