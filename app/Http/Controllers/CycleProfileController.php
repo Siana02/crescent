@@ -30,6 +30,11 @@ class CycleProfileController extends Controller
             'onboarding_completed' => ['sometimes', 'boolean'],
         ]);
 
+        if (array_key_exists('relationship_role', $validated)
+            && $validated['relationship_role'] !== ($request->user()->cycleProfile?->relationship_role ?? 'tracker')) {
+            abort(403, 'Your Crescent relationship role cannot be changed from profile settings.');
+        }
+
         if (array_key_exists('birth_date', $validated)) {
             $validated['sun_sign'] = $validated['birth_date'] ? $this->sunSign($validated['birth_date']) : null;
         }
