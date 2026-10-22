@@ -19,8 +19,9 @@ class AuthController extends Controller
             'relationship_role' => ['sometimes', 'in:tracker,support'],
         ]);
 
-        $user = User::create($validated);
         $role = $validated['relationship_role'] ?? 'tracker';
+        unset($validated['relationship_role']);
+        $user = User::create($validated);
         if ($role === 'support') {
             $user->cycleProfile()->updateOrCreate([], [
                 'relationship_role' => 'support',
@@ -55,8 +56,12 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
+        $profile = $request->user()->cycleProfile;
+
         return response()->json([
             'user' => ['name' => $request->user()->name, 'email' => $request->user()->email],
+            'relationship_role' => $profile?->relationship_role ?? 'tracker',
+            'onboarding_completed' => (bool) $profile?->onboarding_completed,
         ]);
     }
 
