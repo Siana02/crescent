@@ -205,11 +205,37 @@ class AstrologyController extends Controller
         $sign = Str::lower((string) $request->user()->cycleProfile?->sun_sign);
         $allowed = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'];
         if (in_array($sign, $allowed, true)) {
-            return $this->cachedGet(
+            $weeklySign = $this->cachedGet(
                 'cosmyday:content:weekly-sign:'.$sign.':'.now()->format('o-W'),
                 now()->addDays(7)->startOfDay(),
                 '/content/weekly/'.$sign
             );
+            $weeklyPayload = $weeklySign->getData(true);
+            if ($weeklySign->getStatusCode() < 400 && is_array($weeklyPayload) && ! empty($weeklyPayload['data'])) {
+                return $weeklySign;
+            }
+
+            // Last fallback: the API also exposes all twelve weekly readings.
+            $allSigns = $this->cachedGet(
+                'cosmyday:content:weekly-all:'.now()->format('o-W'),
+                now()->addDays(7)->startOfDay(),
+                '/content/weekly'
+            );
+            $allPayload = $allSigns->getData(true);
+            $allData = is_array($allPayload) ? ($allPayload['data'] ?? null) : null;
+            if ($allSigns->getStatusCode() < 400 && is_array($allData)) {
+                $reading = data_get($allData, $sign)
+                    ?? data_get($allData, 'horoscopes.'.$sign)
+                    ?? data_get($allData, 'signs.'.$sign)
+                    ?? data_get($allData, 'data.'.$sign);
+                if (is_array($reading) || is_string($reading)) {
+                    return response()->json([
+                        'data' => $reading,
+                        'source' => 'CosmyDay',
+                        'source_url' => 'https://cosmyday.com',
+                    ]);
+                }
+            }
         }
 
         return $primary;
