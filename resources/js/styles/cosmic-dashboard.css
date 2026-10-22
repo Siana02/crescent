@@ -530,3 +530,41 @@
 .cosmic-support-link:hover{text-decoration:underline}
 .cosmic-support-empty{margin-top:18px}
 @media(max-width:760px){.cosmic-support-permission-list{grid-template-columns:1fr}.cosmic-support-signs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* Astrology sky dispatch: two balanced cards above a compact, expandable week. */
+.cosmic-weather-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cosmic-weather-card--week{grid-column:1/-1;min-height:0;background:linear-gradient(145deg,#fff8e7,#fffdfd 72%)}
+.cosmic-weather-card--week .cosmic-week-forecast{display:grid;gap:12px;margin-top:5px}
+.cosmic-week-forecast-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:7px 0 0}
+.cosmic-week-forecast-day{min-width:0;padding:14px;border:1px solid rgba(204,173,212,.38);border-radius:16px;background:linear-gradient(145deg,#fff1d8,#fffdf9)}
+.cosmic-week-forecast-day--1{background:linear-gradient(145deg,#fff0d6 0%,#fffaf1 58%,rgba(255,255,255,.88) 100%)}
+.cosmic-week-forecast-day--2{background:linear-gradient(145deg,#f2eaff 0%,#fbf7ff 58%,rgba(255,255,255,.9) 100%)}
+.cosmic-week-forecast-day--3{background:linear-gradient(145deg,#ffeaf2 0%,#fff7fa 58%,rgba(255,255,255,.9) 100%)}
+.cosmic-week-forecast-day--4{background:linear-gradient(145deg,#e8f5f2 0%,#f6fcfa 58%,rgba(255,255,255,.9) 100%)}
+.cosmic-week-forecast-day--5{background:linear-gradient(145deg,#eaf0ff 0%,#f7f8ff 58%,rgba(255,255,255,.9) 100%)}
+.cosmic-week-forecast-day--6{background:linear-gradient(145deg,#f9eafa 0%,#fff7ff 58%,rgba(255,255,255,.9) 100%)}
+.cosmic-week-forecast-day--7{background:linear-gradient(145deg,#fff0e3 0%,#fffaf5 58%,rgba(255,255,255,.9) 100%)}
+.cosmic-week-forecast-day h4{overflow-wrap:anywhere}
+.cosmic-week-forecast-day p{overflow-wrap:anywhere}
+.cosmic-week-forecast:not(.is-expanded) .cosmic-week-forecast-grid{grid-template-columns:minmax(0,1fr)}
+.cosmic-week-forecast:not(.is-expanded) .cosmic-week-forecast-day{padding:17px 18px}
+.cosmic-week-forecast:not(.is-expanded) .cosmic-week-forecast-day p{max-width:90ch}
+.cosmic-week-forecast-toggle{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;gap:10px;align-self:start;justify-self:center;min-height:42px;padding:9px 17px;border:1px solid rgba(181,142,191,.42);border-radius:999px;background:rgba(255,255,255,.86);color:#886993;font:inherit;font-size:11px;font-weight:750;letter-spacing:.015em;cursor:pointer;box-shadow:0 5px 15px rgba(113,78,132,.06);transition:background .18s ease,border-color .18s ease,transform .18s ease}
+.cosmic-week-forecast-toggle:hover{background:#fff;border-color:#bd9bc7;transform:translateY(-1px)}
+.cosmic-week-forecast-toggle:focus-visible{outline:3px solid rgba(169,126,186,.45);outline-offset:3px}
+.cosmic-week-forecast-toggle__icon{display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:#f2e7f6;color:#946da1;font-size:18px;line-height:1}
+.cosmic-week-forecast.is-expanded .cosmic-week-forecast-toggle{margin-top:3px}
+@media(max-width:900px){
+ .cosmic-week-forecast-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:640px){
+ .cosmic-weather-grid{grid-template-columns:minmax(0,1fr);gap:12px}
+ .cosmic-weather-card--week{grid-column:auto}
+ .cosmic-weather-card{min-height:0;padding:18px;border-radius:20px}
+ .cosmic-weather-card__footer{padding-top:18px}
+ .cosmic-week-forecast-grid{grid-template-columns:minmax(0,1fr)}
+ .cosmic-week-forecast:not(.is-expanded) .cosmic-week-forecast-day{padding:14px}
+ .cosmic-week-forecast:not(.is-expanded) .cosmic-week-forecast-day p{max-width:none}
+ .cosmic-week-forecast-toggle{width:100%;justify-self:stretch}
+}
