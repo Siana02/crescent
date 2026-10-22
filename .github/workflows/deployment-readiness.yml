@@ -47,3 +47,21 @@ jobs:
           SESSION_DRIVER: array
           QUEUE_CONNECTION: sync
         run: php artisan test
+
+  docker-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build production container
+        run: docker build --pull --tag crescent-deployment-test .
+      - name: Verify image has required PHP runtime extensions
+        run: |
+          docker run --rm --entrypoint php crescent-deployment-test -r '
+            foreach (["curl", "mbstring", "pdo_pgsql", "xml"] as $ext) {
+              if (!extension_loaded($ext)) {
+                fwrite(STDERR, "Missing PHP extension: {$ext}\\n");
+                exit(1);
+              }
+            }
+            echo "Required PHP extensions are present.\\n";
+          '
