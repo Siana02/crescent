@@ -41,6 +41,7 @@ export default function SharedPartnerSpace(){
  }
  if(!relationship)return null;
  const sharedSymptoms=relationship.relationship_type==='co_tracker'?(relationship.companion_wellbeing?.symptoms??[]):role==='support'?(relationship.companion_wellbeing?.symptoms??[]):(checkin?.symptoms??[]);
+ const sharedDate=role==='support'||relationship.relationship_type==='co_tracker'?relationship.companion_wellbeing?.log_date:null;
  const sharedMood=relationship.relationship_type==='co_tracker'?(relationship.companion_wellbeing?.mood??[]):role==='support'?(relationship.companion_wellbeing?.mood??[]):(Array.isArray(checkin?.mood)?checkin?.mood??[]:typeof checkin?.mood==='string'?checkin.mood.split(','):[]);
  return <section id="shared-partner-space" className="cosmic-week-card cosmic-shared-partner-space">
   <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">YOUR SHARED PARTNER SPACE</p><h2>A little closer, today</h2><p className="cosmic-muted">A private space for the updates you have chosen to share, daily notes and gentle relationship reflections.</p></div><span className="cosmic-guide-stamp" aria-hidden="true">♡</span></div>
