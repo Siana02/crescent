@@ -35,7 +35,6 @@ class RelationshipNotesController extends Controller
 
         $notes = RelationshipNote::with('author:id,name')
             ->where('relationship_id', $relationship->id)
-            ->whereDate('note_date', '>=', $today->subDays(13)->toDateString())
             ->orderBy('note_date')
             ->orderBy('created_at')
             ->get()
