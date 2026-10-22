@@ -304,3 +304,52 @@
 .cosmic-degree-check>div>span{color:#907d97;font-size:10px;line-height:1.5}
 .cosmic-aspect-empty{align-items:flex-start}
 @media(max-width:700px){.cosmic-horoscope-grid,.cosmic-week-forecast-grid,.cosmic-degree-check{grid-template-columns:1fr}.cosmic-horoscope-card--tip{grid-column:auto}.cosmic-horoscope-card{padding:15px}.cosmic-horoscope-card__head p{font-size:17px}}
+
+
+/* Ornate, icon-led log drawers: no checkbox UI, every choice is a tactile mini-card. */
+.cosmic-modal:before{content:'✧  ✦  ❀  ✿  ♡  ✿  ❀  ✦  ✧';display:block;width:max-content;max-width:100%;margin:0 0 12px;padding:10px 15px;border:1px solid rgba(221,180,215,.48);border-radius:999px;background:linear-gradient(105deg,rgba(255,231,244,.82),rgba(242,232,255,.86),rgba(255,244,218,.72));color:#bd82b5;font-size:18px;letter-spacing:9px;box-shadow:0 5px 18px rgba(178,126,177,.09)}
+.cosmic-modal--period,.cosmic-modal--symptoms,.cosmic-modal--sex{position:relative}
+.cosmic-modal--period:after,.cosmic-modal--symptoms:after,.cosmic-modal--sex:after{content:'✿  ✧  ♡  ✦  ❀  ✧  ✿';position:absolute;right:26px;top:26px;max-width:42%;color:#d5acd1;font-size:15px;letter-spacing:7px;opacity:.7;pointer-events:none}
+.cosmic-modal--period h2,.cosmic-modal--symptoms h2,.cosmic-modal--sex h2{position:relative;z-index:1}
+.cosmic-modal .cosmic-symptom-groups>fieldset{position:relative;overflow:hidden;padding:17px 15px;border-radius:21px;box-shadow:0 8px 24px rgba(112,76,127,.055)}
+.cosmic-modal .cosmic-symptom-groups>fieldset:after{content:'✧  ✿';position:absolute;right:12px;top:10px;color:#d6b1d4;font-size:14px;letter-spacing:5px;opacity:.55;pointer-events:none}
+.cosmic-modal .cosmic-symptom-groups>fieldset:nth-child(6n+1){background:radial-gradient(circle at 100% 0,rgba(255,221,239,.72),transparent 48%),linear-gradient(145deg,#fffdfd,#fff7fc)}
+.cosmic-modal .cosmic-symptom-groups>fieldset:nth-child(6n+2){background:radial-gradient(circle at 100% 0,rgba(221,210,255,.7),transparent 48%),linear-gradient(145deg,#fcf9ff,#fffdfd)}
+.cosmic-modal .cosmic-symptom-groups>fieldset:nth-child(6n+3){background:radial-gradient(circle at 100% 0,rgba(255,235,196,.7),transparent 48%),linear-gradient(145deg,#fffaf2,#fffdfd)}
+.cosmic-modal .cosmic-symptom-groups>fieldset:nth-child(6n+4){background:radial-gradient(circle at 100% 0,rgba(207,241,226,.7),transparent 48%),linear-gradient(145deg,#f6fffb,#fffdfd)}
+.cosmic-modal .cosmic-symptom-groups>fieldset:nth-child(6n+5){background:radial-gradient(circle at 100% 0,rgba(255,216,228,.7),transparent 48%),linear-gradient(145deg,#fff7fa,#fffdfd)}
+.cosmic-modal .cosmic-symptom-groups>fieldset:nth-child(6n){background:radial-gradient(circle at 100% 0,rgba(222,233,255,.7),transparent 48%),linear-gradient(145deg,#f7faff,#fffdfd)}
+.cosmic-symptom-options{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.cosmic-icon-choice{position:relative;display:grid;grid-template-columns:39px minmax(0,1fr) 19px;align-items:center;gap:9px;min-width:0;min-height:66px;padding:9px 10px;border:1px solid #ecdeef;border-radius:16px;background:linear-gradient(145deg,rgba(255,255,255,.97),rgba(255,249,253,.94));color:#80668a;text-align:left;box-shadow:0 4px 12px rgba(108,76,124,.045);cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease}
+.cosmic-icon-choice:hover{transform:translateY(-2px);border-color:#d7b2dc;box-shadow:0 9px 20px rgba(108,76,124,.11)}
+.cosmic-icon-choice__symbol{display:grid;place-items:center;width:39px;height:39px;border:1px solid rgba(223,197,230,.7);border-radius:14px;background:linear-gradient(145deg,#fff0f7,#f1eaff);color:#ae72a7;font-size:22px;box-shadow:inset 0 1px 0 #fff}
+.cosmic-icon-choice:nth-child(4n+2) .cosmic-icon-choice__symbol{background:linear-gradient(145deg,#fff3df,#ffe8ef);color:#bd8b68}
+.cosmic-icon-choice:nth-child(4n+3) .cosmic-icon-choice__symbol{background:linear-gradient(145deg,#e8f7f0,#f3efff);color:#719b91}
+.cosmic-icon-choice:nth-child(4n) .cosmic-icon-choice__symbol{background:linear-gradient(145deg,#eaf0ff,#f9e9ff);color:#8875b5}
+.cosmic-icon-choice__label{font-size:11px;font-weight:650;line-height:1.4;overflow-wrap:anywhere}
+.cosmic-icon-choice__check{display:grid;place-items:center;color:#d3bfd7;font-size:18px;transition:color .18s,transform .18s}
+.cosmic-icon-choice.is-picked{border-color:#c28cbe;background:linear-gradient(125deg,#f4e7ff,#ffe6f1 72%,#fff1d8);color:#674777;box-shadow:inset 0 0 0 1px rgba(193,128,184,.17),0 8px 18px rgba(155,96,159,.13)}
+.cosmic-icon-choice.is-picked .cosmic-icon-choice__symbol{border-color:#fff;background:linear-gradient(145deg,#fff,#ffe8f4);color:#bc619b;box-shadow:0 3px 9px rgba(180,105,159,.13)}
+.cosmic-icon-choice.is-picked .cosmic-icon-choice__check{color:#ad65a4;transform:scale(1.06)}
+.cosmic-modal--sex .cosmic-icon-choice{min-height:72px}
+.cosmic-modal--sex .cosmic-activity-options .cosmic-icon-choice{background:linear-gradient(145deg,#fff8fc,#f8f1ff)}
+.cosmic-modal--sex .cosmic-protection-options .cosmic-icon-choice{background:linear-gradient(145deg,#f4fbff,#fff8fb)}
+.cosmic-modal--sex .cosmic-protection-options .cosmic-icon-choice.is-picked{background:linear-gradient(125deg,#e9f6ff,#f6e9ff,#ffeaf3)}
+.cosmic-modal--period .cosmic-period-flow{background:linear-gradient(135deg,rgba(255,241,247,.92),rgba(246,239,255,.92),rgba(255,249,230,.82))}
+.cosmic-modal--period .cosmic-flow-choice{position:relative;overflow:hidden;min-height:112px;border-radius:19px;box-shadow:0 5px 15px rgba(141,88,127,.06)}
+.cosmic-modal--period .cosmic-flow-choice:after{content:'✧  ✿';position:absolute;top:6px;right:6px;color:#d9a9cb;font-size:10px;letter-spacing:2px;opacity:.6}
+.cosmic-modal--period .cosmic-flow-choice.is-picked{transform:translateY(-2px);box-shadow:inset 0 0 0 1px #e9b4c9,0 10px 20px rgba(197,105,146,.15)}
+.cosmic-modal--symptoms .cosmic-severity-choices .cosmic-choice-row button{min-height:54px;border-radius:17px;font-weight:700}
+.cosmic-modal--symptoms .cosmic-severity-choices .cosmic-choice-row button span{font-size:21px}
+.cosmic-modal--symptoms .cosmic-drawer-moods{background:linear-gradient(130deg,#fff1f8,#f4efff,#eff9f5)}
+.cosmic-modal--symptoms .cosmic-drawer-moods .cosmic-mood-choices button{min-height:52px;border-radius:17px}
+.cosmic-modal--symptoms .cosmic-modal-close,.cosmic-modal--sex .cosmic-modal-close,.cosmic-modal--period .cosmic-modal-close{z-index:2}
+@media(max-width:680px){
+ .cosmic-modal--period:after,.cosmic-modal--symptoms:after,.cosmic-modal--sex:after{right:17px;top:19px;font-size:11px;letter-spacing:3px}
+ .cosmic-modal:before{font-size:15px;letter-spacing:5px}
+ .cosmic-symptom-options{grid-template-columns:1fr}
+ .cosmic-icon-choice{grid-template-columns:42px minmax(0,1fr) 20px;min-height:61px;padding:9px 11px}
+ .cosmic-icon-choice__symbol{width:40px;height:40px}
+ .cosmic-modal--period .cosmic-flow-choice{min-height:88px}
+}
+@media(prefers-reduced-motion:reduce){.cosmic-icon-choice,.cosmic-icon-choice__check{transition:none}.cosmic-icon-choice:hover{transform:none}}
