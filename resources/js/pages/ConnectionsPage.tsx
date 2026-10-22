@@ -67,6 +67,8 @@ export default function ConnectionsPage() {
     const [insights, setInsights] = useState<Record<number, InsightPayload>>({});
     const [savingNote, setSavingNote] = useState<number | null>(null);
     const [savingSharing, setSavingSharing] = useState<number | null>(null);
+    const [astrologyOptIn, setAstrologyOptIn] = useState(false);
+    const [savingAstrologyOptIn, setSavingAstrologyOptIn] = useState(false);
     const [disconnecting, setDisconnecting] = useState<number | null>(null);
 
     async function load() {
@@ -75,6 +77,7 @@ export default function ConnectionsPage() {
         const data = await readJson(response);
         if (!response.ok) throw new Error(data.message ?? 'Could not load your connections.');
         setProfileRole(data.profile?.relationship_role === 'support' ? 'support' : 'tracker');
+        setAstrologyOptIn(Boolean(data.profile?.wants_astrology));
         setOwnJourney(data.profile?.active_journey ?? 'cycle');
         const normalized = (data.relationships ?? []).map((relationship: Partial<Relationship>) => ({
             ...relationship,
@@ -91,7 +94,26 @@ export default function ConnectionsPage() {
 
     useEffect(() => { void load().catch(() => setError('Could not load your connections. Please refresh.')); }, []);
     useEffect(() => {
-        const accepted = relationships.filter(relationship => relationship.status === 'accepted');
+        async function toggleAstrologyConsent() {
+        const next = !astrologyOptIn;
+        setSavingAstrologyOptIn(true); setError(''); setNotice('');
+        try {
+            const response = await fetch('/api/cycle-profile/astrology-consent', { method: 'PATCH', credentials: 'same-origin', headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() }, body: JSON.stringify({ wants_astrology: next }) });
+            const data = await readJson(response);
+            if (!response.ok) throw new Error(data.message ?? 'Could not update your astrology opt-in.');
+            setAstrologyOptIn(Boolean(data.wants_astrology));
+            setNotice(data.wants_astrology ? 'You have opted in to shared astrology reflections.' : 'Your astrology profile is no longer included in shared compatibility.');
+            const responseRefresh = await fetch('/api/relationships/' + relationships.find(item => item.status === 'accepted')?.id + '/insights', { credentials: 'same-origin', headers: { Accept: 'application/json' } });
+            if (responseRefresh.ok) {
+                const refreshed = await readJson(responseRefresh);
+                const id = relationships.find(item => item.status === 'accepted')?.id;
+                if (id && refreshed.daily) setInsights(current => ({ ...current, [id]: refreshed as InsightPayload }));
+            }
+        } catch (exception) { setError(exception instanceof Error ? exception.message : 'Could not update your astrology opt-in.'); }
+        finally { setSavingAstrologyOptIn(false); }
+    }
+
+    const accepted = relationships.filter(relationship => relationship.status === 'accepted');
         accepted.forEach(relationship => {
             fetch('/api/relationships/' + relationship.id + '/notes', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
                 .then(readJson).then(data => {
@@ -233,6 +255,11 @@ export default function ConnectionsPage() {
                             <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">SUPPORT CONNECTION</p><h4>What you’re sharing</h4></div><span aria-hidden="true">♡</span></div>
                             <p className="cosmic-muted">Switch each item on or off at any time. Changes take effect for your connected partner immediately.</p>
                             <div className="cosmic-sharing-options">{sharingOptions.map(option => <button key={option.key} type="button" disabled={savingSharing === relationship.id || (relationship.relationship_type === 'observer' && profileRole === 'support')} aria-pressed={relationship.sharing_preferences[option.key]} className={relationship.sharing_preferences[option.key] ? 'cosmic-sharing-option is-enabled' : 'cosmic-sharing-option'} onClick={() => void toggleSharing(relationship, option.key)}><span className="material-symbols-rounded">{option.icon}</span><span><strong>{option.title}</strong><small>{option.detail}</small></span><span className="cosmic-sharing-toggle">{relationship.sharing_preferences[option.key] ? 'On' : 'Off'}</span></button>)}</div>
+                        </div>}
+                        {((profileRole === 'support' && relationship.relationship_type === 'observer') || relationship.relationship_type === 'co_tracker') && <div className="cosmic-sharing-panel cosmic-astrology-consent-panel">
+                            <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">YOUR ASTROLOGY OPT-IN</p><h4>Include your natal details?</h4></div><span aria-hidden="true">✧</span></div>
+                            <p className="cosmic-muted">Astrology compatibility appears only when both people opt in. This is separate from the other person's sharing permissions, and you can change your mind at any time.</p>
+                            <button type="button" className={astrologyOptIn ? 'cosmic-sharing-option is-enabled' : 'cosmic-sharing-option'} aria-pressed={astrologyOptIn} disabled={savingAstrologyOptIn} onClick={() => void toggleAstrologyConsent()}><span className="material-symbols-rounded">auto_awesome</span><span><strong>Share my astrology profile</strong><small>{astrologyOptIn ? 'Your natal details are opted in.' : 'Your natal details are not included yet.'}</small></span><span className="cosmic-sharing-toggle">{savingAstrologyOptIn ? 'Saving…' : astrologyOptIn ? 'On' : 'Off'}</span></button>
                         </div>}
                         {profileRole !== 'support' && relationship.relationship_type === 'observer' && relationship.sharing_preferences.astrology && <div className="cosmic-birth-details-panel">
                             <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">THEIR NATAL CHART</p><h4>Birth details for your companion</h4></div><span aria-hidden="true">✦</span></div>
