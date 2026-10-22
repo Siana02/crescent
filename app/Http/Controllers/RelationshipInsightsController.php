@@ -223,7 +223,7 @@ class RelationshipInsightsController extends Controller
         }
 
         $isPrimaryViewer = $userId === (int) $relationship->user_one_id;
-        $canUseCycleContext = $isPrimaryViewer || (bool) (($primaryPreferences['cycle_details'] ?? false) || ($primaryPreferences['wellbeing_updates'] ?? false));
+        $canUseCycleContext = $isPrimaryViewer || (bool) ($primaryPreferences['cycle_details'] ?? false);
         $canUseSymptoms = $isPrimaryViewer || (bool) ($primaryPreferences['wellbeing_updates'] ?? false);
         $today = now($mine?->timezone ?: 'UTC')->toDateString();
         $primaryUserForCache = User::find($relationship->user_one_id);
