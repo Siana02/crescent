@@ -381,7 +381,7 @@ class AstrologyController extends Controller
                     if (is_array($longitude)) {
                         $longitude = data_get($longitude, 'value') ?? data_get($longitude, 'degrees') ?? data_get($longitude, 'degree');
                     }
-                    if (is_string($longitude) && preg_match('/-?\\d+(?:\\.\\d+)?/', $longitude, $longitudeMatches)) {
+                    if (is_string($longitude) && preg_match('/-?\d+(?:\.\d+)?/', $longitude, $longitudeMatches)) {
                         $longitude = (float) $longitudeMatches[0];
                     }
                     if ($sign === null && is_numeric($longitude)) {
@@ -555,7 +555,7 @@ class AstrologyController extends Controller
         } elseif (is_numeric($degree) && abs((float) $degree) >= 30) {
             $degree = fmod((float) $degree + 360.0, 30.0);
         }
-        if (is_string($degree) && preg_match('/-?\\d+(?:\\.\\d+)?/', $degree, $matches)) {
+        if (is_string($degree) && preg_match('/-?\d+(?:\.\d+)?/', $degree, $matches)) {
             $degree = (float) $matches[0];
         }
         $degree = is_numeric($degree) && (float) $degree >= 0 && (float) $degree < 30
