@@ -40,6 +40,8 @@ export default function AuthPage({ mode }: AuthPageProps) {
     const [password, setPassword] = useState('');
     const [passwordConfirmation, setPasswordConfirmation] = useState('');
     const [error, setError] = useState('');
+    const [existingAccountEmail, setExistingAccountEmail] = useState(false);
+    const [inviteNeedsLogin, setInviteNeedsLogin] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     async function checkInvitation() {
@@ -53,7 +55,13 @@ export default function AuthPage({ mode }: AuthPageProps) {
             setRelationshipRole(data.relationship_type === 'co_tracker' ? 'co_tracker' : 'support');
             setError('');
         } catch (exception) {
-            setError(exception instanceof Error ? exception.message : 'That invitation could not be checked.');
+            const message = exception instanceof Error ? exception.message : 'That invitation could not be checked.';
+            if (/not active|already been used|expired/i.test(message)) {
+                setInviteNeedsLogin(true);
+                setError('This invitation is no longer available. It may already have been accepted or may have expired. If you already created your account, sign in to continue. Otherwise, ask your partner to create a fresh code.');
+            } else {
+                setError(message);
+            }
         } finally { setCheckingInvite(false); }
     }
 
@@ -64,6 +72,8 @@ export default function AuthPage({ mode }: AuthPageProps) {
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         setError('');
+        setExistingAccountEmail(false);
+        setInviteNeedsLogin(false);
         setIsSubmitting(true);
 
         if (isRegister && ['support', 'co_tracker'].includes(relationshipRole) && inviteCode.trim().length !== 8) {
@@ -106,7 +116,16 @@ export default function AuthPage({ mode }: AuthPageProps) {
 
             if (!response.ok) {
                 const firstValidationError = data.errors ? Object.values(data.errors)[0]?.[0] : undefined;
-                setError(firstValidationError ?? data.message ?? 'We could not complete that request. Please try again.');
+                const message = firstValidationError ?? data.message ?? 'We could not complete that request. Please try again.';
+                if (isRegister && /email.*already been taken|email.*already exists|already.*email/i.test(message)) {
+                    setExistingAccountEmail(true);
+                    setError('An account already exists with this email address. Sign in to continue with your existing account.');
+                } else if (isRegister && relationshipRole !== 'tracker' && /code.*(not active|already been used|expired)|(already been used|expired).*code/i.test(message)) {
+                    setInviteNeedsLogin(true);
+                    setError('This invitation is no longer available. It may already have been accepted or may have expired. If you already created your account, sign in to continue. Otherwise, ask your partner to create a fresh code.');
+                } else {
+                    setError(message);
+                }
                 return;
             }
 
@@ -181,7 +200,7 @@ export default function AuthPage({ mode }: AuthPageProps) {
                                 <label>Birth place <small>Optional, but improves location-sensitive chart calculations.</small><input value={birthPlace} onChange={event => setBirthPlace(event.target.value)} maxLength={160} placeholder="City, country" /></label>
                             </fieldset>}
                         </div>}
-                        {error && <p className="auth-error" role="alert">{error}</p>}
+                        {error && <div className="auth-error" role="alert"><p>{error}</p>{existingAccountEmail && <p><a href="/login">Sign in to your existing account →</a></p>}{inviteNeedsLogin && <p><a href="/login">Already registered? Sign in →</a></p>}</div>}
                         <Button type="submit" className="auth-submit" disabled={isSubmitting}>
                             {isSubmitting ? 'One moment…' : isRegister ? 'Create your account' : 'Sign in'}
                             <span className="button__icon" aria-hidden="true">→</span>

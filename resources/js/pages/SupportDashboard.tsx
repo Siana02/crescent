@@ -1,6 +1,7 @@
 import '../styles/cosmic-dashboard.css';
 import SharedPartnerSpace from '../components/SharedPartnerSpace';
 import FloralSharedCycleCalendar from '../components/FloralSharedCycleCalendar';
+import MobileNavigationMenu from '../components/MobileNavigationMenu';
 
 type SharingKey = 'cycle_details' | 'pregnancy_details' | 'wellbeing_updates' | 'astrology';
 type SharingPreferences = Record<SharingKey, boolean>;
@@ -30,6 +31,10 @@ const labels: { key: SharingKey; title: string; icon: string }[] = [
     { key: 'wellbeing_updates', title: 'Wellbeing check-ins', icon: 'favorite' },
     { key: 'astrology', title: 'Astrology', icon: 'auto_awesome' },
 ];
+const wellbeingLabels: Record<string, { label: string; icon: string }> = {
+ calm:{label:'Calm',icon:'spa'},zen:{label:'At peace',icon:'self_improvement'},pelvic_pain:{label:'Pelvic pain',icon:'healing'},painful_bowel_movement:{label:'Painful bowel movements',icon:'favorite'},painful_urination:{label:'Painful urination',icon:'water_drop'},dizziness:{label:'Dizziness',icon:'cyclone'},breast_tenderness:{label:'Breast tenderness',icon:'health_and_safety'},bloating:{label:'Bloating',icon:'spa'},nausea:{label:'Nausea',icon:'medication'},diarrhea:{label:'Diarrhoea',icon:'water_drop'},gas:{label:'Gas',icon:'air'},appetite_increase:{label:'Increased appetite',icon:'restaurant'},sweet_cravings:{label:'Sweet cravings',icon:'cookie'},savoury_cravings:{label:'Savoury cravings',icon:'lunch_dining'},creamy_discharge:{label:'Creamy discharge',icon:'water_drop'},fatigue:{label:'Fatigue',icon:'bedtime'},libido_decrease:{label:'Lower libido',icon:'favorite'}
+};
+function wellbeingLabel(value:string){return wellbeingLabels[value]??{label:value.replace(/[_-]+/g,' ').replace(/\b\w/g,letter=>letter.toUpperCase()),icon:'spa'};}
 function dateLabel(value: string) {
     return new Date(value + 'T12:00:00').toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
 }
@@ -63,7 +68,7 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
             <a className="cosmic-brand" href="/dashboard"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a>
             <nav><a className="is-active" href="/dashboard">Home</a><a href="/connections">Connections</a><a href="/astrology">The Cosmic Atelier</a><a href="/profile">Profile & settings</a></nav>
             <div className="cosmic-header__right"><button type="button" onClick={onLogout}>Sign out ↗</button></div>
-        </header>
+        <MobileNavigationMenu onLogout={onLogout} /></header>
         <main className="cosmic-main">
             <section className="cosmic-welcome cosmic-connections-welcome">
                 <div><p className="cosmic-eyebrow">A LITTLE SPACE TO SHOW UP</p><h1>Hello, {supportName}. <em>{connection ? `You're invited to ${primaryName}'s little Crescent universe.` : 'Your little Crescent universe is waiting for its first connection.'}</em></h1>
@@ -98,7 +103,7 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
                 </section>}
                 {connection.companion_wellbeing && permissions?.wellbeing_updates && <section className="cosmic-week-card cosmic-support-shared-card cosmic-support-wellbeing-card">
                     <p className="cosmic-eyebrow">A LITTLE WELLBEING CHECK-IN</p><h2>How {primaryName} is feeling</h2><p className="cosmic-muted">Latest update · {dateLabel(connection.companion_wellbeing.log_date)}</p>
-                    <div className="cosmic-support-tags">{[...(connection.companion_wellbeing.mood ?? []), ...(connection.companion_wellbeing.symptoms ?? []), connection.companion_wellbeing.category ?? '', connection.companion_wellbeing.energy_level ? `Energy ${connection.companion_wellbeing.energy_level}/5` : ''].filter(Boolean).map(tag => <span key={tag}>{tag}</span>)}</div>
+                    <div className="cosmic-support-tags">{[...(connection.companion_wellbeing.mood ?? []), ...(connection.companion_wellbeing.symptoms ?? []), connection.companion_wellbeing.category ?? ''].filter(Boolean).filter((tag,index,all)=>all.indexOf(tag)===index).map(tag=>{const item=wellbeingLabel(tag);return <span className="cosmic-wellbeing-pill" key={tag}><span className="material-symbols-rounded" aria-hidden="true">{item.icon}</span>{item.label}</span>;})}{connection.companion_wellbeing.energy_level != null && <span className="cosmic-wellbeing-pill"><span className="material-symbols-rounded" aria-hidden="true">bolt</span>Energy {connection.companion_wellbeing.energy_level}/5</span>}</div>
                     {connection.companion_wellbeing.notes && <blockquote>{connection.companion_wellbeing.notes}</blockquote>}
                     <div className="cosmic-support-wellbeing-advice"><p className="cosmic-eyebrow">A FEW WAYS TO SHOW UP</p><div>{careIdeas(connection.companion_wellbeing, primaryName).map((idea, index) => <p key={idea}><span aria-hidden="true">{['♡','✿','✧'][index]}</span>{idea}</p>)}</div></div>
                     <p className="cosmic-fineprint">{primaryName}'s check-in is the best guide. These are invitations to offer care, never assumptions about what they need.</p>
