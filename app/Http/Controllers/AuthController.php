@@ -96,7 +96,7 @@ class AuthController extends Controller
             $initiatorPreferences = $preferences[(string) $relationship->user_one_id] ?? $preferences;
             $astrologyEnabled = (bool) ($initiatorPreferences['astrology'] ?? false);
 
-            if ($intent === 'support' && $astrologyEnabled && empty($validated['birth_date'])) {
+            if (in_array($intent, ['support', 'co_tracker'], true) && $astrologyEnabled && empty($validated['birth_date'])) {
                 throw ValidationException::withMessages([
                     'birth_date' => 'Your partner has enabled astrology. Add your birth date to set up your shared sky reflections.',
                 ]);
@@ -139,6 +139,20 @@ class AuthController extends Controller
                     'user_two_id' => $user->id,
                     'status' => 'accepted',
                     'accepted_at' => now(),
+                ]);
+            } elseif ($intent === 'co_tracker') {
+                $user->cycleProfile()->updateOrCreate([], [
+                    'relationship_role' => 'tracker',
+                    'onboarding_completed' => false,
+                    'cycle_regularity' => 'unknown',
+                    'timezone' => config('app.timezone', 'UTC'),
+                    'primary_goal' => 'track_cycle',
+                    'partner_preference' => 'co_tracker',
+                    'wants_astrology' => $astrologyEnabled,
+                    'birth_date' => $validated['birth_date'] ?? null,
+                    'birth_time' => $validated['birth_time'] ?? null,
+                    'birth_place' => $validated['birth_place'] ?? null,
+                    'sun_sign' => ! empty($validated['birth_date']) ? $this->sunSign($validated['birth_date']) : null,
                 ]);
             }
 
