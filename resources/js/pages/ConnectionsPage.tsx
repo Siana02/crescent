@@ -73,7 +73,7 @@ export default function ConnectionsPage() {
             fetch('/api/relationships/' + relationship.id + '/notes', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
                 .then(readJson).then(data => {
                     setNotes(current => ({ ...current, [relationship.id]: data as NotesPayload }));
-                    if (data.today_note && !(drafts[relationship.id] ?? '').trim()) setDrafts(current => ({ ...current, [relationship.id]: data.today_note.body }));
+                    if (data.today_note) setDrafts(current => current[relationship.id]?.trim() ? current : ({ ...current, [relationship.id]: data.today_note.body }));
                 }).catch(() => undefined);
             fetch('/api/relationships/' + relationship.id + '/insights', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
                 .then(readJson).then(data => { if (data.daily) setInsights(current => ({ ...current, [relationship.id]: data as InsightPayload })); })
