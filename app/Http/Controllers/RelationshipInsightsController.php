@@ -241,6 +241,7 @@ class RelationshipInsightsController extends Controller
                 $cycleDay = (($cycleDay - 1) % max(1, $primaryProfile->average_cycle_length)) + 1;
                 $periodLength = max(1, (int) ($primaryProfile->average_period_length ?? 5));
                 if ($cycleDay <= $periodLength) $phase = 'menstrual';
+                elseif (($primaryProfile->cycle_regularity ?? 'unknown') === 'irregular') $phase = 'cycle-unknown';
                 elseif ($cycleDay < max($periodLength + 1, (int) $primaryProfile->average_cycle_length - 13)) $phase = 'follicular';
                 elseif ($cycleDay <= (int) $primaryProfile->average_cycle_length - 12) $phase = 'ovulatory-estimate';
                 else $phase = 'luteal';
