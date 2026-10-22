@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Relationship;
 use App\Models\RelationshipNote;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -23,6 +24,8 @@ class RelationshipNotesController extends Controller
     {
         $this->ensureParticipant($relationship, $request);
         $userId = $request->user()->id;
+        $timezone = $request->user()->cycleProfile?->timezone ?: config('app.timezone', 'UTC');
+        $today = CarbonImmutable::today($timezone);
 
         RelationshipNote::query()
             ->where('relationship_id', $relationship->id)
@@ -32,7 +35,7 @@ class RelationshipNotesController extends Controller
 
         $notes = RelationshipNote::with('author:id,name')
             ->where('relationship_id', $relationship->id)
-            ->whereDate('note_date', '>=', now()->subDays(13)->toDateString())
+            ->whereDate('note_date', '>=', $today->subDays(13)->toDateString())
             ->orderBy('note_date')
             ->orderBy('created_at')
             ->get()
@@ -50,7 +53,7 @@ class RelationshipNotesController extends Controller
         $todayNote = RelationshipNote::query()
             ->where('relationship_id', $relationship->id)
             ->where('author_id', $userId)
-            ->whereDate('note_date', now()->toDateString())
+            ->whereDate('note_date', $today->toDateString())
             ->first();
 
         return response()->json([
@@ -79,7 +82,8 @@ class RelationshipNotesController extends Controller
             'body' => ['required', 'string', 'min:1', 'max:1200'],
         ]);
 
-        $today = now()->toDateString();
+        $timezone = $request->user()->cycleProfile?->timezone ?: config('app.timezone', 'UTC');
+        $today = CarbonImmutable::today($timezone)->toDateString();
         $note = RelationshipNote::query()
             ->where('relationship_id', $relationship->id)
             ->where('author_id', $userId)
