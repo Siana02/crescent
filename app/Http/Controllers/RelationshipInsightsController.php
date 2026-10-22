@@ -230,7 +230,7 @@ class RelationshipInsightsController extends Controller
             $lastPeriod = $primary?->periodLogs()->orderByDesc('start_date')->first();
             $cycleDay = null;
             $phase = 'cycle-unknown';
-            if ($lastPeriod && $primaryProfile?->average_cycle_length) {
+            if ($canUseCycleContext && $lastPeriod && $primaryProfile?->average_cycle_length) {
                 $periodStart = CarbonImmutable::parse($lastPeriod->start_date->format('Y-m-d'), $timezone)->startOfDay();
                 $cycleDay = (int) $periodStart->diffInDays($localToday) + 1;
                 $cycleDay = (($cycleDay - 1) % max(1, $primaryProfile->average_cycle_length)) + 1;
@@ -240,7 +240,7 @@ class RelationshipInsightsController extends Controller
                 elseif ($cycleDay <= (int) $primaryProfile->average_cycle_length - 12) $phase = 'ovulatory-estimate';
                 else $phase = 'luteal';
             }
-            $checkin = $primary?->dailyCheckins()->whereDate('log_date', $localToday->toDateString())->first();
+            $checkin = $canUseSymptoms ? $primary?->dailyCheckins()->whereDate('log_date', $localToday->toDateString())->first() : null;
             $symptoms = array_map('strtolower', (array) ($checkin?->symptoms ?? []));
             $phaseTips = [
                 'menstrual' => [
