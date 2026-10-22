@@ -1,6 +1,7 @@
 import '../styles/cosmic-dashboard.css';
 import SharedPartnerSpace from '../components/SharedPartnerSpace';
 import FloralSharedCycleCalendar from '../components/FloralSharedCycleCalendar';
+import MobileNavigationMenu from '../components/MobileNavigationMenu';
 
 type SharingKey = 'cycle_details' | 'pregnancy_details' | 'wellbeing_updates' | 'astrology';
 type SharingPreferences = Record<SharingKey, boolean>;
@@ -67,7 +68,7 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
             <a className="cosmic-brand" href="/dashboard"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a>
             <nav><a className="is-active" href="/dashboard">Home</a><a href="/connections">Connections</a><a href="/astrology">The Cosmic Atelier</a><a href="/profile">Profile & settings</a></nav>
             <div className="cosmic-header__right"><button type="button" onClick={onLogout}>Sign out ↗</button></div>
-        </header>
+        <MobileNavigationMenu onLogout={onLogout} /></header>
         <main className="cosmic-main">
             <section className="cosmic-welcome cosmic-connections-welcome">
                 <div><p className="cosmic-eyebrow">A LITTLE SPACE TO SHOW UP</p><h1>Hello, {supportName}. <em>{connection ? `You're invited to ${primaryName}'s little Crescent universe.` : 'Your little Crescent universe is waiting for its first connection.'}</em></h1>
