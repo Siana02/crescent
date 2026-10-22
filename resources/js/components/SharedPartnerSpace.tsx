@@ -42,6 +42,11 @@ export default function SharedPartnerSpace(){
   catch(error){setMessage(error instanceof Error?error.message:'Could not save your note.');}finally{setBusy(false);}
  }
  if(!relationship)return null;
+ // Keep these names role-aware: the companion name is the other person's name
+ // in each account's relationship payload.
+ const primaryName=role==='support'?(relationship.companion_name?.trim()||'your partner'):myName;
+ const supportName=role==='support'?myName:(relationship.companion_name?.trim()||'your partner');
+ const namesLabel=primaryName+' & '+supportName;
  const sharedSymptoms=relationship.relationship_type==='co_tracker'?(relationship.companion_wellbeing?.symptoms??[]):role==='support'?(relationship.companion_wellbeing?.symptoms??[]):(checkin?.symptoms??[]);
  const sharedDate=role==='support'||relationship.relationship_type==='co_tracker'?relationship.companion_wellbeing?.log_date:null;
  const sharedMood=relationship.relationship_type==='co_tracker'?(relationship.companion_wellbeing?.mood??[]):role==='support'?(relationship.companion_wellbeing?.mood??[]):(Array.isArray(checkin?.mood)?checkin?.mood??[]:typeof checkin?.mood==='string'?checkin.mood.split(','):[]);
