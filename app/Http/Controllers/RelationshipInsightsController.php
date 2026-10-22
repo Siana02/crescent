@@ -150,12 +150,16 @@ class RelationshipInsightsController extends Controller
         $defaults = ['cycle_details' => false, 'pregnancy_details' => false, 'wellbeing_updates' => false, 'astrology' => false];
         $myPreferences = array_merge($defaults, $allPreferences[(string) $userId] ?? []);
         $theirPreferences = array_merge($defaults, $allPreferences[(string) $otherId] ?? []);
-        $shareAstrology = (bool) ($myPreferences['astrology'] && $theirPreferences['astrology']);
+        $shareAstrology = $relationship->relationship_type === 'observer'
+            ? (bool) (($relationship->sharing_preferences[(string) $relationship->user_one_id]['astrology'] ?? $myPreferences['astrology'] ?? false)
+                && $mine?->wants_astrology && $theirs?->wants_astrology)
+            : (bool) ($myPreferences['astrology'] && $theirPreferences['astrology'] && $mine?->wants_astrology && $theirs?->wants_astrology);
 
         $mineChart = $shareAstrology ? $this->chartForProfile($mine) : ['placements' => [], 'birth_time_known' => false];
         $theirChart = $shareAstrology ? $this->chartForProfile($theirs) : ['placements' => [], 'birth_time_known' => false];
         $compatibility = [
             'available' => false,
+            'score' => null,
             'summary' => 'Both people can opt in to astrology and add birth date, time (if known) and birthplace to explore their natal connection.',
             'themes' => [],
             'aspects' => [],
@@ -176,7 +180,19 @@ class RelationshipInsightsController extends Controller
                 (bool) ($mineChart['birth_time_known'] ?? false),
                 (bool) ($theirChart['birth_time_known'] ?? false)
             );
-            if ($compatibility['themes'] !== [] || $compatibility['aspects'] !== []) {
+            if ($compatibility['themes'] !== [] || $compatibility['aspects'] !== [] || ($mine->sun_sign && $theirs->sun_sign)) {
+                $scoreParts = [];
+                foreach ($compatibility['themes'] as $theme) {
+                    $scoreParts[] = match ($theme['tone']) { 'familiar' => 82, 'resonant' => 78, 'complementary' => 80, default => 66 };
+                }
+                foreach ($compatibility['aspects'] as $aspect) {
+                    $scoreParts[] = match ($aspect['tone']) { 'supportive' => 84, 'intense' => 72, default => 61 };
+                }
+                if (!$scoreParts && $mine->sun_sign && $theirs->sun_sign) {
+                    $sunTone = $this->signTone($mine->sun_sign, $theirs->sun_sign);
+                    $scoreParts[] = match ($sunTone['tone'] ?? 'contrasting') { 'familiar' => 82, 'resonant' => 78, 'complementary' => 80, default => 66 };
+                }
+                $compatibility['score'] = $scoreParts ? (int) round(array_sum($scoreParts) / count($scoreParts)) : null;
                 $compatibility['available'] = true;
                 $compatibility['summary'] = 'A reflective comparison of the natal sign placements and planetary aspects available for both profiles. It is an invitation to understand each other, not a verdict about your relationship.';
             }
@@ -195,15 +211,37 @@ class RelationshipInsightsController extends Controller
             $natalSigns = array_filter([$mineForInsight?->sun_sign, $mineForInsight?->moon_sign, $theirsForInsight?->sun_sign, $theirsForInsight?->moon_sign]);
             $moonElement = self::ELEMENTS[$moon['sign'] ?? ''] ?? null;
             $hasSharedSign = count(array_intersect($natalSigns, array_filter([$moon['sign'] ?? null, $venus['sign'] ?? null, $mercury['sign'] ?? null]))) > 0;
-            $themes = [
-                ['title' => 'Make room for a check-in', 'tip' => 'Ask one open question and give the other person time to answer before jumping into solutions.'],
-                ['title' => 'Small care counts', 'tip' => 'Offer one specific act of care today, and make it easy for your partner to say what would help most.'],
-                ['title' => 'Be curious, not certain', 'tip' => 'If something feels off, check what your partner meant instead of filling in the blanks yourself.'],
-                ['title' => 'Share the invisible load', 'tip' => 'Choose one practical task to make lighter for each other, then agree who will do what.'],
-                ['title' => 'Celebrate your different rhythms', 'tip' => 'You do not need to feel the same way to support each other. Ask whether they want listening, closeness or space.'],
+            $primary = User::with('cycleProfile')->find($relationship->user_one_id);
+            $primaryProfile = $primary?->cycleProfile;
+            $timezone = $primaryProfile?->timezone ?: 'UTC';
+            $localToday = CarbonImmutable::today($timezone);
+            $lastPeriod = $primary?->periodLogs()->orderByDesc('start_date')->first();
+            $cycleDay = null;
+            $phase = 'cycle-unknown';
+            if ($lastPeriod && $primaryProfile?->average_cycle_length) {
+                $periodStart = CarbonImmutable::parse($lastPeriod->start_date->format('Y-m-d'), $timezone)->startOfDay();
+                $cycleDay = (int) $periodStart->diffInDays($localToday) + 1;
+                $cycleDay = (($cycleDay - 1) % max(1, $primaryProfile->average_cycle_length)) + 1;
+                $periodLength = max(1, (int) ($primaryProfile->average_period_length ?? 5));
+                if ($cycleDay <= $periodLength) $phase = 'menstrual';
+                elseif ($cycleDay < max($periodLength + 1, (int) $primaryProfile->average_cycle_length - 13)) $phase = 'follicular';
+                elseif ($cycleDay <= (int) $primaryProfile->average_cycle_length - 12) $phase = 'ovulatory-estimate';
+                else $phase = 'luteal';
+            }
+            $checkin = $primary?->dailyCheckins()->whereDate('log_date', $localToday->toDateString())->first();
+            $symptoms = array_map('strtolower', (array) ($checkin?->symptoms ?? []));
+            $phaseTips = [
+                'menstrual' => ['A softer pace may help', 'Offer to handle one practical task, bring a warm drink or heat pack if wanted, and ask what kind of comfort feels good today.'],
+                'follicular' => ['Make room for a little adventure', 'If energy feels good, suggest a walk, a new recipe or an easy shared plan. Let your partner choose the pace.'],
+                'ovulatory-estimate' => ['Check in about closeness', 'Some people notice changes in desire around estimated ovulation and others do not. Ask openly what feels good; never assume interest or fertility from a calendar estimate.'],
+                'luteal' => ['Make comfort easy to ask for', 'Offer a favourite snack, help with a small task or make a quiet evening easier. Ask first instead of assuming what your partner needs.'],
+                'cycle-unknown' => ['Ask what support would feel useful', 'A simple check-in is more reliable than guessing: ask whether your partner would like practical help, company, listening or space.'],
             ];
-            $index = (int) (crc32($today.'|'.$relationship->id.'|'.($mineForInsight?->sun_sign ?? '').'|'.($theirsForInsight?->sun_sign ?? '')) % count($themes));
-            $chosen = $themes[$index];
+            $chosen = $phaseTips[$phase];
+            if (array_intersect($symptoms, ['bloating', 'bloated', 'cramps', 'cramping', 'fatigue', 'tired', 'headache'])) {
+                $chosen = ['Notice what they logged today', 'Your partner logged '.implode(', ', array_slice(array_intersect($symptoms, ['bloating','bloated','cramps','cramping','fatigue','tired','headache']), 0, 3)).'. Offer a specific comfort or practical help, then let them tell you what would actually help.'];
+            }
+            $chosen = ['title' => $chosen[0], 'tip' => $chosen[1]];
             $personalTransits = $shareAstrology ? array_merge(
                 array_map(fn (array $aspect) => array_merge($aspect, ['chart_owner' => 'Your chart']), $this->aspects($sky, $mineChart['placements'] ?? [], true, (bool) ($mineChart['birth_time_known'] ?? false), true)),
                 array_map(fn (array $aspect) => array_merge($aspect, ['chart_owner' => 'Companion chart']), $this->aspects($sky, $theirChart['placements'] ?? [], true, (bool) ($theirChart['birth_time_known'] ?? false), true))
@@ -217,6 +255,7 @@ class RelationshipInsightsController extends Controller
             if ($moonElement === 'water') $chosen['tip'] = 'Give feelings a little room before trying to solve them. '.$chosen['tip'];
             return [
                 'date' => $today,
+                'cycle_context' => ['phase' => $phase, 'cycle_day' => $cycleDay, 'based_on_primary_partner' => true],
                 'title' => $chosen['title'],
                 'tip' => $chosen['tip'],
                 'transit_note' => $transitNote,
