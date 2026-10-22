@@ -121,6 +121,7 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
     const [error, setError] = useState('');
     const [notice, setNotice] = useState('');
     const [inviteType, setInviteType] = useState<'observer' | 'co_tracker'>('observer');
+    const [inviteSharing, setInviteSharing] = useState({ pregnancy_details: true, wellbeing_updates: true, astrology: false });
     const [inviteCode, setInviteCode] = useState('');
     const [isInviting, setIsInviting] = useState(false);
     const [isTransitioning, setIsTransitioning] = useState(false);
@@ -159,7 +160,7 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
             const response = await fetch('/api/relationships/invite', {
                 method: 'POST', credentials: 'same-origin',
                 headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken() },
-                body: JSON.stringify({ relationship_type: inviteType }),
+                body: JSON.stringify({ relationship_type: inviteType, sharing_preferences: { cycle_details: false, pregnancy_details: inviteSharing.pregnancy_details, wellbeing_updates: inviteSharing.wellbeing_updates, astrology: inviteSharing.astrology } }),
             });
             const result = await response.json() as { invite_code?: string; message?: string; errors?: Record<string, string[]> };
             if (!response.ok) throw new Error(result.errors ? Object.values(result.errors)[0]?.[0] : result.message || 'We could not create an invitation.');
@@ -251,7 +252,14 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
 
             <section className="pregnancy-companion">
                 <div><p className="pregnancy-eyebrow">YOUR PEOPLE, YOUR CHOICE</p><h2>Invite someone into this chapter</h2><p>You can begin solo and invite a partner or companion whenever you’re ready. Connecting never switches sharing on automatically.</p></div>
-                <form onSubmit={createInvite}><label>Choose a companion role<select value={inviteType} onChange={event => setInviteType(event.target.value as 'observer' | 'co_tracker')}><option value="observer">Partner or observer</option><option value="co_tracker">Co-tracking companion</option></select></label><Button type="submit" disabled={isInviting}>{isInviting ? 'Creating code…' : 'Create a Cosmic Sync Code ✧'}</Button></form>
+                <form className="pregnancy-invite-form" onSubmit={createInvite}><label>Choose a companion role<select value={inviteType} onChange={event => setInviteType(event.target.value as 'observer' | 'co_tracker')}><option value="observer">Partner or observer</option><option value="co_tracker">Co-cycling companion</option></select></label>
+                    <fieldset className="pregnancy-invite-sharing"><legend>Choose what to share from the start</legend>
+                        <label><input type="checkbox" checked={inviteSharing.pregnancy_details} onChange={event => setInviteSharing(value => ({...value,pregnancy_details:event.target.checked}))}/> Pregnancy stage and due-date details</label>
+                        <label><input type="checkbox" checked={inviteSharing.wellbeing_updates} onChange={event => setInviteSharing(value => ({...value,wellbeing_updates:event.target.checked}))}/> Symptoms and wellbeing updates</label>
+                        <label><input type="checkbox" checked={inviteSharing.astrology} onChange={event => setInviteSharing(value => ({...value,astrology:event.target.checked}))}/> Astrology reflections (both people must opt in)</label>
+                    </fieldset>
+                    <small>You can adjust these permissions later in Connections. Private notes stay private unless you choose to share them.</small>
+                    <Button type="submit" disabled={isInviting}>{isInviting ? 'Creating code…' : 'Create a Cosmic Sync Code ✧'}</Button></form>
                 {inviteCode && <div className="pregnancy-invite-code"><small>Your invitation code</small><strong>{inviteCode}</strong><button type="button" onClick={() => navigator.clipboard?.writeText(inviteCode)}>Copy code</button><span>Expires in seven days. Your details stay private until you choose to share.</span></div>}
             </section>
 
