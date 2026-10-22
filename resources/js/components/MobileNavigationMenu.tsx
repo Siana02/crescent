@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Home, LogOut, Menu, Settings, Sparkles, Users, X } from 'lucide-react';
+import { Home, LogOut, Settings, Sparkles, Users } from 'lucide-react';
 
 type Props = { onLogout?: () => void | Promise<void> };
 
@@ -42,14 +42,13 @@ export default function MobileNavigationMenu({ onLogout }: Props) {
   }
 
   return <div className="cosmic-mobile-nav">
-    <button className="cosmic-mobile-nav__toggle" type="button" aria-label={open ? 'Close navigation menu' : 'Open navigation menu'} aria-expanded={open} aria-controls="cosmic-mobile-menu" onClick={() => { setOpen(value => !value); setError(''); }}>
-      {open ? <X size={21} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
-      <span>{open ? 'Close' : 'Menu'}</span>
+    <button className={`cosmic-mobile-nav__toggle${open ? ' is-open' : ''}`} type="button" aria-label={open ? 'Close navigation menu' : 'Open navigation menu'} aria-expanded={open} aria-controls="cosmic-mobile-menu" onClick={() => { setOpen(value => !value); setError(''); }}>
+      <span className="cosmic-menu-glyph" aria-hidden="true"><i /><i /><i /></span>
     </button>
     {open && <>
       <button type="button" className="cosmic-mobile-nav__scrim" aria-label="Close navigation menu" onClick={() => setOpen(false)} />
       <nav id="cosmic-mobile-menu" className="cosmic-mobile-nav__panel" aria-label="Mobile navigation">
-        <div className="cosmic-mobile-nav__heading"><span className="cosmic-brand__mark">☾</span><div><strong>Your Crescent</strong><small>Where would you like to go?</small></div><button type="button" className="cosmic-mobile-nav__close" aria-label="Close menu" onClick={() => setOpen(false)}><X size={18} /></button></div>
+        <div className="cosmic-mobile-nav__heading"><span className="cosmic-brand__mark">☾</span><div><strong>Your Crescent</strong><small>Where would you like to go?</small></div></div>
         {links.map(({ href, label, icon: Icon }) => <a key={href} href={href} className={window.location.pathname.replace(/\/$/, '') === href ? 'is-active' : ''}><Icon size={18} aria-hidden="true" /><span>{label}</span><span className="cosmic-mobile-nav__arrow" aria-hidden="true">↗</span></a>)}
         <div className="cosmic-mobile-nav__divider" />
         <button type="button" className="cosmic-mobile-nav__signout" onClick={() => void signOut()} disabled={signingOut}><LogOut size={18} aria-hidden="true" /><span>{signingOut ? 'Signing out…' : 'Sign out'}</span></button>
