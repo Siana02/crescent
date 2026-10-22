@@ -61,7 +61,8 @@ export default function AuthPage({ mode }: AuthPageProps) {
             const codeQuery = inviteCode ? `?code=${encodeURIComponent(inviteCode)}` : '';
             if (isRegister && relationshipRole === 'support') window.location.assign(`/connections${codeQuery}`);
             else if (isRegister) window.location.assign(`/onboarding${codeQuery}`);
-            else if (inviteCode && data.relationship_role !== 'support' && !data.onboarding_completed) window.location.assign(`/onboarding${codeQuery}`);
+            else if (data.relationship_role === 'support') window.location.assign(`/connections${codeQuery}`);
+            else if (inviteCode && !data.onboarding_completed) window.location.assign(`/onboarding${codeQuery}`);
             else if (inviteCode) window.location.assign(`/connections${codeQuery}`);
             else window.location.assign('/dashboard');
         } catch {
