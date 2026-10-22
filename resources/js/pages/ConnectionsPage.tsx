@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import Button from '../components/Button';
 import '../styles/cosmic-dashboard.css';
+import MobileNavigationMenu from '../components/MobileNavigationMenu';
 
 type RelationshipType = 'observer' | 'co_tracker';
 type SharingKey = 'cycle_details' | 'pregnancy_details' | 'wellbeing_updates' | 'astrology';
@@ -230,7 +231,7 @@ export default function ConnectionsPage() {
     const accepted = relationships.filter(relationship => relationship.status === 'accepted');
     const pending = relationships.filter(relationship => relationship.status === 'pending');
     return <div className="cosmic-dashboard cosmic-connections-page">
-        <header className="cosmic-header"><a className="cosmic-brand" href="/dashboard"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a><nav><a href="/dashboard">Home</a><a className="is-active" href="/connections">Connections</a><a href="/astrology">The Cosmic Atelier</a><a href="/profile">Profile & settings</a></nav><div className="cosmic-header__right"><a href="/dashboard">Back to home ↗</a></div></header>
+        <header className="cosmic-header"><a className="cosmic-brand" href="/dashboard"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a><nav><a href="/dashboard">Home</a><a className="is-active" href="/connections">Connections</a><a href="/astrology">The Cosmic Atelier</a><a href="/profile">Profile & settings</a></nav><div className="cosmic-header__right"><a href="/dashboard">Back to home ↗</a></div><MobileNavigationMenu /></header>
         <main className="cosmic-main">
             <section className="cosmic-welcome cosmic-connections-welcome"><div><p className="cosmic-eyebrow">YOUR SPACE, YOUR BOUNDARIES</p><h1>{displayName ? displayName + ', closer' : 'Closer'}, <em>on your terms.</em></h1><p>Two accounts, two personal journeys, one shared space when you choose. Cycle and pregnancy details stay private until their owner chooses to share.</p><div className="cosmic-connection-promise"><span>✧</span> Consent first · Separate journeys · Gentle connection</div><p className="cosmic-own-journey">{profileRole === 'support' ? 'Your role · Support partner' : 'Your journey · ' + journeyLabel(ownJourney)}</p></div><div className="cosmic-welcome__art"><span>💌</span><i>✦</i></div></section>
             {error && <p role="alert" className="cosmic-toast is-error">{error}</p>}{notice && <p role="status" className="cosmic-toast">{notice}</p>}
