@@ -890,3 +890,13 @@ a:focus-visible { outline: 3px solid #b88bbd; outline-offset: 4px; }
 @media (prefers-reduced-motion: reduce) {
     .crescent-install-prompt * { scroll-behavior: auto !important; transition: none !important; }
 }
+
+.crescent-notification-settings { margin-top: 26px; }
+.crescent-notification-options { display: grid; gap: 4px; }
+.crescent-notification-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.crescent-notification-actions button { min-height: 44px; padding: 10px 18px; border: 1px solid #d8bfdc; border-radius: 999px; background: linear-gradient(110deg,#f3d3df,#ded0f0); color: #49394f; font: inherit; font-weight: 600; cursor: pointer; }
+.crescent-notification-actions button:disabled { opacity: .65; cursor: wait; }
+@media (max-width: 520px) {
+ .crescent-notification-settings { margin-top: 18px; }
+ .crescent-notification-actions button { width: 100%; }
+}
