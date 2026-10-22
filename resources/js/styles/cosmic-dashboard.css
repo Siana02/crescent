@@ -671,3 +671,27 @@
 @media(max-width:600px){.cosmic-shared-atelier{padding:16px;border-radius:22px}.cosmic-shared-big-three{grid-template-columns:1fr}.cosmic-shared-big-three>article>div{grid-template-columns:1fr auto 1fr}.cosmic-shared-theme>div{align-items:flex-start;flex-direction:column;gap:5px}.cosmic-shared-theme>div span{text-align:left}.cosmic-paired-chart-row{grid-template-columns:.55fr 1fr 1fr;gap:6px;font-size:10px}}
 
 .cosmic-connection-action[hidden]{display:none!important}
+
+.co-cycling-portal-banner{display:flex;align-items:center;justify-content:space-between;gap:22px;margin:18px 0 24px;padding:24px;border:1px solid #ead9e8;border-radius:24px;background:radial-gradient(ellipse at 100% 0,#f7e8f3 0,transparent 36%),linear-gradient(125deg,#fffafd,#f7f3ff);position:relative;overflow:hidden}
+.co-cycling-portal-banner:after{content:'❀';position:absolute;right:24px;top:6px;color:#e6c6dd;font-size:40px;opacity:.6;pointer-events:none}
+.co-cycling-portal-banner h2{margin:6px 0;color:#75557f;font-family:Georgia,serif;font-size:clamp(22px,3vw,30px);font-weight:400}
+.co-cycling-portal-banner p:not(.cosmic-eyebrow){max-width:640px;color:#88758f;font-size:12px;line-height:1.8}
+.co-cycling-portal-banner>a{position:relative;z-index:1;flex:0 0 auto;padding:10px 14px;border:1px solid #dfc8e2;border-radius:999px;background:#fff8fc;color:#875e91;font-size:11px;font-weight:800;text-decoration:none}
+.baby-atelier-hero{background:radial-gradient(ellipse at 90% 0,#f2e2f7 0,transparent 40%),radial-gradient(ellipse at 0 100%,#fff0f3 0,transparent 44%),linear-gradient(135deg,#fffafd,#f9f3ff)}
+.baby-atelier-big-three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}
+.baby-atelier-big-three article{padding:16px;border:1px solid #ead9e9;border-radius:17px;background:#fffafde0}
+.baby-atelier-big-three small{color:#a180a8;font-size:9px;font-weight:800;letter-spacing:.15em}
+.baby-atelier-big-three strong{display:block;margin:8px 0;color:#76547f;font-family:Georgia,serif;font-size:19px;font-weight:400}
+.baby-atelier-big-three p{color:#8a788f;font-size:11px;line-height:1.7}
+.baby-atelier-placements{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:16px}
+.baby-atelier-placements article{display:flex;align-items:center;gap:11px;padding:12px;border:1px solid #f0e5ef;border-radius:13px;background:#fffdfd}
+.baby-atelier-placements article>span{font-size:23px;color:#b48bb9}
+.baby-atelier-placements article>div{display:grid;gap:4px}
+.baby-atelier-placements strong{color:#795d82;font-size:11px}
+.baby-atelier-placements small{color:#a18ba5;font-size:10px}
+.postpartum-baby-keepsake{display:flex;align-items:center;gap:18px;margin-bottom:16px;padding:22px;border:1px solid #ead9e9;border-radius:21px;background:linear-gradient(125deg,#fff8fc,#f5efff)}
+.postpartum-baby-keepsake>span{font-size:38px;color:#c39cbd}
+.postpartum-baby-keepsake h2{margin:4px 0;color:#76577e;font-family:Georgia,serif;font-size:22px;font-weight:400}
+.postpartum-baby-keepsake p:not(.pregnancy-eyebrow){color:#897790;font-size:12px}
+.postpartum-baby-keepsake a{color:#936b9b;font-size:11px;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:700px){.co-cycling-portal-banner{align-items:flex-start;flex-direction:column;padding:18px}.baby-atelier-big-three{grid-template-columns:1fr}.baby-atelier-placements{grid-template-columns:1fr}}
