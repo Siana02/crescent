@@ -163,6 +163,7 @@ class DashboardController extends Controller
                 'display_name' => $profile->display_name,
                 'wants_astrology' => $profile->wants_astrology,
                 'partner_preference' => $profile->partner_preference,
+                'relationship_role' => $profile->relationship_role ?? 'tracker',
                 'active_journey' => $profile->active_journey ?? 'cycle',
                 'cycle_tracking_started_at' => $profile->cycle_tracking_started_at?->format('Y-m-d'),
             ],
