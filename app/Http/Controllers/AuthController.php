@@ -98,6 +98,16 @@ class AuthController extends Controller
         }
 
         $user = DB::transaction(function () use ($validated, $role, $relationship, $astrologyEnabled) {
+            if ($relationship) {
+                $lockedRelationship = Relationship::whereKey($relationship->id)->lockForUpdate()->first();
+                if (! $lockedRelationship || $lockedRelationship->status !== 'pending' || $lockedRelationship->user_two_id !== null || ! $lockedRelationship->expires_at?->isFuture()) {
+                    throw ValidationException::withMessages([
+                        'invite_code' => 'That Cosmic Sync Code has already been used or expired. Ask your companion for a fresh one.',
+                    ]);
+                }
+                $relationship = $lockedRelationship;
+            }
+
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
