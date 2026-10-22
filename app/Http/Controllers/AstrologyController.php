@@ -186,9 +186,67 @@ class AstrologyController extends Controller
         return $this->cachedGet('cosmyday:content:moon:'.now()->format('Ymd'), now()->addDay()->startOfDay(), '/content/moon');
     }
 
-    public function weekAhead(): JsonResponse
+    public function weekAhead(Request $request): JsonResponse
     {
-        return $this->cachedGet('cosmyday:content:week-ahead:'.now()->format('Ymd'), now()->addDay()->startOfDay(), '/content/week-ahead');
+        $primary = $this->cachedGet(
+            'cosmyday:content:week-ahead:'.now()->format('Ymd'),
+            now()->addDay()->startOfDay(),
+            '/content/week-ahead'
+        );
+        $payload = $primary->getData(true);
+        $data = is_array($payload) ? ($payload['data'] ?? null) : null;
+        if ($primary->getStatusCode() < 400 && is_array($data) && $data !== []) {
+            return $primary;
+        }
+
+        // The seven-day overview can occasionally be unavailable while per-sign
+        // weekly content is still live. Prefer the user's saved Sun sign as a
+        // useful fallback instead of returning an empty card.
+        $sign = Str::lower((string) $request->user()->cycleProfile?->sun_sign);
+        $allowed = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'];
+        if (in_array($sign, $allowed, true)) {
+            $weeklySign = $this->cachedGet(
+                'cosmyday:content:weekly-sign:'.$sign.':'.now()->format('o-W'),
+                now()->addDays(7)->startOfDay(),
+                '/content/weekly/'.$sign
+            );
+            $weeklyPayload = $weeklySign->getData(true);
+            if ($weeklySign->getStatusCode() < 400 && is_array($weeklyPayload) && ! empty($weeklyPayload['data'])) {
+                return $weeklySign;
+            }
+
+            // Last fallback: the API also exposes all twelve weekly readings.
+            $allSigns = $this->cachedGet(
+                'cosmyday:content:weekly-all:'.now()->format('o-W'),
+                now()->addDays(7)->startOfDay(),
+                '/content/weekly'
+            );
+            $allPayload = $allSigns->getData(true);
+            $allData = is_array($allPayload) ? ($allPayload['data'] ?? null) : null;
+            if ($allSigns->getStatusCode() < 400 && is_array($allData)) {
+                $reading = data_get($allData, $sign)
+                    ?? data_get($allData, 'horoscopes.'.$sign)
+                    ?? data_get($allData, 'signs.'.$sign)
+                    ?? data_get($allData, 'data.'.$sign);
+                if ($reading === null && array_is_list($allData)) {
+                    foreach ($allData as $candidate) {
+                        if (is_array($candidate) && Str::lower((string) (data_get($candidate, 'sign') ?? data_get($candidate, 'zodiac_sign') ?? data_get($candidate, 'name'))) === $sign) {
+                            $reading = $candidate;
+                            break;
+                        }
+                    }
+                }
+                if (is_array($reading) || is_string($reading)) {
+                    return response()->json([
+                        'data' => $reading,
+                        'source' => 'CosmyDay',
+                        'source_url' => 'https://cosmyday.com',
+                    ]);
+                }
+            }
+        }
+
+        return $primary;
     }
 
     private function cachedGet(string $key, \DateTimeInterface $expiresAt, string $path, array $query = []): JsonResponse
@@ -295,16 +353,37 @@ class AstrologyController extends Controller
                         ?? data_get($item, 'zodiac.sign')
                         ?? data_get($item, 'position.sign')
                         ?? data_get($item, 'position.zodiac_sign')
-                        ?? data_get($item, 'position.zodiacSign');
+                        ?? data_get($item, 'position.zodiacSign')
+                        ?? data_get($item, 'position.sign.name')
+                        ?? data_get($item, 'position.zodiac.name')
+                        ?? data_get($item, 'position.zodiac_sign.name')
+                        ?? data_get($item, 'zodiac_sign.name')
+                        ?? data_get($item, 'zodiacSign.name');
                     $longitude = data_get($item, 'longitude')
                         ?? data_get($item, 'ecliptic_longitude')
                         ?? data_get($item, 'eclipticLongitude')
+                        ?? data_get($item, 'ecliptic_longitude_degrees')
+                        ?? data_get($item, 'eclipticLongitudeDegrees')
+                        ?? data_get($item, 'absolute_longitude')
+                        ?? data_get($item, 'absoluteLongitude')
+                        ?? data_get($item, 'lon')
+                        ?? data_get($item, 'lng')
                         ?? data_get($item, 'ecliptical.lon')
                         ?? data_get($item, 'ecliptical.longitude')
                         ?? data_get($item, 'position.longitude')
                         ?? data_get($item, 'position.longitude_degrees')
                         ?? data_get($item, 'position.longitudeDegrees')
-                        ?? data_get($item, 'position.ecliptical.lon');
+                        ?? data_get($item, 'position.ecliptical.lon')
+                        ?? data_get($item, 'position.ecliptic_longitude')
+                        ?? data_get($item, 'position.eclipticLongitude')
+                        ?? data_get($item, 'position.lon')
+                        ?? data_get($item, 'position.lng');
+                    if (is_array($longitude)) {
+                        $longitude = data_get($longitude, 'value') ?? data_get($longitude, 'degrees') ?? data_get($longitude, 'degree');
+                    }
+                    if (is_string($longitude) && preg_match('/-?\d+(?:\.\d+)?/', $longitude, $longitudeMatches)) {
+                        $longitude = (float) $longitudeMatches[0];
+                    }
                     if ($sign === null && is_numeric($longitude)) {
                         $sign = $this->signFromLongitude((float) $longitude);
                     }
@@ -416,14 +495,22 @@ class AstrologyController extends Controller
         // present, convert it to the degree within the zodiac sign.
         $degree = data_get($details, 'degree')
             ?? data_get($details, 'degrees')
+            ?? data_get($details, 'degree_value')
+            ?? data_get($details, 'degreeValue')
             ?? data_get($details, 'degree_in_sign')
             ?? data_get($details, 'degreeInSign')
             ?? data_get($details, 'degrees_in_sign')
             ?? data_get($details, 'degreesInSign')
+            ?? data_get($details, 'sign_degree')
+            ?? data_get($details, 'signDegree')
+            ?? data_get($details, 'zodiac.degree')
             ?? data_get($details, 'position.degree')
             ?? data_get($details, 'position.degrees')
             ?? data_get($details, 'position.degree_in_sign')
-            ?? data_get($details, 'position.degreeInSign');
+            ?? data_get($details, 'position.degreeInSign')
+            ?? data_get($details, 'position.sign_degree')
+            ?? data_get($details, 'position.signDegree')
+            ?? data_get($details, 'position.zodiac.degree');
         if (is_array($degree)) {
             $degree = data_get($degree, 'value') ?? data_get($degree, 'degrees') ?? data_get($degree, 'degree');
         }
@@ -431,6 +518,12 @@ class AstrologyController extends Controller
         $longitude = data_get($details, 'longitude')
             ?? data_get($details, 'ecliptic_longitude')
             ?? data_get($details, 'eclipticLongitude')
+            ?? data_get($details, 'ecliptic_longitude_degrees')
+            ?? data_get($details, 'eclipticLongitudeDegrees')
+            ?? data_get($details, 'absolute_longitude')
+            ?? data_get($details, 'absoluteLongitude')
+            ?? data_get($details, 'lon')
+            ?? data_get($details, 'lng')
             ?? data_get($details, 'longitude_degrees')
             ?? data_get($details, 'longitudeDegrees')
             ?? data_get($details, 'absolute_degree')
@@ -443,7 +536,16 @@ class AstrologyController extends Controller
             ?? data_get($details, 'position.longitude')
             ?? data_get($details, 'position.longitude_degrees')
             ?? data_get($details, 'position.longitudeDegrees')
-            ?? data_get($details, 'position.ecliptic_longitude');
+            ?? data_get($details, 'position.ecliptic_longitude')
+            ?? data_get($details, 'position.eclipticLongitude')
+            ?? data_get($details, 'position.ecliptic_longitude_degrees')
+            ?? data_get($details, 'position.eclipticLongitudeDegrees')
+            ?? data_get($details, 'position.absolute_longitude')
+            ?? data_get($details, 'position.absoluteLongitude')
+            ?? data_get($details, 'position.lon')
+            ?? data_get($details, 'position.lng')
+            ?? data_get($details, 'position.longitude.value')
+            ?? data_get($details, 'ecliptical.longitude.value');
         if (is_array($longitude)) {
             $longitude = data_get($longitude, 'value') ?? data_get($longitude, 'degrees') ?? data_get($longitude, 'degree');
         }
@@ -453,7 +555,7 @@ class AstrologyController extends Controller
         } elseif (is_numeric($degree) && abs((float) $degree) >= 30) {
             $degree = fmod((float) $degree + 360.0, 30.0);
         }
-        if (is_string($degree) && preg_match('/-?\\d+(?:\\.\\d+)?/', $degree, $matches)) {
+        if (is_string($degree) && preg_match('/-?\d+(?:\.\d+)?/', $degree, $matches)) {
             $degree = (float) $matches[0];
         }
         $degree = is_numeric($degree) && (float) $degree >= 0 && (float) $degree < 30
