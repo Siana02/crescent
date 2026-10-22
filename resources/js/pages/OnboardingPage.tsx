@@ -6,6 +6,14 @@ type Goal = 'track_cycle' | 'cosmic_cycle' | 'fertility_support' | 'manage_sympt
 type PartnerPreference = 'solo' | 'observer' | 'co_tracker';
 type Regularity = 'regular' | 'irregular' | 'unknown';
 type PregnancyDateSource = 'due_date' | 'last_period_date' | 'conception_date';
+type SharingKey = 'cycle_details' | 'pregnancy_details' | 'wellbeing_updates' | 'astrology';
+type SharingPreferences = Record<SharingKey, boolean>;
+const sharingOptions: { key: SharingKey; title: string; detail: string; icon: string }[] = [
+    { key: 'cycle_details', title: 'Cycle updates', detail: 'Cycle journey and cycle-related updates', icon: '💧' },
+    { key: 'pregnancy_details', title: 'Pregnancy updates', detail: 'Pregnancy or postpartum journey', icon: '🤍' },
+    { key: 'wellbeing_updates', title: 'Wellbeing check-ins', detail: 'Mood and wellbeing updates you choose to share', icon: '♡' },
+    { key: 'astrology', title: 'Astrology', detail: 'Natal signs for shared compatibility reflections', icon: '✦' },
+];
 
 type ApiError = { message?: string; errors?: Record<string, string[]> };
 type InviteResponse = { invite_code?: string; message?: string; errors?: Record<string, string[]> };
@@ -166,6 +174,7 @@ export default function OnboardingPage() {
     const [regularity, setRegularity] = useState<Regularity>('unknown');
     const [contraception, setContraception] = useState('prefer_not_to_say');
     const [partnerPreference, setPartnerPreference] = useState<PartnerPreference>('solo');
+    const [sharingPreferences, setSharingPreferences] = useState<SharingPreferences>({ cycle_details: false, pregnancy_details: false, wellbeing_updates: false, astrology: false });
     const [isSaving, setIsSaving] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
@@ -306,7 +315,7 @@ export default function OnboardingPage() {
             } else if (partnerPreference !== 'solo') {
                 const inviteResponse = await fetch('/api/relationships/invite', {
                     method: 'POST', credentials: 'same-origin', headers,
-                    body: JSON.stringify({ relationship_type: partnerPreference }),
+                    body: JSON.stringify({ relationship_type: partnerPreference, sharing_preferences: sharingPreferences }),
                 });
                 const inviteResult = (await inviteResponse.json()) as InviteResponse;
                 if (!inviteResponse.ok) throw new Error(firstError(inviteResult, 'Your Cosmic Sync Code could not be created.'));
@@ -420,7 +429,15 @@ export default function OnboardingPage() {
                         <ChoiceCard selected={partnerPreference === 'solo'} icon="🪷" title="No, keeping it solo for now" description="Your Crescent space is just for you." onClick={() => setPartnerPreference('solo')} />
                         <ChoiceCard selected={partnerPreference === 'observer'} icon="💌" title="Invite a partner / observer" description="They can join as a companion, with sharing off by default." onClick={() => setPartnerPreference('observer')} />
                         <ChoiceCard selected={partnerPreference === 'co_tracker'} icon="🌷" title="Invite a co-cycling partner" description="Create a connection for two people who track cycles." onClick={() => setPartnerPreference('co_tracker')} />
-                        {partnerPreference !== 'solo' && <p className="onboarding-connection-note">We’ll create a shareable Cosmic Sync Code that expires in seven days. You can decide what to share after your companion accepts.</p>}
+                        {partnerPreference !== 'solo' && <div className="onboarding-sharing-setup">
+                            <p className="onboarding-sharing-setup__eyebrow">YOUR SHARING BOUNDARIES</p>
+                            <h3>What would you like to share?</h3>
+                            <p>Choose these before your Cosmic Sync Code is created. Your companion cannot turn on sharing for you, and you can change your choices later.</p>
+                            <div className="onboarding-sharing-options">{sharingOptions.map(option => <button key={option.key} type="button" aria-pressed={sharingPreferences[option.key]} className={sharingPreferences[option.key] ? 'is-enabled' : ''} onClick={() => setSharingPreferences(current => ({ ...current, [option.key]: !current[option.key] }))}>
+                                <span aria-hidden="true">{option.icon}</span><span><strong>{option.title}</strong><small>{option.detail}</small></span><b>{sharingPreferences[option.key] ? 'On' : 'Off'}</b>
+                            </button>)}</div>
+                            <p className="onboarding-connection-note">Your code will be created with these settings already in place. Astrology selected? Your companion will be asked for their birth date during registration.</p>
+                        </div>}
                         <div className="onboarding-optional-title">Already have a Cosmic Sync Code?</div>
                         <Field label="Enter your companion’s code" hint="Paste an 8-character code to connect to an existing Crescent space."><input value={acceptCode} onChange={event => setAcceptCode(event.target.value.toUpperCase().slice(0, 8))} maxLength={8} placeholder="e.g. MOONSTAR" autoCapitalize="characters" /></Field>
                     </div>}
