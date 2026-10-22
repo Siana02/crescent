@@ -42,6 +42,7 @@ function dateLabel(value: string) { return new Date(value + 'T12:00:00').toLocal
 
 export default function ConnectionsPage() {
     const [relationships, setRelationships] = useState<Relationship[]>([]);
+    const [profileRole, setProfileRole] = useState<'tracker' | 'support'>('tracker');
     const [kind, setKind] = useState<RelationshipType>('observer');
     const [code, setCode] = useState(() => new URLSearchParams(window.location.search).get('code')?.trim().toUpperCase().slice(0, 8) ?? '');
     const [newCode, setNewCode] = useState('');
@@ -59,6 +60,7 @@ export default function ConnectionsPage() {
         if (response.status === 401) { window.location.assign('/login'); return; }
         const data = await readJson(response);
         if (!response.ok) throw new Error(data.message ?? 'Could not load your connections.');
+        setProfileRole(data.profile?.relationship_role === 'support' ? 'support' : 'tracker');
         setRelationships((data.relationships ?? []).map((relationship: Partial<Relationship>) => ({
             ...relationship,
             sharing_preferences: { ...emptySharing, ...(relationship.sharing_preferences ?? {}) },
@@ -142,14 +144,14 @@ export default function ConnectionsPage() {
             <section className="cosmic-welcome cosmic-connections-welcome"><div><p className="cosmic-eyebrow">YOUR SPACE, YOUR BOUNDARIES</p><h1>Closer, <em>on your terms.</em></h1><p>Two accounts, two personal journeys, one shared space when you choose. Cycle and pregnancy details stay private until their owner chooses to share.</p><div className="cosmic-connection-promise"><span>✧</span> Consent first · Separate journeys · Gentle connection</div></div><div className="cosmic-welcome__art"><span>💌</span><i>✦</i></div></section>
             {error && <p role="alert" className="cosmic-toast is-error">{error}</p>}{notice && <p role="status" className="cosmic-toast">{notice}</p>}
             <div className="cosmic-connections-grid">
-                <section className="cosmic-week-card cosmic-connection-action"><p className="cosmic-eyebrow">INVITE SOMEONE YOU TRUST</p><h2>Create a Cosmic Sync Code</h2><p className="cosmic-muted">Choose the connection that fits. You can change what you share after they accept.</p>
+                {profileRole !== 'support' ? <section className="cosmic-week-card cosmic-connection-action"><p className="cosmic-eyebrow">INVITE SOMEONE YOU TRUST</p><h2>Create a Cosmic Sync Code</h2><p className="cosmic-muted">Choose the connection that fits. You can change what you share after they accept.</p>
                     <form className="cosmic-connection-form" onSubmit={invite}>
                         <button type="button" aria-pressed={kind === 'observer'} className={kind === 'observer' ? 'cosmic-connection-type is-selected' : 'cosmic-connection-type'} onClick={() => setKind('observer')}><span className="material-symbols-rounded">favorite</span><span><strong>Partner / support partner</strong><small>One-way daily notes from the person tracking their journey.</small></span><span className="cosmic-connection-check">{kind === 'observer' ? '✦' : '○'}</span></button>
                         <button type="button" aria-pressed={kind === 'co_tracker'} className={kind === 'co_tracker' ? 'cosmic-connection-type is-selected' : 'cosmic-connection-type'} onClick={() => setKind('co_tracker')}><span className="material-symbols-rounded">diversity_3</span><span><strong>Co-cycling / co-tracking partners</strong><small>Both people keep their own cycle, fertility or pregnancy profile.</small></span><span className="cosmic-connection-check">{kind === 'co_tracker' ? '✦' : '○'}</span></button>
                         <Button type="submit" disabled={busy}>{busy ? 'Preparing your code…' : 'Create invitation ✧'}</Button>
                     </form>
                     {newCode && <div className="cosmic-new-code"><span>Your Cosmic Sync Code</span><strong>{newCode}</strong><button type="button" onClick={() => { void navigator.clipboard?.writeText(newCode); setNotice('Code copied. Share it privately.'); }}>Copy code</button><small>Expires in seven days and can be accepted once.</small></div>}
-                </section>
+                </section> : <section className="cosmic-week-card cosmic-connection-action"><p className="cosmic-eyebrow">YOUR SUPPORT ROLE</p><h2>You’re here to support your partner</h2><p className="cosmic-muted">You don’t need a reproductive tracking profile. Ask your partner for their Cosmic Sync Code and accept it here to connect your accounts.</p></section>}
                 <section className="cosmic-week-card cosmic-connection-action"><p className="cosmic-eyebrow">ALREADY HAVE A CODE?</p><h2>Join a Crescent space</h2><p className="cosmic-muted">Sign in or register first. The code links accounts only after you accept it here.</p><form className="cosmic-connection-form" onSubmit={accept}><label className="cosmic-connection-code-field">8-character Cosmic Sync Code<input value={code} onChange={event => setCode(event.target.value.toUpperCase().slice(0, 8))} maxLength={8} minLength={8} required placeholder="MOONSTAR" autoCapitalize="characters" /></label><Button type="submit" disabled={busy || code.trim().length !== 8}>{busy ? 'Connecting…' : 'Accept invitation'}</Button></form></section>
             </div>
             <section className="cosmic-week-card cosmic-circle-section"><div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">YOUR LITTLE CIRCLE</p><h2>Your connections</h2><p className="cosmic-muted">Every connection has its own boundaries and shared space.</p></div><span className="cosmic-guide-stamp" aria-hidden="true">✿</span></div>
