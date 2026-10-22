@@ -69,14 +69,18 @@ class RelationshipInsightsController extends Controller
         $profiles = CycleProfile::whereIn('user_id', [$userId, $otherId])->get()->keyBy('user_id');
         $mine = $profiles->get($userId);
         $theirs = $profiles->get($otherId);
-        $shareAstrology = (bool) ($relationship->sharing_preferences['astrology'] ?? true);
+        $allPreferences = $relationship->sharing_preferences ?? [];
+        $defaults = ['cycle_details' => false, 'pregnancy_details' => false, 'wellbeing_updates' => false, 'astrology' => false];
+        $myPreferences = array_merge($defaults, $allPreferences[(string) $userId] ?? []);
+        $theirPreferences = array_merge($defaults, $allPreferences[(string) $otherId] ?? []);
+        $shareAstrology = (bool) ($myPreferences['astrology'] && $theirPreferences['astrology']);
 
         $compatibility = [
             'available' => false,
             'summary' => 'Add birth dates to both profiles to begin exploring your celestial connection.',
             'themes' => [],
         ];
-        if ($shareAstrology && $mine && $theirs && ($mine->wants_astrology || $theirs->wants_astrology)) {
+        if ($shareAstrology && $mine && $theirs) {
             $pairs = [
                 ['label' => 'Sun signs', 'left' => $mine->sun_sign, 'right' => $theirs->sun_sign],
                 ['label' => 'Moon signs', 'left' => $mine->moon_sign, 'right' => $theirs->moon_sign],
@@ -94,13 +98,15 @@ class RelationshipInsightsController extends Controller
 
         $today = now('UTC')->toDateString();
         $cacheKey = 'crescent:relationship-insight:'.$relationship->id.':'.$today;
-        $insight = Cache::remember($cacheKey, now('UTC')->endOfDay(), function () use ($relationship, $mine, $theirs, $compatibility, $today) {
+        $mineForInsight = $shareAstrology ? $mine : null;
+        $theirsForInsight = $shareAstrology ? $theirs : null;
+        $insight = Cache::remember($cacheKey, now('UTC')->endOfDay(), function () use ($relationship, $mineForInsight, $theirsForInsight, $compatibility, $today) {
             $sky = $this->skySnapshot();
             $moon = collect($sky)->firstWhere('name', 'Moon');
             $venus = collect($sky)->firstWhere('name', 'Venus');
             $mercury = collect($sky)->firstWhere('name', 'Mercury');
             $sun = collect($sky)->firstWhere('name', 'Sun');
-            $natalSigns = array_filter([$mine?->sun_sign, $mine?->moon_sign, $theirs?->sun_sign, $theirs?->moon_sign]);
+            $natalSigns = array_filter([$mineForInsight?->sun_sign, $mineForInsight?->moon_sign, $theirsForInsight?->sun_sign, $theirsForInsight?->moon_sign]);
             $moonElement = self::ELEMENTS[$moon['sign'] ?? ''] ?? null;
             $hasSharedSign = count(array_intersect($natalSigns, array_filter([$moon['sign'] ?? null, $venus['sign'] ?? null, $mercury['sign'] ?? null]))) > 0;
             $themes = [
@@ -110,7 +116,7 @@ class RelationshipInsightsController extends Controller
                 ['title' => 'Share the invisible load', 'tip' => 'Choose one practical task to make lighter for each other, then agree who will do what.'],
                 ['title' => 'Celebrate your different rhythms', 'tip' => 'You do not need to feel the same way to support each other. Ask whether they want listening, closeness or space.'],
             ];
-            $index = (int) (crc32($today.'|'.$relationship->id.'|'.($mine?->sun_sign ?? '').'|'.($theirs?->sun_sign ?? '')) % count($themes));
+            $index = (int) (crc32($today.'|'.$relationship->id.'|'.($mineForInsight?->sun_sign ?? '').'|'.($theirsForInsight?->sun_sign ?? '')) % count($themes));
             $chosen = $themes[$index];
             $transitNote = $moon && $venus
                 ? 'Today’s sky snapshot: Moon in '.($moon['sign'] ?? 'an unreported sign').' and Venus in '.($venus['sign'] ?? 'an unreported sign').'.'
