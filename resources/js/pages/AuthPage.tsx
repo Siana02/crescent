@@ -15,7 +15,6 @@ type AuthResponse = {
     registration_intent?: 'tracker' | 'support' | 'co_tracker';
     onboarding_completed?: boolean;
     astrology_enabled?: boolean;
-    errors?: Record<string, string[]>;
 };
 
 function csrfToken(): string {
