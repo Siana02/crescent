@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Relationship;
 use App\Models\RelationshipNote;
+use App\Services\CrescentPushService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -101,6 +102,11 @@ class RelationshipNotesController extends Controller
                 'note_date' => $today,
                 'body' => trim($validated['body']),
             ]);
+        }
+
+        $recipientId = $relationship->user_one_id === $userId ? $relationship->user_two_id : $relationship->user_one_id;
+        if ($recipientId) {
+            app(CrescentPushService::class)->notify((int) $recipientId, 'shared_note');
         }
 
         return response()->json([
