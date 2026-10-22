@@ -16,7 +16,7 @@ type DashboardData = {
   average_cycle_length:number|null;average_period_length:number|null;cycle_regularity:'regular'|'irregular'|'unknown';timezone:string;
   birth_date:string|null;contraception_type:string|null;primary_goal:string;birth_time:string|null;birth_place:string|null;
   sun_sign:string|null;moon_sign:string|null;rising_sign:string|null;onboarding_completed:boolean;display_name:string|null;
-  wants_astrology:boolean;partner_preference:'solo'|'observer'|'co_tracker';active_journey:'cycle'|'fertility'|'pregnancy'|'postpartum';relationship_role:'tracker'|'support';sun_sign:string|null;moon_sign:string|null;rising_sign:string|null;
+  wants_astrology:boolean;partner_preference:'solo'|'observer'|'co_tracker';active_journey:'cycle'|'fertility'|'pregnancy'|'postpartum';relationship_role:'tracker'|'support';
  };
  latest_period:{start_date:string;end_date:string|null}|null;
  period_history?:{start_date:string;end_date:string|null}[];
