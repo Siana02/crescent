@@ -185,14 +185,26 @@ class PregnancyController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
             'share_with_partner' => ['sometimes', 'boolean'],
         ]);
-        $pregnancy = $request->user()->pregnancies()->whereIn('status', ['active', 'postpartum'])->latest()->firstOrFail();
+        $user = $request->user();
+        $pregnancy = $user->pregnancies()->whereIn('status', ['active', 'postpartum'])->latest()->first();
+        $shareWithPartner = (bool) ($validated['share_with_partner'] ?? false);
+        if (! $pregnancy) {
+            abort_unless($shareWithPartner, 403, 'A reminder for your partner’s pregnancy must be shared with them.');
+            $relationships = Relationship::query()->where('status', 'accepted')
+                ->where(function ($query) use ($user) {
+                    $query->where('user_one_id', $user->id)->orWhere('user_two_id', $user->id);
+                })->get();
+            $otherIds = $relationships->map(fn ($relationship) => $relationship->user_one_id === $user->id ? $relationship->user_two_id : $relationship->user_one_id);
+            $pregnancy = Pregnancy::query()->whereIn('user_id', $otherIds)->whereIn('status', ['active', 'postpartum'])->latest()->first();
+            abort_unless($pregnancy, 404, 'No connected pregnancy journey is available for this reminder.');
+        }
         $reminder = $pregnancy->reminders()->create([
             'created_by' => $request->user()->id,
             'title' => $validated['title'],
             'category' => $validated['category'],
             'remind_at' => $validated['remind_at'],
             'notes' => $validated['notes'] ?? null,
-            'share_with_partner' => (bool) ($validated['share_with_partner'] ?? false),
+            'share_with_partner' => $shareWithPartner,
         ]);
 
         return response()->json(['message' => $reminder->share_with_partner ? 'Reminder saved and shared with your connected partner.' : 'Reminder saved in your private pregnancy planner.', 'reminder' => $reminder], 201);
