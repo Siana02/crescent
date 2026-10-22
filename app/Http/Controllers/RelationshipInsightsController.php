@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\CosmicCompatibility;
 use App\Models\Relationship;
 use App\Models\CycleProfile;
+use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -163,6 +165,12 @@ class RelationshipInsightsController extends Controller
             'summary' => 'Both people can opt in to astrology and add birth date, time (if known) and birthplace to explore their natal connection.',
             'themes' => [],
             'aspects' => [],
+            'charts' => [
+                'left' => $mineChart['placements'] ?? [],
+                'right' => $theirChart['placements'] ?? [],
+                'left_time_known' => (bool) ($mineChart['birth_time_known'] ?? false),
+                'right_time_known' => (bool) ($theirChart['birth_time_known'] ?? false),
+            ],
         ];
         if ($shareAstrology && $mine && $theirs) {
             $pairs = [
