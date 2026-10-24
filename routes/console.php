@@ -39,4 +39,4 @@ Schedule::call(function () {
                 }
             }
         });
-})->everyMinute()->withoutOverlapping();
+})->name('crescent-daily-checkin-reminders')->everyMinute()->withoutOverlapping();
