@@ -47,6 +47,11 @@ const stories: Story[] = [
  'You may find it useful to tell a trusted person what support looks like on difficult days: help with errands, a heating pad, quiet time, transport to an appointment, or simply not being expected to explain yourself repeatedly. If pain affects intimacy, you are allowed to pause sexual activity and talk with a partner about comfort and boundaries. Pain during sex is a symptom worth discussing, not something you must accept.',
  'A good care plan is one that respects your goals and improves your life, not one that expects you to prove how much discomfort you can tolerate. If you are not being heard, bring your notes, ask direct questions, or seek another clinician where possible.'
  ]}
+ ,
+ {heading:'A practical plan for the difficult days',paragraphs:[
+ 'If the first day or two of your period is difficult, it may help to prepare a small comfort plan in advance. Keep the pain relief that is safe for you, period products, water, a snack and a heat pack accessible. If possible, identify which tasks can be moved and who you could ask for practical help. These are not substitutes for treatment, but reducing the number of decisions you must make while in pain can make the day more manageable.',
+ 'Notice what actually helps instead of assuming you should follow every wellness tip you see. You might find heat useful but stretching uncomfortable; another person may prefer a short walk and quiet rest. There is no prize for exercising through severe pain, avoiding medication at all costs, or maintaining your usual schedule when you are unwell. If you regularly need to cancel important activities, that is a reason to seek better support, not evidence that your plan needs more willpower.'
+ ]}
  ],
  sources:[
  {label:'NHS — Period pain',url:'https://www.nhs.uk/conditions/period-pain/',note:'Symptoms, self-care and when to seek medical advice.'},
@@ -99,6 +104,11 @@ const stories: Story[] = [
  'Consider seeking advice if periods repeatedly stop without an expected reason, become very irregular, last much longer than usual, or involve heavy bleeding or significant pain. A clinician may ask about pregnancy possibility, medicines, contraception, stress, weight changes and other symptoms. There are many possible explanations, and an app cannot distinguish them. Avoid assuming that every change is caused by stress or a “hormone imbalance.”',
  'If you are trying to conceive, cycle records can help describe your pattern, but they cannot confirm fertility or diagnose an ovulation problem. If you are avoiding pregnancy, do not rely on a predicted fertile window as contraception. The right advice depends on your goals and medical context, so make those goals clear when you seek care.',
  'Above all, cycle literacy is meant to support self-understanding. It is not a demand to optimise every meal, workout, relationship or workday around a hormone chart. Let the information serve you: notice what repeats, be curious about what changes, and seek help when something feels wrong.'
+ ]}
+ ,
+ {heading:'Build a useful record without turning it into a rulebook',paragraphs:[
+ 'A simple record can include the first day of bleeding, how long it lasts, whether flow feels light or heavy for you, symptoms, and any major context such as illness or a new medicine. You do not need to record every detail every day for tracking to be worthwhile. If recording makes you anxious or encourages you to monitor your body constantly, take a break or keep only the information that helps you.',
+ 'Try describing observations rather than conclusions: “clear, slippery fluid today” is more useful than “ovulation definitely happened”; “low energy after a poor night of sleep” leaves room for context instead of blaming a cycle phase. Over time, patterns may emerge, but a pattern is still not a diagnosis. Share the record with a clinician if it helps you explain a concern, and let the record be imperfect. The point is to support your understanding, not create another standard you must meet.'
  ]}
  ],
  sources:[
@@ -153,6 +163,11 @@ const stories: Story[] = [
  'If a product is painful, leaks persistently despite correct use, causes irritation, or is difficult to insert or remove, you can choose another option. Menstrual cups, tampons and discs are not compulsory upgrades; pads, period underwear and other products remain valid choices. People with disabilities, pelvic pain, sensory sensitivities or limited water access may need different solutions. Practical comfort matters more than a trend.',
  'If you do not have reliable access to period products, consider contacting a local clinic, community organisation or trusted school or workplace support service to ask what is available. Period care is a health and dignity issue, not a test of how resourceful you are.'
  ]}
+ ,
+ {heading:'Consent and control belong at the centre',paragraphs:[
+ 'Contraception should be a decision you can make freely, with accurate information and without pressure. A partner can share preferences, but should not control whether you start, stop or continue a method. If you want a method that is private, ask a qualified provider about realistic confidentiality, side effects, visibility, follow-up and safety in your circumstances. Some methods can be felt or noticed by a partner; others require a clinic visit or regular supplies. There is no need to disclose more than feels safe in a given setting.',
+ 'If you are experiencing reproductive coercion—such as pressure to become pregnant, interference with contraception, or being prevented from accessing care—consider speaking confidentially with a health professional or support service if it is safe. Ask what information is recorded, who can access it, and how communication will happen. Your preferences may change, and you can revisit a decision. A respectful provider should help you understand options, not shame you for choosing one method over another or for deciding that a particular method is not right for you.'
+ ]}
  ],
  sources:[
  {label:'WHO — Family planning / contraception methods',url:'https://www.who.int/news-room/fact-sheets/detail/family-planning-contraception',note:'Overview of contraceptive methods and informed choice.'},
@@ -206,6 +221,11 @@ const stories: Story[] = [
  'After birth, during breastfeeding, around menopause, or while using hormonal contraception, vaginal moisture and discharge patterns may change. Low oestrogen can contribute to dryness or discomfort for some people, while other conditions can produce similar symptoms. A clinician can help distinguish the possibilities and discuss suitable care. Avoid self-treating persistent symptoms with fragranced products or supplements that promise to reset vaginal pH.',
  'If symptoms recur, write down what you notice and what treatments you have used. Repeated episodes deserve a clear assessment of the cause rather than endless cycles of guessing. You can ask for an explanation of test results and a plan for what to do if symptoms return.'
  ]}
+ ,
+ {heading:'What to expect from a respectful consultation',paragraphs:[
+ 'It is okay to feel nervous about discussing discharge, odour, itching or sexual health. You can begin with the symptom that concerns you most and ask the clinician to explain what they need to know. Depending on your symptoms, an appointment may involve questions, a urine sample, a swab or an examination; not every person needs every step. You can ask why a test is recommended, what it involves, how results will be delivered and what happens if it is uncomfortable.',
+ 'If an examination is suggested, the clinician should explain it and seek your consent. You can ask for a pause, ask questions, or decline an examination while discussing other options. If you prefer a clinician of a particular gender or need an interpreter, ask whether the service can accommodate you. These requests may not always be available immediately, but it is reasonable to raise them. Good care should help you understand the choices and feel respected, not leave you embarrassed or blamed.'
+ ]}
  ],
  sources:[
  {label:'NHS — Vaginal discharge',url:'https://www.nhs.uk/symptoms/vaginal-discharge/',note:'Normal variation and symptoms that should be assessed.'},
@@ -258,6 +278,12 @@ const stories: Story[] = [
  'A negative test can bring relief, sadness or a complicated mix of emotions. If you were trying to conceive, it is understandable to feel disappointed; one cycle does not tell the whole story about future fertility. If you were anxious about pregnancy, you may still want a reliable plan for contraception and a way to access emergency care if a method fails in future.',
  'If pregnancy remains possible, follow the test instructions about repeating it. If your period remains absent or your cycles are repeatedly irregular, arrange a clinical check rather than relying on repeated symptom searches. A provider can help you understand what is known, what is uncertain and whether any further tests are appropriate.',
  'Whatever the result, you deserve information that is accurate and care that does not shame you. You can take the next step one at a time: confirm what is happening, understand your options, and get support that respects your circumstances.'
+ ]}
+ ,
+ {heading:'Questions to bring to your next appointment',paragraphs:[
+ 'If you speak with a clinician, you can ask when a test is most reliable in your circumstances, whether a repeat test is appropriate, and what symptoms should prompt urgent care. Tell them the first day of your last period if you know it, whether your cycles are regular, whether you use contraception, and whether you have had pain or bleeding. You do not need to remember every detail; a short note on your phone or paper can help you feel less rushed.',
+ 'If the result changes what you need next, ask where you can get timely follow-up and what the likely costs or waiting times are. If you are taking medication or managing a health condition, ask how pregnancy possibility affects your care plan. Do not stop a prescribed medicine without checking unless you have been specifically instructed to do so. A pharmacist or clinician can help review the risks and alternatives.',
+ 'It is also fine to ask for plain language: “What do we know from this result, and what remains uncertain?” A good answer should separate evidence from possibility and explain the next step without frightening you unnecessarily.'
  ]}
  ],
  sources:[
