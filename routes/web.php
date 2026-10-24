@@ -27,6 +27,7 @@ Route::middleware(['auth', 'active.account'])->group(function () {
     Route::get('/connections', fn () => view('welcome'));
     Route::get('/astrology', fn () => view('welcome'));
     Route::get('/profile', fn () => view('welcome'));
+    Route::get('/read/{slug}', fn () => view('welcome'))->where('slug', '[a-z0-9-]+');
     Route::get('/settings', fn () => view('welcome'));
     Route::get('/dashboard', function (Request $request) {
         $profile = $request->user()->cycleProfile;
