@@ -12,3 +12,33 @@
 @media(max-width:900px){.editorial-nav{padding:0 24px}.editorial-nav-label{display:none}.editorial-cover{padding-top:45px;grid-template-columns:1fr .8fr;gap:30px}.editorial-cover h1{font-size:clamp(38px,6vw,58px)}.editorial-story{grid-template-columns:150px minmax(0,1fr);gap:38px;padding:70px 28px}.editorial-more{padding-left:28px;padding-right:28px}.editorial-more-card>div{padding:18px}.editorial-more-card h3{font-size:21px}}
 @media(max-width:640px){.editorial-nav{height:65px;padding:0 18px}.editorial-wordmark{font-size:24px}.editorial-nav-back{font-size:8px;letter-spacing:1px}.editorial-cover{display:flex;flex-direction:column;align-items:stretch;padding:37px 22px 56px;gap:24px}.editorial-cover-copy{padding:0}.editorial-cover h1{font-size:46px;letter-spacing:-1.5px}.editorial-dek{font-size:20px}.editorial-cover-image{width:84%;max-width:none;align-self:center;padding-left:15px}.editorial-cover-index{bottom:19px;left:22px;right:22px}.editorial-cover-index span:nth-child(2){font-size:7px}.editorial-meta-strip{margin:0 22px;flex-wrap:wrap;gap:7px 14px;font-size:7px}.editorial-story{display:block;padding:53px 23px 70px}.editorial-story-aside{position:static;border-bottom:1px solid var(--ed-line);padding:0 0 20px;margin-bottom:35px}.editorial-story-aside p{font-size:16px;margin:12px 0}.editorial-intro{font-size:19px}.editorial-chapter{padding:35px 0}.editorial-chapter h2{font-size:34px}.editorial-chapter p{font-size:14px;line-height:1.85}.editorial-takeaway{padding:25px 24px;margin-bottom:48px}.editorial-takeaway>p:last-child{font-size:21px}.editorial-more{padding:48px 22px}.editorial-more-heading{display:block}.editorial-more-heading>a{display:inline-block;margin-top:15px}.editorial-more-grid{grid-template-columns:1fr;gap:16px}.editorial-more-card{display:grid;grid-template-columns:38% 1fr}.editorial-more-card img{height:100%;min-height:180px;aspect-ratio:auto}.editorial-more-card>div{padding:16px}.editorial-more-card h3{font-size:21px;margin:10px 0 18px}.editorial-footer{padding:24px 20px;flex-wrap:wrap}.editorial-footer p{order:3;width:100%;margin:0}.editorial-footer>a:last-child{font-size:7px}}
 @media(prefers-reduced-motion:reduce){.editorial-more-card{transition:none}}
+
+
+/* Public homepage journal spread */
+.landing-journal{background:#f5f0e8;color:#292321;padding:clamp(55px,8vw,105px) clamp(22px,7vw,105px);border-top:1px solid #e0d6c9;border-bottom:1px solid #e0d6c9}
+.landing-journal-heading{display:flex;align-items:end;justify-content:space-between;gap:30px;max-width:1360px;margin:0 auto 36px}
+.landing-journal-heading .editorial-kicker{margin-bottom:13px}
+.landing-journal-heading h2{font-family:var(--ed-serif);font-size:clamp(37px,5vw,64px);font-weight:400;line-height:1.06;letter-spacing:-1.3px;margin:0 0 14px;max-width:760px}
+.landing-journal-heading h2 em{font-weight:400;color:#a66f70}
+.landing-journal-heading>div>p:last-child{max-width:600px;color:#746a62;font-size:14px;margin:0}
+.landing-journal-edition{flex-shrink:0;text-align:right;font-size:8px;line-height:1.9;letter-spacing:2px;color:#887b6b;font-weight:800}
+.landing-journal-edition b{display:block;font-size:25px;color:#aa8a59;font-weight:400;margin-top:10px}
+.landing-journal-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:19px;max-width:1360px;margin:0 auto}
+.landing-journal-card{grid-column:span 2;min-width:0;text-decoration:none!important;background:#fffcf7;border:1px solid #e3d9cc;display:flex;flex-direction:column;transition:transform .25s,box-shadow .25s}
+.landing-journal-card--1,.landing-journal-card--2{grid-column:span 3}
+.landing-journal-card:hover{transform:translateY(-4px);box-shadow:0 16px 35px rgba(47,34,27,.09)}
+.landing-journal-image{position:relative;aspect-ratio:5/2;overflow:hidden;background:#e7dcd0}
+.landing-journal-card:not(.landing-journal-card--1):not(.landing-journal-card--2) .landing-journal-image{aspect-ratio:4/3}
+.landing-journal-image img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.83);transition:transform .45s}
+.landing-journal-card:hover .landing-journal-image img{transform:scale(1.035)}
+.landing-journal-image>span{position:absolute;right:13px;bottom:7px;font-family:var(--ed-serif);font-size:25px;color:#fff;text-shadow:0 1px 8px #0008}
+.landing-journal-copy{padding:22px 23px 20px;display:flex;flex-direction:column;flex:1}
+.landing-journal-copy>p{font-size:8px;letter-spacing:1.5px;color:#a48558;font-weight:800;margin:0 0 12px}
+.landing-journal-copy h3{font-family:var(--ed-serif);font-size:clamp(22px,2.2vw,31px);font-weight:400;line-height:1.13;letter-spacing:-.4px;margin:0 0 24px}
+.landing-journal-card:not(.landing-journal-card--1):not(.landing-journal-card--2) .landing-journal-copy h3{font-size:25px}
+.landing-journal-copy>div{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid #e3d9cc;padding-top:13px;margin-top:auto}
+.landing-journal-copy small{font-size:8px;letter-spacing:1.4px;font-weight:800;color:#a66f70}
+.landing-journal-copy>div span{font-size:8px;letter-spacing:1px;font-weight:800;color:#55483f}
+.landing-journal-note{max-width:1360px;margin:24px auto 0;font-size:10px;color:#84796e;letter-spacing:.3px}
+@media(max-width:800px){.landing-journal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.landing-journal-card,.landing-journal-card--1,.landing-journal-card--2{grid-column:span 1}.landing-journal-card--1{grid-column:span 2}.landing-journal-card--1 .landing-journal-image{aspect-ratio:16/7}.landing-journal-heading{align-items:start}.landing-journal-edition{display:none}.landing-journal-copy{padding:18px}.landing-journal-copy h3,.landing-journal-card:not(.landing-journal-card--1):not(.landing-journal-card--2) .landing-journal-copy h3{font-size:24px}}
+@media(max-width:520px){.landing-journal-grid{grid-template-columns:1fr}.landing-journal-card,.landing-journal-card--1,.landing-journal-card--2{grid-column:span 1}.landing-journal-image,.landing-journal-card:not(.landing-journal-card--1):not(.landing-journal-card--2) .landing-journal-image{aspect-ratio:16/9}.landing-journal-copy h3,.landing-journal-card:not(.landing-journal-card--1):not(.landing-journal-card--2) .landing-journal-copy h3{font-size:27px}.landing-journal-heading h2{font-size:43px}}
