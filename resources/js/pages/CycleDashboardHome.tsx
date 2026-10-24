@@ -96,8 +96,8 @@ export default function CycleDashboardHome({data,onLogout,onRefresh}:Props){
  const [modal,setModal]=useState<ModalKind>(null);
  const [activeArticle,setActiveArticle]=useState<number|null>(null);
  const [expanded,setExpanded]=useState(false);
- const [selectedDate,setSelectedDate]=useState(dateKey(new Date()));
- const [month,setMonth]=useState(new Date(new Date().getFullYear(),new Date().getMonth(),1));
+ const [selectedDate,setSelectedDate]=useState(dateKeyInTimezone(data.profile.timezone||Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'));
+ const [month,setMonth]=useState(()=>{const d=new Date(dateKeyInTimezone(data.profile.timezone||Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC')+'T12:00:00');return new Date(d.getFullYear(),d.getMonth(),1);});
  const [astrology,setAstrology]=useState(data.profile.wants_astrology);
  const [energy,setEnergy]=useState(data.today_checkin?.energy_level??'');
  const [mood,setMood]=useState<string[]>(parseMoods(data.today_checkin?.mood));
@@ -105,13 +105,13 @@ export default function CycleDashboardHome({data,onLogout,onRefresh}:Props){
  const [savedCheckin,setSavedCheckin]=useState(Boolean(data.today_checkin));
  const [selectedCheckin,setSelectedCheckin]=useState<{log_date:string;energy_level:string|null;mood:string[];symptoms:string[];notes:string|null}|null>(null);
  const [historyLoading,setHistoryLoading]=useState(false);
- const [periodStart,setPeriodStart]=useState(dateKey(new Date()));
+ const [periodStart,setPeriodStart]=useState(dateKeyInTimezone(data.profile.timezone||Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'));
  const [periodEnd,setPeriodEnd]=useState('');
  const [periodFlow,setPeriodFlow]=useState('medium');
  const [pickedSymptoms,setPickedSymptoms]=useState<string[]>(data.today_checkin?.symptoms??[]);
  const [severity,setSeverity]=useState('mild');
  const [symptomNotes,setSymptomNotes]=useState('');
- const [sexDate,setSexDate]=useState(dateKey(new Date()));
+ const [sexDate,setSexDate]=useState(dateKeyInTimezone(data.profile.timezone||Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'));
  const [activities,setActivities]=useState<string[]>([]);
  const [protection,setProtection]=useState<string[]>([]);
  const [sexDrive,setSexDrive]=useState('3');
@@ -181,7 +181,7 @@ export default function CycleDashboardHome({data,onLogout,onRefresh}:Props){
  return <div className="cosmic-dashboard">
  <header className="cosmic-header"><a className="cosmic-brand" href="/" aria-label="Crescent home"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a><nav><a className="is-active" href="/dashboard">Home</a><a href="#moon-calendar">Moon & cycle</a><a href="#read-next">Read & explore</a><a href="/astrology">The Cosmic Atelier</a><a href="/connections">Connections</a><a href="/profile">Profile & settings</a></nav><div className="cosmic-header__right"><span>✦ Just for you</span><button onClick={()=>void onLogout()}>Sign out</button></div><MobileNavigationMenu onLogout={onLogout} /></header>
  <main className="cosmic-main">
- <section className="cosmic-welcome"><div><p className="cosmic-eyebrow">YOUR LITTLE UNIVERSE · {new Intl.DateTimeFormat(undefined,{weekday:'long',month:'long',day:'numeric'}).format(new Date())}</p><h1>Hello, {firstName}<em>let's tune in.</em></h1><p>Your body isn't a mystery to solve. It's a story you get to know, one day at a time.</p></div><div className="cosmic-welcome__art" aria-hidden="true"><span>🌙</span><i>✦</i><b>✿</b></div></section>
+ <section className="cosmic-welcome"><div><p className="cosmic-eyebrow">YOUR LITTLE UNIVERSE · {new Intl.DateTimeFormat(undefined,{weekday:'long',month:'long',day:'numeric',timeZone:data.profile.timezone||undefined}).format(new Date(today+'T12:00:00'))}</p><h1>Hello, {firstName}<em>let's tune in.</em></h1><p>Your body isn't a mystery to solve. It's a story you get to know, one day at a time.</p></div><div className="cosmic-welcome__art" aria-hidden="true"><span>🌙</span><i>✦</i><b>✿</b></div></section>
  {data.profile.partner_preference==='co_tracker'&&<section className="co-cycling-portal-banner"><div><p className="cosmic-eyebrow">YOUR CO-CYCLING SPACE · TWO RHYTHMS, ONE SHARED JOURNEY</p><h2>Your cycles, your boundaries, your shared space.</h2><p>Keep your own cycle history private by default, choose what to share in Connections, and use your shared space for check-ins, notes and care that works for both of you.</p></div><a href="/connections">Manage your connection ↗</a></section>}
 
  {astrology?<section className="cosmic-big-three"><div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">YOUR COSMIC SIGNATURE</p><h2>Your Big Three <span>✧</span></h2></div><button className="cosmic-text-button" disabled={busy} onClick={()=>void toggleAstrology()}>Turn astrology off</button></div><div className="cosmic-sign-row"><article><span className="cosmic-sign-icon">☼</span><div><small>SUN</small><strong>{data.profile.sun_sign?signLabel(data.profile.sun_sign):'Add birthday'}</strong><span>Your core self</span></div></article><article><span className="cosmic-sign-icon">☾</span><div><small>MOON</small><strong>{data.profile.moon_sign?signLabel(data.profile.moon_sign):'Not set'}</strong><span>Inner world</span></div></article><article><span className="cosmic-sign-icon">↗</span><div><small>RISING</small><strong>{data.profile.rising_sign?signLabel(data.profile.rising_sign):'Not set'}</strong><span>First impression</span></div></article></div><p className="cosmic-fineprint">Astrology is optional reflection, never medical advice. Planetary data by <a href="https://cosmyday.com" target="_blank" rel="noreferrer">CosmyDay</a>. <a href="/astrology#personal-transits">See how today’s sky meets your chart ↗</a></p></section>:<section className="cosmic-astro-invite"><span>✧</span><div><strong>Want a little cosmic magic?</strong><p>Turn on astrology any time to reveal your Big Three and lunar reflections.</p></div><Button onClick={()=>void toggleAstrology()} disabled={busy}>Turn astrology on ✦</Button></section>}
