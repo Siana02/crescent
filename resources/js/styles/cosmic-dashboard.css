@@ -1094,7 +1094,7 @@
 .cosmic-reading .cosmic-article-cover-number{position:absolute;right:13px;bottom:10px;color:#fff;font-family:Georgia,serif;font-size:24px;text-shadow:0 1px 9px #0008}
 .cosmic-reading .cosmic-article-copy{padding:23px 23px 21px;display:flex;flex-direction:column;align-items:flex-start;flex:1}
 .cosmic-reading .cosmic-article-copy>p:first-child{font-size:9px!important;letter-spacing:1.7px!important;font-weight:800;color:#a48558!important;margin:0 0 12px!important}
-.cosmic-reading .cosmic-article-copy h3{font-family:'Web Font Project','Cormorant Garamond',Georgia,serif!important;font-size:clamp(22px,2.1vw,29px)!important;font-weight:400!important;line-height:1.15!important;letter-spacing:-.35px;margin:0 0 14px!important;color:#292321!important}
+.cosmic-reading .cosmic-article-copy h3{font-family:'CrescentEditorial','Cormorant Garamond',Georgia,serif!important;font-size:clamp(22px,2.1vw,29px)!important;font-weight:400!important;line-height:1.15!important;letter-spacing:-.35px;margin:0 0 14px!important;color:#292321!important}
 .cosmic-reading .cosmic-article-copy small{font-size:8px!important;letter-spacing:1.5px;font-weight:800;color:#a66f70!important;margin:0 0 12px!important}
 .cosmic-reading .cosmic-article-copy>p:last-of-type{font-size:12px!important;line-height:1.8;color:#746a62!important;margin:0 0 22px!important}
 .cosmic-reading .cosmic-article-read-link{margin-top:auto;padding-top:12px;border-top:1px solid #e0d6c9;width:100%;display:flex;align-items:center;justify-content:space-between;text-decoration:none!important;font-size:10px;font-weight:800;letter-spacing:.7px;color:#39302b!important}
