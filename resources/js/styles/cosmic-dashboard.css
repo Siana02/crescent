@@ -1100,3 +1100,14 @@
 .cosmic-reading .cosmic-article-read-link{margin-top:auto;padding-top:12px;border-top:1px solid #ead9e8;width:100%;display:flex;align-items:center;justify-content:space-between;text-decoration:none!important;font-size:10px;font-weight:800;letter-spacing:.7px;color:#49394f!important}
 .cosmic-reading .cosmic-article-read-link span{font-size:18px;color:#bda6c1}
 @media(max-width:640px){.cosmic-reading .cosmic-article-grid{grid-template-columns:1fr!important}.cosmic-reading .cosmic-article-cover{aspect-ratio:16/9}.cosmic-reading .cosmic-article-copy{padding:20px}}
+
+/* Daily constellation cards are article links, with a pastel fade over image-led backgrounds. */
+.cosmic-insight-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.cosmic-insight-card{position:relative;display:block;min-height:245px;padding:22px 35% 24px 22px;background-position:center right!important;background-size:cover!important;background-repeat:no-repeat!important;text-decoration:none!important;color:#49394f!important;overflow:hidden;transition:transform .22s ease,box-shadow .22s ease}
+.cosmic-insight-card:hover{transform:translateY(-3px);box-shadow:0 14px 28px rgba(83,54,94,.12)}
+.cosmic-insight-card:focus-visible{outline:2px solid #9a78b4;outline-offset:3px}
+.cosmic-insight-card>p:not(:first-of-type){max-width:390px;color:#75667e;font-size:11px;line-height:1.7}
+.cosmic-insight-card small{max-width:390px;font-size:9px}
+.cosmic-insight-card .cosmic-insight-link-label{display:inline-block;margin-top:13px;padding-top:8px;border-top:1px solid rgba(117,86,135,.2);font-size:9px;font-weight:800;letter-spacing:.04em;color:#765184}
+@media(max-width:800px){.cosmic-insight-grid{grid-template-columns:1fr}.cosmic-insight-card{min-height:220px;padding-right:38%;background-position:center right!important}}
+@media(max-width:480px){.cosmic-insight-card{padding:20px 26% 22px 18px;min-height:240px}.cosmic-insight-card>p:not(:first-of-type){font-size:10px}}
