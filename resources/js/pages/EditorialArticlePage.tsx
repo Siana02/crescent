@@ -36,6 +36,17 @@ const stories: Story[] = [
  'Crescent can help you record the day pain occurs, its intensity, related symptoms and what seemed to help. Over time, that record may make patterns easier to explain to a clinician. It cannot determine whether pain is caused by endometriosis or another condition, and a calendar estimate should never override what your body is telling you.',
  'You are not weak for needing rest, medication or medical care. Pain is information, not a character test. The goal is not to become better at tolerating distress indefinitely; it is to understand what is happening and find support that improves your quality of life.'
  ]}
+ ,
+ {heading:'Questions about pain relief, treatment and follow-up',paragraphs:[
+ 'A treatment plan should make sense for your body and your priorities. If you are offered medication, ask how and when to take it, whether it is safe with your other medicines, what side effects to look for, and how soon you should expect to notice a difference. If you have a history of stomach or kidney problems, asthma triggered by pain medicines, take blood thinners, or could be pregnant, mention that before using anti-inflammatory medication. A pharmacist can often help with medicine-safety questions.',
+ 'If first-line treatment does not help, that is useful information rather than a personal failure. A clinician may consider other approaches, review how and when symptoms occur, or investigate another cause. Depending on the history, assessment can include questions, an examination with consent, testing or imaging. You can ask what each step is intended to find out and what alternatives exist. You have the right to understand the plan and to pause an examination if you feel uncomfortable.',
+ 'Make a follow-up plan before you leave: what improvement should look like, how long to try a treatment, what side effects mean you should stop, and when to return. If pain continues to affect daily life, say so plainly. “I miss work because of this” or “I cannot sleep during the first two days” gives concrete context that can help guide care.'
+ ]},
+ {heading:'Pain, stress and the whole person',paragraphs:[
+ 'Stress can influence how pain is experienced, and persistent pain can itself create stress. That does not mean menstrual pain is imaginary or “all in your head.” Pain is a real physical experience shaped by many interacting systems. Gentle support for sleep, emotional wellbeing and daily routines may help you cope, but it should complement—not replace—appropriate assessment and treatment when symptoms are severe.',
+ 'You may find it useful to tell a trusted person what support looks like on difficult days: help with errands, a heating pad, quiet time, transport to an appointment, or simply not being expected to explain yourself repeatedly. If pain affects intimacy, you are allowed to pause sexual activity and talk with a partner about comfort and boundaries. Pain during sex is a symptom worth discussing, not something you must accept.',
+ 'A good care plan is one that respects your goals and improves your life, not one that expects you to prove how much discomfort you can tolerate. If you are not being heard, bring your notes, ask direct questions, or seek another clinician where possible.'
+ ]}
  ],
  sources:[
  {label:'NHS — Period pain',url:'https://www.nhs.uk/conditions/period-pain/',note:'Symptoms, self-care and when to seek medical advice.'},
@@ -77,6 +88,17 @@ const stories: Story[] = [
  {heading:'Care that follows your actual life',paragraphs:[
  'There is no need to schedule your entire life around a phase label. If you feel energetic, enjoy it; if you are tired, consider what else may be contributing and make room for rest. Regular meals, movement that feels good, adequate sleep and stress support can benefit general health across the cycle. Restrictive “cycle syncing” plans are not required to have a healthy cycle.',
  'Use the cycle as one source of context, not a rulebook. You are allowed to feel differently from one month to the next, to have no noticeable phase-related symptoms, and to change what care looks like as your circumstances change.'
+ ]}
+ ,
+ {heading:'Why the same cycle can feel different month to month',paragraphs:[
+ 'A cycle is not a sealed system operating separately from the rest of your life. Travel, poor sleep, illness, emotional stress, changes in exercise or food access, breastfeeding, medication and hormonal contraception can all influence bleeding or the symptoms you notice. Sometimes a change is temporary; sometimes it deserves a conversation with a clinician. Tracking context alongside dates can stop a single late period from becoming a story about personal failure.',
+ 'The menstrual cycle also changes across the lifespan. Patterns in the first years after periods begin can be different from adult patterns, and cycles may shift again during perimenopause. Pregnancy and postpartum changes require a different frame from a typical cycling pattern. If you use hormonal contraception, bleeding may not reflect a natural ovulatory cycle at all. A tracker should make space for these realities instead of forcing every person into the same four-stage template.',
+ 'Look for trends over several cycles rather than drawing conclusions from one day. Ask whether the change is persistent, disruptive, new for you, or accompanied by symptoms such as severe pain, unusually heavy bleeding or repeated missed periods. That context is more useful than trying to match every feeling to a predicted phase.'
+ ]},
+ {heading:'When cycle changes merit a health check',paragraphs:[
+ 'Consider seeking advice if periods repeatedly stop without an expected reason, become very irregular, last much longer than usual, or involve heavy bleeding or significant pain. A clinician may ask about pregnancy possibility, medicines, contraception, stress, weight changes and other symptoms. There are many possible explanations, and an app cannot distinguish them. Avoid assuming that every change is caused by stress or a “hormone imbalance.”',
+ 'If you are trying to conceive, cycle records can help describe your pattern, but they cannot confirm fertility or diagnose an ovulation problem. If you are avoiding pregnancy, do not rely on a predicted fertile window as contraception. The right advice depends on your goals and medical context, so make those goals clear when you seek care.',
+ 'Above all, cycle literacy is meant to support self-understanding. It is not a demand to optimise every meal, workout, relationship or workday around a hormone chart. Let the information serve you: notice what repeats, be curious about what changes, and seek help when something feels wrong.'
  ]}
  ],
  sources:[
@@ -120,6 +142,17 @@ const stories: Story[] = [
  'You can ask how effective a method is with typical use, what side effects are common, how bleeding may change, whether it interacts with medication, how quickly fertility returns after stopping, what it costs, and what to do if you miss a dose or a condom breaks. Ask how to access follow-up or removal if you choose an implant or IUD. You are entitled to understandable information and a choice that respects your goals.',
  'If privacy, partner pressure, safety or cost affects your choice, mention only what you feel safe sharing with the provider. A trusted clinic or pharmacist may be able to explain confidential services available in your area. Contraception should support your autonomy; you should not be coerced into starting, stopping or using a method.'
  ]}
+ ,
+ {heading:'A comparison checklist before you decide',paragraphs:[
+ 'Start with the outcome that matters most to you. Is preventing pregnancy the priority, do you also want STI protection, would lighter bleeding be helpful, or do you prefer to avoid hormones? Consider how much day-to-day maintenance you are comfortable with, how you feel about internal products or a procedure, how easy follow-up is to access, and what the method costs over time. A method that is theoretically very effective may not be a practical fit if you cannot obtain it reliably or use it comfortably.',
+ 'Ask about typical-use effectiveness, not only perfect-use figures. Ask what to do if you miss a pill, have vomiting or diarrhoea while using an oral method, start a new medicine, or experience condom breakage. If you choose a long-acting method, ask about insertion, removal, expected bleeding changes and how to get help if you have a problem. If you use a method that does not protect against STIs, discuss whether condoms or testing should be part of your plan.',
+ 'It is reasonable to take time to decide. You can ask a provider to explain options in plain language, write down the names of methods, and return with questions. If a method causes side effects that are difficult to live with, contact a clinician to discuss alternatives rather than feeling obliged to endure them.'
+ ]},
+ {heading:'Period care when access, privacy or comfort is difficult',paragraphs:[
+ 'The best period product is one that is safe, available and workable in your real circumstances. At school, work, travel or home, consider whether you have clean water, a private place to change, a way to dispose of used products, and a spare product if bleeding is unpredictable. If you use reusable products, follow the manufacturer’s cleaning and storage instructions and make sure they can dry appropriately between uses.',
+ 'If a product is painful, leaks persistently despite correct use, causes irritation, or is difficult to insert or remove, you can choose another option. Menstrual cups, tampons and discs are not compulsory upgrades; pads, period underwear and other products remain valid choices. People with disabilities, pelvic pain, sensory sensitivities or limited water access may need different solutions. Practical comfort matters more than a trend.',
+ 'If you do not have reliable access to period products, consider contacting a local clinic, community organisation or trusted school or workplace support service to ask what is available. Period care is a health and dignity issue, not a test of how resourceful you are.'
+ ]}
  ],
  sources:[
  {label:'WHO — Family planning / contraception methods',url:'https://www.who.int/news-room/fact-sheets/detail/family-planning-contraception',note:'Overview of contraceptive methods and informed choice.'},
@@ -162,6 +195,17 @@ const stories: Story[] = [
  'If you want to track a change, write down when it started, what changed compared with your usual pattern, whether there is odour or irritation, where you are in your cycle, and any new products or medicines. Note any pelvic pain, fever, bleeding or pregnancy possibility. Avoid using an app to label the cause; the useful information is the observation itself.',
  'Your body does not need to look exactly like a diagram. Discharge varies, and you deserve care that is calm, confidential where available, and grounded in evidence. Ask what a test is for, how results will be shared, and what treatment options make sense for you.'
  ]}
+ ,
+ {heading:'Sexual health, testing and partner conversations',paragraphs:[
+ 'When a new discharge change follows sex with a new partner or a possible exposure to a sexually transmitted infection, consider contacting a sexual-health service for advice and testing. Some infections have mild or no symptoms, so how you feel cannot reliably tell you whether testing is needed. Ask which tests are appropriate, when to take them, whether a repeat test is recommended, and how to protect yourself and partners while waiting for results.',
+ 'If an infection is diagnosed, follow the treatment instructions and advice about partners, avoiding sex or using condoms during treatment, and returning for testing if recommended. Do not share prescription medicines or use leftover antibiotics. The right treatment depends on the cause, and incorrect medication can delay recovery or contribute to resistance. If you feel unsafe discussing sexual health with a partner, prioritise your safety and ask the clinician about confidential support.',
+ 'A discharge change is not evidence of poor hygiene or wrongdoing. Vaginal health is affected by biology, infections, irritation, medicines and other factors. You deserve clear explanations and respectful care, without shame or assumptions about your relationships.'
+ ]},
+ {heading:'Pregnancy, postpartum changes and other contexts',paragraphs:[
+ 'Discharge can change during pregnancy, and pregnancy possibility matters when assessing symptoms or choosing medication. If you are pregnant or may be pregnant and notice a new concerning discharge, bleeding, pelvic pain, fever or a strong unusual odour, contact a qualified clinician for advice. Do not assume that a change is simply a normal pregnancy symptom.',
+ 'After birth, during breastfeeding, around menopause, or while using hormonal contraception, vaginal moisture and discharge patterns may change. Low oestrogen can contribute to dryness or discomfort for some people, while other conditions can produce similar symptoms. A clinician can help distinguish the possibilities and discuss suitable care. Avoid self-treating persistent symptoms with fragranced products or supplements that promise to reset vaginal pH.',
+ 'If symptoms recur, write down what you notice and what treatments you have used. Repeated episodes deserve a clear assessment of the cause rather than endless cycles of guessing. You can ask for an explanation of test results and a plan for what to do if symptoms return.'
+ ]}
  ],
  sources:[
  {label:'NHS — Vaginal discharge',url:'https://www.nhs.uk/symptoms/vaginal-discharge/',note:'Normal variation and symptoms that should be assessed.'},
@@ -203,6 +247,17 @@ const stories: Story[] = [
  {heading:'Use tracking as a record, not a verdict',paragraphs:[
  'Crescent can help you record period dates and symptoms, but a predicted period date is not a pregnancy test and a fertility window estimate is not contraception. If avoiding pregnancy is important, consider a reliable method and know how to access emergency contraception promptly after a failure or unprotected sex.',
  'If you are trying to conceive, tracking may help you notice patterns over time, but it cannot guarantee that ovulation happened on a predicted day. Ask a healthcare professional for personalised guidance if you have concerns about fertility, repeated pregnancy loss, or how long you have been trying. The right next step depends on your age, health history and circumstances.'
+ ]}
+ ,
+ {heading:'If pregnancy was not planned',paragraphs:[
+ 'If a test is positive and the pregnancy was not planned, you may have many reactions at once—or you may not know what you feel yet. You do not need to decide everything in a single moment. A qualified, non-judgemental reproductive-health provider can explain the options available where you live, including continuing the pregnancy and parenting, continuing the pregnancy and exploring adoption where available, or abortion where legal and accessible. Ask about timing, confidentiality, costs and what services are genuine and medically qualified.',
+ 'If you are worried about how a partner, family member or another person might react, think about who is safe to tell and whether you want support at an appointment. If someone is pressuring or threatening you about a pregnancy decision, tell a trusted clinician or support service if it is safe to do so. Your health, privacy and safety matter.',
+ 'Be cautious with unverified online sellers, home remedies or advice that promises to end a pregnancy without clear medical information. A qualified local provider can explain evidence-based options, what to expect, and which symptoms need urgent care. If you have severe pain, heavy bleeding or fainting, seek urgent medical assessment regardless of what you have decided.'
+ ]},
+ {heading:'If you were hoping for a different result',paragraphs:[
+ 'A negative test can bring relief, sadness or a complicated mix of emotions. If you were trying to conceive, it is understandable to feel disappointed; one cycle does not tell the whole story about future fertility. If you were anxious about pregnancy, you may still want a reliable plan for contraception and a way to access emergency care if a method fails in future.',
+ 'If pregnancy remains possible, follow the test instructions about repeating it. If your period remains absent or your cycles are repeatedly irregular, arrange a clinical check rather than relying on repeated symptom searches. A provider can help you understand what is known, what is uncertain and whether any further tests are appropriate.',
+ 'Whatever the result, you deserve information that is accurate and care that does not shame you. You can take the next step one at a time: confirm what is happening, understand your options, and get support that respects your circumstances.'
  ]}
  ],
  sources:[
