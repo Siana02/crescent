@@ -304,7 +304,7 @@ function ReadingProgress() {
  return <div className="editorial-progress" aria-hidden="true"><span style={{width: progress + '%'}} /></div>;
 }
 export default function EditorialArticlePage() {
- const slug = window.location.pathname.replace(/^\\/read\\//, '').replace(/\\/$/, '');
+ const slug = window.location.pathname.replace(/^\/read\//, '').replace(/\/$/, '');
  const story = stories.find(item => item.slug === slug);
  if (!story) return <main className="editorial-not-found"><a href="/dashboard">← Return to Crescent</a><p className="editorial-kicker">THE READING ROOM</p><h1>This story is still finding its way.</h1><p>Explore the latest body-literacy guides from your dashboard.</p><a className="editorial-button" href="/dashboard#read-next">Explore the journal</a></main>;
  const otherStories = stories.filter(item => item.slug !== story.slug).slice(0, 3);
