@@ -39,13 +39,15 @@ export default function NotificationSettings() {
   }, []);
 
   async function save(next: Preferences) {
-    setPreferences(next);
     const response = await fetch('/api/notifications/preferences', {
       method: 'PUT', credentials: 'same-origin',
       headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf() },
       body: JSON.stringify(next),
     });
-    if (!response.ok) throw new Error((await response.json()).message || 'Could not save preferences.');
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.message || 'Could not save preferences.');
+    setPreferences({ ...defaults, ...result.preferences, private_previews: false });
+    return result.preferences as Preferences;
   }
 
   async function enablePush() {
@@ -74,6 +76,11 @@ export default function NotificationSettings() {
       setSubscribed(true);
       setMessage('Notifications are enabled for this device. Lock-screen messages use neutral wording.');
     } catch (error) {
+      // Keep the control aligned with the browser and server subscription state after partial failures.
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        setSubscribed(Boolean(await registration.pushManager.getSubscription()));
+      } catch { /* preserve the last known state when the browser API is unavailable */ }
       setMessage(error instanceof Error ? error.message : 'Could not enable notifications.');
     } finally { setBusy(false); }
   }

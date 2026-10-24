@@ -10,6 +10,7 @@ import AstrologyPage from './pages/AstrologyPage';
 import BabyAstrologyPage from './pages/BabyAstrologyPage';
 import './styles/app.css';
 import InstallAppPrompt from './components/InstallAppPrompt';
+import EditorialArticlePage from './pages/EditorialArticlePage';
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -26,7 +27,9 @@ if (!mount) {
 }
 
 const path = window.location.pathname;
-const page = path === '/astrology' && new URLSearchParams(window.location.search).get('subject') === 'baby'
+const page = path.startsWith('/read/')
+    ? <EditorialArticlePage />
+    : path === '/astrology' && new URLSearchParams(window.location.search).get('subject') === 'baby'
     ? <BabyAstrologyPage />
     : path === '/astrology'
     ? <AstrologyPage />

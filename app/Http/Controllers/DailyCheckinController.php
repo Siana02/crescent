@@ -21,6 +21,27 @@ class DailyCheckinController extends Controller
         'libido_decrease', 'sweet_cravings', 'savoury_cravings', 'overwhelmed', 'moody',
     ];
 
+    public function show(Request $request): JsonResponse
+    {
+        $profile = $request->user()->cycleProfile;
+        $timezone = $profile?->timezone ?: config('app.timezone', 'UTC');
+        $validated = $request->validate([
+            'date' => ['required', 'date_format:Y-m-d', 'before_or_equal:'.CarbonImmutable::today($timezone)->toDateString()],
+        ]);
+
+        $checkin = $request->user()->dailyCheckins()->whereDate('log_date', $validated['date'])->first();
+
+        return response()->json([
+            'checkin' => $checkin ? [
+                'log_date' => $checkin->log_date->format('Y-m-d'),
+                'energy_level' => $checkin->energy_level,
+                'mood' => $checkin->mood ? explode(',', $checkin->mood) : [],
+                'symptoms' => $checkin->symptoms ?? [],
+                'notes' => $checkin->notes,
+            ] : null,
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $moodInput = $request->input('mood');

@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 Route::view('/', 'welcome');
 Route::view('/login', 'welcome')->name('login');
 Route::view('/register', 'welcome')->name('register');
+Route::get('/read/{slug}', fn () => view('welcome'))->where('slug', '[a-z0-9-]+');
 
 Route::get('/auth/invitation-preview', [AuthController::class, 'invitationPreview'])->middleware('throttle:20,1');
 Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
@@ -61,6 +62,7 @@ Route::middleware(['auth', 'active.account'])->group(function () {
     Route::put('/api/cycle-profile', [CycleProfileController::class, 'update']);
     Route::patch('/api/cycle-profile/astrology-consent', [CycleProfileController::class, 'astrologyConsent']);
     Route::post('/api/periods', [PeriodLogController::class, 'store']);
+    Route::get('/api/daily-checkins', [DailyCheckinController::class, 'show'])->middleware('throttle:60,1');
     Route::post('/api/daily-checkins', [DailyCheckinController::class, 'store'])->middleware('throttle:30,1');
     Route::post('/api/sex-logs', [SexLogController::class, 'store'])->middleware('throttle:30,1');
     Route::put('/api/pregnancy', [PregnancyController::class, 'update']);
