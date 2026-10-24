@@ -61,6 +61,7 @@ Route::middleware(['auth', 'active.account'])->group(function () {
     Route::put('/api/cycle-profile', [CycleProfileController::class, 'update']);
     Route::patch('/api/cycle-profile/astrology-consent', [CycleProfileController::class, 'astrologyConsent']);
     Route::post('/api/periods', [PeriodLogController::class, 'store']);
+    Route::get('/api/daily-checkins', [DailyCheckinController::class, 'show'])->middleware('throttle:60,1');
     Route::post('/api/daily-checkins', [DailyCheckinController::class, 'store'])->middleware('throttle:30,1');
     Route::post('/api/sex-logs', [SexLogController::class, 'store'])->middleware('throttle:30,1');
     Route::put('/api/pregnancy', [PregnancyController::class, 'update']);
