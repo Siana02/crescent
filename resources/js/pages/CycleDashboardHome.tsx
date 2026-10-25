@@ -5,6 +5,7 @@ import SharedPartnerSpace from '../components/SharedPartnerSpace';
 import FloralSharedCycleCalendar from '../components/FloralSharedCycleCalendar';
 import { getMoonPhase } from '../utils/moonPhase';
 import '../styles/cosmic-dashboard.css';
+import '../styles/cycle-history.css';
 import MobileNavigationMenu from '../components/MobileNavigationMenu';
 
 type DashboardData = {
