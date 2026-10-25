@@ -96,7 +96,7 @@ function errorText(result:{message?:string;errors?:Record<string,string[]>},fall
 export default function CycleDashboardHome({data,onLogout,onRefresh}:Props){
  const [modal,setModal]=useState<ModalKind>(null);
  const [expanded,setExpanded]=useState(false);
- const initialCalendarDate=(()=>{const timezone=data.profile.timezone||Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';const current=dateKeyInTimezone(timezone);const requested=new URLSearchParams(window.location.search).get('date');return requested&&/^\\d{4}-\\d{2}-\\d{2}$/.test(requested)&&requested<=current?requested:current;})();
+ const initialCalendarDate=(()=>{const timezone=data.profile.timezone||Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';const current=dateKeyInTimezone(timezone);const requested=new URLSearchParams(window.location.search).get('date');return requested&&/^\d{4}-\d{2}-\d{2}$/.test(requested)&&requested<=current?requested:current;})();
  const [selectedDate,setSelectedDate]=useState(initialCalendarDate);
  const [month,setMonth]=useState(()=>{const d=new Date(initialCalendarDate+'T12:00:00');return new Date(d.getFullYear(),d.getMonth(),1);});
  const [astrology,setAstrology]=useState(data.profile.wants_astrology);
@@ -124,7 +124,7 @@ export default function CycleDashboardHome({data,onLogout,onRefresh}:Props){
  const [notice,setNotice]=useState('');
  const today=dateKeyInTimezone(data.profile.timezone||Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC');
  useEffect(()=>{
-  if(selectedDate>today){setSelectedCheckin(null);return;}
+  if(selectedDate>today){setSelectedCheckin(null);setHistoryLoading(false);return;}
   let cancelled=false;
   setHistoryLoading(true);
   fetch('/api/daily-checkins?date='+encodeURIComponent(selectedDate),{credentials:'same-origin',headers:{Accept:'application/json'}})
