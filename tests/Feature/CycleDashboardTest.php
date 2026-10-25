@@ -154,6 +154,65 @@ $this->actingAs($user)
             ->assertJsonPath('today_checkin.energy_level', 'balanced');
     }
 
+    public function test_historical_checkin_updates_preserve_fields_that_were_not_submitted(): void
+    {
+        $user = User::factory()->create();
+        $date = today('Africa/Nairobi')->subDays(3)->toDateString();
+
+        $this->actingAs($user)
+            ->postJson('/api/daily-checkins', [
+                'log_date' => $date,
+                'energy_level' => 'low',
+                'mood' => ['tender', 'anxious'],
+                'symptoms' => ['cramps', 'bloating'],
+                'notes' => 'Rest helped me today.',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('checkin.log_date', $date);
+
+        $this->postJson('/api/daily-checkins', [
+            'log_date' => $date,
+            'symptoms' => ['headache', 'fatigue'],
+        ])
+            ->assertCreated()
+            ->assertJsonPath('checkin.log_date', $date)
+            ->assertJsonPath('checkin.energy_level', 'low')
+            ->assertJsonPath('checkin.mood.0', 'tender')
+            ->assertJsonPath('checkin.mood.1', 'anxious')
+            ->assertJsonPath('checkin.symptoms.0', 'headache')
+            ->assertJsonPath('checkin.symptoms.1', 'fatigue')
+            ->assertJsonPath('checkin.notes', 'Rest helped me today.');
+
+        $this->getJson('/api/daily-checkins?date='.$date)
+            ->assertOk()
+            ->assertJsonPath('checkin.log_date', $date)
+            ->assertJsonPath('checkin.energy_level', 'low')
+            ->assertJsonPath('checkin.mood.1', 'anxious')
+            ->assertJsonPath('checkin.symptoms.0', 'headache')
+            ->assertJsonPath('checkin.notes', 'Rest helped me today.');
+    }
+
+    public function test_user_can_create_a_checkin_for_a_past_date_when_no_record_exists(): void
+    {
+        $user = User::factory()->create();
+        $date = today('Africa/Nairobi')->subMonths(2)->toDateString();
+
+        $this->actingAs($user)
+            ->postJson('/api/daily-checkins', [
+                'log_date' => $date,
+                'symptoms' => ['cramps'],
+                'notes' => 'A note from an earlier day.',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('checkin.log_date', $date)
+            ->assertJsonPath('checkin.symptoms.0', 'cramps')
+            ->assertJsonPath('checkin.notes', 'A note from an earlier day.');
+
+        $this->getJson('/api/daily-checkins?date='.$date)
+            ->assertOk()
+            ->assertJsonPath('checkin.symptoms.0', 'cramps');
+    }
+
     public function test_daily_checkin_requires_authentication(): void
     {
         $this->postJson('/api/daily-checkins', ['mood' => 'calm'])->assertUnauthorized();
