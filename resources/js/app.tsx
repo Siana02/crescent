@@ -11,6 +11,7 @@ import BabyAstrologyPage from './pages/BabyAstrologyPage';
 import './styles/app.css';
 import InstallAppPrompt from './components/InstallAppPrompt';
 import EditorialArticlePage from './pages/EditorialArticlePage';
+import CycleHistoryPage from './pages/CycleHistoryPage';
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -27,7 +28,9 @@ if (!mount) {
 }
 
 const path = window.location.pathname;
-const page = path.startsWith('/read/')
+const page = path === '/cycle-history' || path === '/read/cycle-length-guide' || path === '/read/period-length-guide'
+    ? <CycleHistoryPage />
+    : path.startsWith('/read/')
     ? <EditorialArticlePage />
     : path === '/astrology' && new URLSearchParams(window.location.search).get('subject') === 'baby'
     ? <BabyAstrologyPage />

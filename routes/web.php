@@ -25,6 +25,7 @@ Route::post('/auth/register', [AuthController::class, 'register'])->middleware('
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 
 Route::middleware(['auth', 'active.account'])->group(function () {
+    Route::get('/cycle-history', fn () => view('welcome'));
     Route::get('/connections', fn () => view('welcome'));
     Route::get('/astrology', fn () => view('welcome'));
     Route::get('/profile', fn () => view('welcome'));
@@ -61,6 +62,7 @@ Route::middleware(['auth', 'active.account'])->group(function () {
     Route::get('/api/astrology/week-ahead', [AstrologyController::class, 'weekAhead'])->middleware('throttle:30,1');
     Route::put('/api/cycle-profile', [CycleProfileController::class, 'update']);
     Route::patch('/api/cycle-profile/astrology-consent', [CycleProfileController::class, 'astrologyConsent']);
+    Route::get('/api/periods', [PeriodLogController::class, 'index']);
     Route::post('/api/periods', [PeriodLogController::class, 'store']);
     Route::get('/api/daily-checkins', [DailyCheckinController::class, 'show'])->middleware('throttle:60,1');
     Route::post('/api/daily-checkins', [DailyCheckinController::class, 'store'])->middleware('throttle:30,1');
