@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import '../styles/cosmic-dashboard.css';
 
 type DailyCheckinSummary = {log_date:string;energy_level:string|null;mood:string[];symptoms:string[];notes:string|null};
@@ -15,9 +15,10 @@ function dateFromKey(value:string){return new Date(value+'T12:00:00');}
 function label(value:string){return dateFromKey(value).toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric'});}
 function addDays(value:string,days:number){const d=dateFromKey(value);d.setDate(d.getDate()+days);return keyOf(d);}
 function Flower({tone}:{tone:'period'|'fertile'|'ovulation'|'lower'}){return <span className={'cosmic-floral-marker cosmic-floral-marker--'+tone} aria-hidden="true">✿</span>;}
-export default function FloralSharedCycleCalendar({cycle,ownerName='your partner',viewerName,editable=false,onEditDate,onSelectDate,selectedCheckin=null,historyLoading=false,historyError='',onRetryHistory,onOpenSymptoms,initialSelectedDate,todayDate}:{cycle:CycleCalendarSummary;ownerName?:string;viewerName?:string;editable?:boolean;onEditDate?:(date:string)=>void;onSelectDate?:(date:string)=>void;selectedCheckin?:DailyCheckinSummary|null;historyLoading?:boolean;historyError?:string;onRetryHistory?:()=>void;onOpenSymptoms?:()=>void;initialSelectedDate?:string;todayDate?:string}){
+export default function FloralSharedCycleCalendar({cycle,ownerName='your partner',viewerName,editable=false,onEditDate,onSelectDate,selectedCheckin=null,historyLoading=false,historyError='',onRetryHistory,onOpenSymptoms,initialSelectedDate,todayDate,activeDate}:{cycle:CycleCalendarSummary;ownerName?:string;viewerName?:string;editable?:boolean;onEditDate?:(date:string)=>void;onSelectDate?:(date:string)=>void;selectedCheckin?:DailyCheckinSummary|null;historyLoading?:boolean;historyError?:string;onRetryHistory?:()=>void;onOpenSymptoms?:()=>void;initialSelectedDate?:string;todayDate?:string;activeDate?:string}){
  const [month,setMonth]=useState(()=>{const d=dateFromKey(initialSelectedDate??keyOf(new Date()));return new Date(d.getFullYear(),d.getMonth(),1);});
  const [selected,setSelected]=useState(()=>initialSelectedDate??keyOf(new Date()));
+ useEffect(()=>{if(activeDate&&activeDate!==selected){setSelected(activeDate);const d=dateFromKey(activeDate);setMonth(new Date(d.getFullYear(),d.getMonth(),1));}},[activeDate,selected]);
  const days=useMemo(()=>{const first=new Date(month.getFullYear(),month.getMonth(),1);const count=new Date(month.getFullYear(),month.getMonth()+1,0).getDate();return [...Array((first.getDay()+6)%7).fill(null),...Array.from({length:count},(_,i)=>i+1)];},[month]);
  const periodDates=useMemo(()=>{const dates=new Set<string>();for(const p of cycle.period_history??[]){const end=p.end_date??addDays(p.start_date,Math.max(0,(cycle.average_period_length??5)-1));for(let d=p.start_date;d<=end;d=addDays(d,1))dates.add(d);}if(cycle.average_cycle_length&&cycle.estimated_next_period){for(let start=cycle.estimated_next_period;start<=addDays(cycle.estimated_next_period,cycle.average_cycle_length*2);start=addDays(start,cycle.average_cycle_length)){for(let i=0;i<(cycle.average_period_length??5);i++)dates.add(addDays(start,i));}}return dates;},[cycle]);
  const ovulation=cycle.estimated_ovulation_date;
