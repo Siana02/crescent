@@ -105,7 +105,7 @@ function CycleHistoryContent(){
     <div className="ch-cycle-card__legend"><span><i className="ch-dot period"/>Period</span><span><i className="ch-dot lower"/>Lower estimated fertility</span><span><i className="ch-dot fertile"/>Fertile estimate</span><span><i className="ch-dot ovulation"/>Ovulation estimate</span></div>
     <div className="ch-cycle-facts"><span><b>Period length</b>{cycle.periodDays!==null?cycle.periodDays+' days':'Not recorded'}</span><span><b>Period dates</b>{cycle.periodEnd?pretty(cycle.start)+' – '+pretty(cycle.periodEnd):'End date not recorded'}</span></div>
    </article>)}</section>;})}</div>}
-   {yearCycles.length>4&&<button type="button" className="ch-show-all" onClick={()=>setExpandedYears(v=>v.includes(selectedYear)?v.filter(y=>y!==selectedYear):[...v,selectedYear])>{expandedYears.includes(selectedYear)?'Show fewer cycles':'View all '+yearCycles.length+' cycles for '+selectedYear}<ChevronDown size={16}/></button>}
+   {yearCycles.length>4&&<button type="button" className="ch-show-all" onClick={()=>setExpandedYears(v=>v.includes(selectedYear)?v.filter(y=>y!==selectedYear):[...v,selectedYear])}>{expandedYears.includes(selectedYear)?'Show fewer cycles':'View all '+yearCycles.length+' cycles for '+selectedYear}<ChevronDown size={16}/></button>}
    <p className="ch-swipe-hint">♡ Swipe left or right to move between years</p>
   </section>
   <section className="ch-chart-panel"><div className="ch-year-heading"><div><p className="ch-eyebrow">YOUR PATTERNS AT A GLANCE</p><h2>Cycle length over time <span>✧</span></h2><p>Completed cycles with two recorded period start dates.</p></div><span className="ch-chart-flower">✿</span></div>
