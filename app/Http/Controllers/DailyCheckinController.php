@@ -62,19 +62,34 @@ class DailyCheckinController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        if (empty($validated['energy_level']) && empty($validated['mood']) && empty($validated['symptoms']) && empty($validated['notes'])) {
+        $logDate = $validated['log_date'] ?? $today;
+        $checkins = $request->user()->dailyCheckins();
+        $checkin = $checkins->whereDate('log_date', $logDate)->first();
+
+        if (! $checkin && ! collect(['energy_level', 'mood', 'symptoms', 'notes'])->contains(fn ($field) => array_key_exists($field, $validated) && $validated[$field] !== null && $validated[$field] !== [] && $validated[$field] !== '')) {
             return response()->json(['message' => 'Choose at least one thing to check in with.'], 422);
         }
 
-        $checkin = $request->user()->dailyCheckins()->updateOrCreate(
-            ['log_date' => $validated['log_date'] ?? $today],
-            [
-                'energy_level' => $validated['energy_level'] ?? null,
-                'mood' => ! empty($validated['mood']) ? implode(',', $validated['mood']) : null,
-                'symptoms' => $validated['symptoms'] ?? [],
-                'notes' => $validated['notes'] ?? null,
-            ],
-        );
+        $attributes = [];
+        if (array_key_exists('energy_level', $validated)) {
+            $attributes['energy_level'] = $validated['energy_level'];
+        }
+        if (array_key_exists('mood', $validated)) {
+            $attributes['mood'] = ! empty($validated['mood']) ? implode(',', $validated['mood']) : null;
+        }
+        if (array_key_exists('symptoms', $validated)) {
+            $attributes['symptoms'] = $validated['symptoms'] ?? [];
+        }
+        if (array_key_exists('notes', $validated)) {
+            $attributes['notes'] = $validated['notes'];
+        }
+
+        if ($checkin) {
+            $checkin->fill($attributes);
+            $checkin->save();
+        } else {
+            $checkin = $checkins->create(array_merge(['log_date' => $logDate], $attributes));
+        }
 
         return response()->json([
             'checkin' => [
