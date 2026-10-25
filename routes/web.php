@@ -25,6 +25,7 @@ Route::post('/auth/register', [AuthController::class, 'register'])->middleware('
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 
 Route::middleware(['auth', 'active.account'])->group(function () {
+    Route::get('/cycle-history', fn () => view('welcome'));
     Route::get('/connections', fn () => view('welcome'));
     Route::get('/astrology', fn () => view('welcome'));
     Route::get('/profile', fn () => view('welcome'));
