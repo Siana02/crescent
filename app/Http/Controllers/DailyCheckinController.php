@@ -25,6 +25,12 @@ class DailyCheckinController extends Controller
     {
         $profile = $request->user()->cycleProfile;
         $timezone = $profile?->timezone ?: config('app.timezone', 'UTC');
+        if ($request->boolean('dates')) {
+            return response()->json([
+                'dates' => $request->user()->dailyCheckins()->orderBy('log_date')->pluck('log_date')->map(fn ($date) => CarbonImmutable::parse($date, $timezone)->format('Y-m-d'))->values(),
+            ]);
+        }
+
         $validated = $request->validate([
             'date' => ['required', 'date_format:Y-m-d', 'before_or_equal:'.CarbonImmutable::today($timezone)->toDateString()],
         ]);
