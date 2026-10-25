@@ -106,6 +106,8 @@ export default function CycleDashboardHome({data,onLogout,onRefresh}:Props){
  const [savedCheckin,setSavedCheckin]=useState(Boolean(data.today_checkin));
  const [selectedCheckin,setSelectedCheckin]=useState<{log_date:string;energy_level:string|null;mood:string[];symptoms:string[];notes:string|null}|null>(null);
  const [historyLoading,setHistoryLoading]=useState(false);
+ const [historyError,setHistoryError]=useState('');
+ const [historyRefresh,setHistoryRefresh]=useState(0);
  const [periodStart,setPeriodStart]=useState(dateKeyInTimezone(data.profile.timezone||Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'));
  const [periodEnd,setPeriodEnd]=useState('');
  const [periodFlow,setPeriodFlow]=useState('medium');
@@ -124,16 +126,16 @@ export default function CycleDashboardHome({data,onLogout,onRefresh}:Props){
  const [notice,setNotice]=useState('');
  const today=dateKeyInTimezone(data.profile.timezone||Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC');
  useEffect(()=>{
-  if(selectedDate>today){setSelectedCheckin(null);setHistoryLoading(false);return;}
+  if(selectedDate>today){setSelectedCheckin(null);setHistoryError('');setHistoryLoading(false);return;}
   let cancelled=false;
-  setHistoryLoading(true);
+  setHistoryLoading(true);setHistoryError('');
   fetch('/api/daily-checkins?date='+encodeURIComponent(selectedDate),{credentials:'same-origin',headers:{Accept:'application/json'}})
    .then(async response=>{if(!response.ok)throw new Error('Could not load this day’s check-in.');return response.json();})
    .then(result=>{if(!cancelled)setSelectedCheckin(result.checkin??null);})
    .catch(()=>{if(!cancelled)setSelectedCheckin(null);})
    .finally(()=>{if(!cancelled)setHistoryLoading(false);});
   return ()=>{cancelled=true;};
- },[selectedDate,today]);
+ },[selectedDate,today,historyRefresh]);
  useEffect(()=>{if(selectedCheckin?.log_date===selectedDate){setPickedSymptoms(selectedCheckin.symptoms);setSymptomMood(selectedCheckin.mood);setSymptomNotes(selectedCheckin.notes??'');}else if(!selectedCheckin){setPickedSymptoms([]);setSymptomMood([]);setSymptomNotes('');}},[selectedCheckin,selectedDate]);
  const firstName=data.profile.display_name?.trim()||data.user.name.split(' ')[0]||'there';
  const moonToday=getMoonPhase(new Date(today+'T12:00:00'));
@@ -212,6 +214,8 @@ export default function CycleDashboardHome({data,onLogout,onRefresh}:Props){
   onSelectDate={(date)=>{setSelectedDate(date);const d=new Date(date+'T12:00:00');setMonth(new Date(d.getFullYear(),d.getMonth(),1));}}
   selectedCheckin={selectedCheckin}
   historyLoading={historyLoading}
+  historyError={historyError}
+  onRetryHistory={()=>setHistoryRefresh(value=>value+1)}
   onOpenSymptoms={()=>{setPickedSymptoms(selectedCheckin?.log_date===selectedDate?selectedCheckin.symptoms:[]);setSymptomMood(selectedCheckin?.log_date===selectedDate?selectedCheckin.mood:[]);setSymptomNotes(selectedCheckin?.log_date===selectedDate?(selectedCheckin.notes??''):'');setModal('symptoms');}}
  />
  <section className="cosmic-cycle-history-summary">
