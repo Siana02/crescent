@@ -70,7 +70,10 @@ function CycleHistoryContent(){
  const [yearIndex,setYearIndex]=useState(0);
  const [expandedYears,setExpandedYears]=useState<number[]>([]);
  const [touchStart,setTouchStart]=useState<number|null>(null);
- useEffect(()=>{fetch('/api/dashboard?timezone='+encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'),{credentials:'same-origin',headers:{Accept:'application/json'}}).then(async r=>{if(!r.ok)throw new Error('Your cycle history could not be loaded. Please try again.');return r.json();}).then((d:DashboardPayload)=>setData(d)).catch(e=>setError(e instanceof Error?e.message:'Something went wrong.')).finally(()=>setLoading(false));},[]);
+ useEffect(()=>{Promise.all([
+  fetch('/api/dashboard?timezone='+encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'),{credentials:'same-origin',headers:{Accept:'application/json'}}),
+  fetch('/api/periods',{credentials:'same-origin',headers:{Accept:'application/json'}}),
+ ]).then(async([dashboardResponse,periodResponse])=>{if(dashboardResponse.status===401||periodResponse.status===401){window.location.assign('/login');throw new Error('Please sign in to view your cycle history.');}if(!dashboardResponse.ok||!periodResponse.ok)throw new Error('Your cycle history could not be loaded. Please try again.');const dashboard=await dashboardResponse.json() as DashboardPayload;const history=await periodResponse.json() as {periods:PeriodRecord[]};setData({...dashboard,period_history:history.periods??[]});}).catch(e=>setError(e instanceof Error?e.message:'Something went wrong.')).finally(()=>setLoading(false));},[]);
  const timezone=data?.profile.timezone||Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';
  const today=todayIn(timezone);
  const cycles=useMemo(()=>{
