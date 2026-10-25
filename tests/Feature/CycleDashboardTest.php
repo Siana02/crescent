@@ -213,6 +213,26 @@ $this->actingAs($user)
             ->assertJsonPath('checkin.symptoms.0', 'cramps');
     }
 
+    public function test_daily_checkin_history_is_private_to_the_signed_in_user(): void
+    {
+        $owner = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $date = today('Africa/Nairobi')->subDays(5)->toDateString();
+
+        $this->actingAs($owner)
+            ->postJson('/api/daily-checkins', [
+                'log_date' => $date,
+                'symptoms' => ['cramps'],
+                'notes' => 'A private note.',
+            ])
+            ->assertCreated();
+
+        $this->actingAs($otherUser)
+            ->getJson('/api/daily-checkins?date='.$date)
+            ->assertOk()
+            ->assertJsonPath('checkin', null);
+    }
+
     public function test_daily_checkin_requires_authentication(): void
     {
         $this->postJson('/api/daily-checkins', ['mood' => 'calm'])->assertUnauthorized();
