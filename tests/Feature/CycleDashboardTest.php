@@ -233,6 +233,32 @@ $this->actingAs($user)
             ->assertJsonPath('checkin', null);
     }
 
+    public function test_period_history_endpoint_returns_older_records_beyond_dashboard_window(): void
+    {
+        $user = User::factory()->create();
+        $olderStart = today('Africa/Nairobi')->subMonths(9)->toDateString();
+        $newerStart = today('Africa/Nairobi')->subMonths(8)->toDateString();
+
+        $this->actingAs($user)
+            ->postJson('/api/periods', [
+                'start_date' => $olderStart,
+                'end_date' => today('Africa/Nairobi')->subMonths(9)->addDays(3)->toDateString(),
+                'flow_intensity' => 'medium',
+            ])->assertCreated();
+
+        $this->postJson('/api/periods', [
+            'start_date' => $newerStart,
+            'end_date' => today('Africa/Nairobi')->subMonths(8)->addDays(4)->toDateString(),
+            'flow_intensity' => 'light',
+        ])->assertCreated();
+
+        $this->getJson('/api/periods')
+            ->assertOk()
+            ->assertJsonCount(2, 'periods')
+            ->assertJsonPath('periods.0.start_date', $newerStart)
+            ->assertJsonPath('periods.1.start_date', $olderStart);
+    }
+
     public function test_daily_checkin_requires_authentication(): void
     {
         $this->postJson('/api/daily-checkins', ['mood' => 'calm'])->assertUnauthorized();
