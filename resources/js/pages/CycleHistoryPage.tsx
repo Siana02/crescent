@@ -79,7 +79,7 @@ function CycleHistoryContent(){
   return records.map((p,i)=>{
    const next=records[i+1];
    const cycleDays=next?diffDays(p.start_date,next.start_date):null;
-   const periodDays=p.end_date?diffDays(p.start_date,p.end_date)+1:null;
+   const periodDays=p.end_date?diffDays(p.start_date,p.end_date)+1:!next?(data.profile.average_period_length??null):null;
    const end=next?addDays(next.start_date,-1):today;
    return {start:p.start_date,end,periodEnd:p.end_date,cycleDays,periodDays,current:!next};
   }).reverse();
