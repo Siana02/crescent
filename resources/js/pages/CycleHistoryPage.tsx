@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleHelp, Flower2, Heart, Info, MoonStar, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronDown, ChevronLeft, ChevronRight, Flower2, Heart, Info, MoonStar, Sparkles } from 'lucide-react';
 import '../styles/cycle-history.css';
 
 type PeriodRecord = { start_date:string; end_date:string|null; flow_intensity?:string|null };
@@ -60,6 +60,10 @@ export default function CycleHistoryPage(){
  const path=window.location.pathname;
  if(path==='/read/cycle-length-guide')return <GuidePage kind="cycle"/>;
  if(path==='/read/period-length-guide')return <GuidePage kind="period"/>;
+ return <CycleHistoryContent/>;
+}
+
+function CycleHistoryContent(){
  const [data,setData]=useState<DashboardPayload|null>(null);
  const [loading,setLoading]=useState(true);
  const [error,setError]=useState('');
@@ -88,7 +92,6 @@ export default function CycleHistoryPage(){
  const visibleCycles=showAll||expandedYears.includes(selectedYear)?yearCycles:yearCycles.slice(0,4);
  const previousYear=()=>{setYearIndex(i=>Math.min(years.length-1,i+1));setShowAll(false);};
  const nextYear=()=>{setYearIndex(i=>Math.max(0,i-1));setShowAll(false);};
- if(path!=='/cycle-history')return <GuidePage kind="cycle"/>;
  if(loading)return <main className="ch-page ch-loading">Gathering your cycle petals… ✿</main>;
  if(error||!data)return <main className="ch-page ch-loading"><p>{error||'Cycle history is not available.'}</p><a href="/dashboard">Return to dashboard</a></main>;
  return <main className="ch-page">
