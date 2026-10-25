@@ -197,6 +197,7 @@ export default function CycleDashboardHome({data,onLogout,onRefresh}:Props){
  <FloralSharedCycleCalendar
   ownerName={firstName}
   initialSelectedDate={initialCalendarDate}
+  activeDate={selectedDate}
   todayDate={today}
   editable
   onEditDate={(date)=>{if(date>today){setError('You can only log a period on today or an earlier date.');return;}setPeriodStart(date);setPeriodEnd('');setPeriodFlow('medium');setModal('period');}}
