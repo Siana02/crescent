@@ -16,7 +16,7 @@ function label(value:string){return dateFromKey(value).toLocaleDateString(undefi
 function addDays(value:string,days:number){const d=dateFromKey(value);d.setDate(d.getDate()+days);return keyOf(d);}
 function Flower({tone}:{tone:'period'|'fertile'|'ovulation'|'lower'}){return <span className={'cosmic-floral-marker cosmic-floral-marker--'+tone} aria-hidden="true">✿</span>;}
 export default function FloralSharedCycleCalendar({cycle,ownerName='your partner',viewerName,editable=false,onEditDate,onSelectDate,selectedCheckin=null,historyLoading=false,onOpenSymptoms,initialSelectedDate}:{cycle:CycleCalendarSummary;ownerName?:string;viewerName?:string;editable?:boolean;onEditDate?:(date:string)=>void;onSelectDate?:(date:string)=>void;selectedCheckin?:DailyCheckinSummary|null;historyLoading?:boolean;onOpenSymptoms?:()=>void;initialSelectedDate?:string}){
- const [month,setMonth]=useState(()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),1);});
+ const [month,setMonth]=useState(()=>{const d=dateFromKey(initialSelectedDate??keyOf(new Date()));return new Date(d.getFullYear(),d.getMonth(),1);});
  const [selected,setSelected]=useState(()=>initialSelectedDate??keyOf(new Date()));
  const days=useMemo(()=>{const first=new Date(month.getFullYear(),month.getMonth(),1);const count=new Date(month.getFullYear(),month.getMonth()+1,0).getDate();return [...Array((first.getDay()+6)%7).fill(null),...Array.from({length:count},(_,i)=>i+1)];},[month]);
  const periodDates=useMemo(()=>{const dates=new Set<string>();for(const p of cycle.period_history??[]){const end=p.end_date??addDays(p.start_date,Math.max(0,(cycle.average_period_length??5)-1));for(let d=p.start_date;d<=end;d=addDays(d,1))dates.add(d);}if(cycle.average_cycle_length&&cycle.estimated_next_period){for(let start=cycle.estimated_next_period;start<=addDays(cycle.estimated_next_period,cycle.average_cycle_length*2);start=addDays(start,cycle.average_cycle_length)){for(let i=0;i<(cycle.average_period_length??5);i++)dates.add(addDays(start,i));}}return dates;},[cycle]);
@@ -35,7 +35,7 @@ export default function FloralSharedCycleCalendar({cycle,ownerName='your partner
   </div>
   <div className="cosmic-floral-calendar__legend"><span><Flower tone="period"/> Period days</span><span><Flower tone="fertile"/> Estimated fertile days</span><span><Flower tone="ovulation"/> Estimated ovulation</span><span><Flower tone="lower"/> Lower estimated fertility</span></div>
   <div className="cosmic-floral-calendar__selected">{selectedKind!=='none'&&<Flower tone={selectedKind}/>}<div><strong>{label(selected)}</strong><p>{detail}</p></div>{editable&&<button type="button" className="cosmic-floral-calendar__edit" onClick={()=>onEditDate?.(selected)}>＋ Log period</button>}</div>
-  <section className="cosmic-floral-calendar__history" aria-live="polite" aria-label="Selected day wellbeing history">
+  {editable&&<section className="cosmic-floral-calendar__history" aria-live="polite" aria-label="Selected day wellbeing history">
    <div className="cosmic-floral-calendar__history-heading"><div><p className="cosmic-eyebrow">YOUR DAY, IN BLOOM</p><h4>{label(selected)}</h4></div><span aria-hidden="true">✧</span></div>
    {historyLoading?<p className="cosmic-floral-calendar__history-muted">Gathering this day's notes…</p>:selectedCheckin?.log_date===selected?<div className="cosmic-floral-calendar__history-content">
     {(selectedCheckin.energy_level||selectedCheckin.mood.length>0)&&<div className="cosmic-floral-calendar__history-meta">{selectedCheckin.energy_level&&<span><b>Energy</b> {({low:'Running low',balanced:'Balanced',high:'High',peak:'Glowing'} as Record<string,string>)[selectedCheckin.energy_level]??selectedCheckin.energy_level}</span>}{selectedCheckin.mood.length>0&&<span><b>Mood</b> {selectedCheckin.mood.map(m=>m.replaceAll('_',' ')).join(' · ')}</span>}</div>}
@@ -43,7 +43,7 @@ export default function FloralSharedCycleCalendar({cycle,ownerName='your partner
     {selectedCheckin.notes&&<blockquote>{selectedCheckin.notes}</blockquote>}
    </div>:<p className="cosmic-floral-calendar__history-muted">Nothing logged for this day yet. You can still add symptoms or check in.</p>}
    {editable&&selected<=keyOf(new Date())&&<div className="cosmic-floral-calendar__history-actions"><button type="button" onClick={onOpenSymptoms}>✿ {selectedCheckin?.log_date===selected?'Edit / add symptoms':'Add symptoms'}</button><button type="button" onClick={()=>onEditDate?.(selected)}>＋ Log period</button></div>}
-  </section>
+  </section>}
   <p className="cosmic-floral-calendar__science">In a typical 28-day cycle, ovulation often happens around day 14, but it can shift even in regular cycles. An egg usually remains viable for about 12–24 hours after ovulation; sperm can survive for up to about 5 days. That's why the fertile window begins before ovulation. Blue flowers mean lower estimated fertility, not a safe day. A calendar cannot confirm ovulation or reliably prevent pregnancy.</p>
   {!cycle.fertility_estimate_available&&<p className="cosmic-floral-calendar__science">Fertility dates are not shown because the available cycle information does not support an estimate, or hormonal contraception may affect ovulation.</p>}
  </section>;
