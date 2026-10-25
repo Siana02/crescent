@@ -9,6 +9,24 @@ use Illuminate\Validation\Rule;
 
 class PeriodLogController extends Controller
 {
+    public function index(Request $request): JsonResponse
+    {
+        $profile = $request->user()->cycleProfile;
+        $periods = $request->user()->periodLogs();
+
+        if ($profile?->cycle_tracking_started_at) {
+            $periods->whereDate('start_date', '>=', $profile->cycle_tracking_started_at->format('Y-m-d'));
+        }
+
+        return response()->json([
+            'periods' => $periods->orderByDesc('start_date')->get()->map(fn ($period) => [
+                'start_date' => $period->start_date->format('Y-m-d'),
+                'end_date' => $period->end_date?->format('Y-m-d'),
+                'flow_intensity' => $period->flow_intensity,
+            ])->values(),
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $timezone = $request->user()->cycleProfile()->value('timezone') ?? config('app.timezone', 'UTC');
