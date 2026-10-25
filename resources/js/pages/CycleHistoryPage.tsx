@@ -68,7 +68,6 @@ function CycleHistoryContent(){
  const [loading,setLoading]=useState(true);
  const [error,setError]=useState('');
  const [yearIndex,setYearIndex]=useState(0);
- const [showAll,setShowAll]=useState(false);
  const [expandedYears,setExpandedYears]=useState<number[]>([]);
  const [touchStart,setTouchStart]=useState<number|null>(null);
  useEffect(()=>{fetch('/api/dashboard?timezone='+encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'),{credentials:'same-origin',headers:{Accept:'application/json'}}).then(async r=>{if(!r.ok)throw new Error('Your cycle history could not be loaded. Please try again.');return r.json();}).then((d:DashboardPayload)=>setData(d)).catch(e=>setError(e instanceof Error?e.message:'Something went wrong.')).finally(()=>setLoading(false));},[]);
@@ -89,9 +88,9 @@ function CycleHistoryContent(){
  useEffect(()=>{if(years.length&&yearIndex>=years.length)setYearIndex(0);},[years,yearIndex]);
  const selectedYear=years[yearIndex]??new Date(today+'T12:00:00').getFullYear();
  const yearCycles=cycles.filter(c=>fromKey(c.start).getFullYear()===selectedYear);
- const visibleCycles=showAll||expandedYears.includes(selectedYear)?yearCycles:yearCycles.slice(0,4);
- const previousYear=()=>{setYearIndex(i=>Math.min(years.length-1,i+1));setShowAll(false);};
- const nextYear=()=>{setYearIndex(i=>Math.max(0,i-1));setShowAll(false);};
+ const visibleCycles=expandedYears.includes(selectedYear)?yearCycles:yearCycles.slice(0,4);
+ const previousYear=()=>{setYearIndex(i=>Math.min(years.length-1,i+1));};
+ const nextYear=()=>{setYearIndex(i=>Math.max(0,i-1));};
  if(loading)return <main className="ch-page ch-loading">Gathering your cycle petals… ✿</main>;
  if(error||!data)return <main className="ch-page ch-loading"><p>{error||'Cycle history is not available.'}</p><a href="/dashboard">Return to dashboard</a></main>;
  return <main className="ch-page">
@@ -99,14 +98,14 @@ function CycleHistoryContent(){
   <section className="ch-hero"><div><p className="ch-eyebrow"><MoonStar size={14}/> YOUR BODY, YOUR TIMELINE <Sparkles size={14}/></p><h1>{data.profile.display_name?.trim()||data.user.name.split(' ')[0]}'s <em>Cycles</em></h1><p>Every period logged, every cycle remembered. Your history, arranged gently by year and month.</p><div className="ch-hero-stats"><span><Flower2 size={16}/>{cycles.length} recorded starts</span><span><Heart size={16}/>{cycles.filter(c=>c.periodDays!==null).length} periods with end dates</span></div></div><div className="ch-hero-art"><span>✿</span><i>✧</i><b>☾</b><small>♡</small></div></section>
   <section className="ch-year-panel" onTouchStart={e=>setTouchStart(e.touches[0]?.clientX??null)} onTouchEnd={e=>{if(touchStart===null)return;const delta=(e.changedTouches[0]?.clientX??touchStart)-touchStart;if(delta < -45)previousYear();if(delta>45)nextYear();setTouchStart(null);}}>
    <div className="ch-year-heading"><div><p className="ch-eyebrow">A LITTLE LOOK BACK</p><h2>{selectedYear} <span>✧</span></h2><p>{yearCycles.length} cycle{yearCycles.length===1?'':'s'} starting this year</p></div><div className="ch-year-controls"><button type="button" onClick={previousYear} disabled={yearIndex>=years.length-1} aria-label="View previous year"><ChevronLeft/></button><button type="button" onClick={nextYear} disabled={yearIndex===0} aria-label="View newer year"><ChevronRight/></button></div></div>
-   <label className="ch-year-select">Choose a year <span><select value={selectedYear} onChange={e=>{setYearIndex(years.indexOf(Number(e.target.value)));setShowAll(false);}}>{years.map(y=><option key={y} value={y}>{y}</option>)}</select><ChevronDown size={15}/></span></label>
+   <label className="ch-year-select">Choose a year <span><select value={selectedYear} onChange={e=>{setYearIndex(years.indexOf(Number(e.target.value)));}}>{years.map(y=><option key={y} value={y}>{y}</option>)}</select><ChevronDown size={15}/></span></label>
    {yearCycles.length===0?<div className="ch-empty"><Flower2 size={28}/><h3>No cycles recorded for this year yet</h3><p>When you log a period, Crescent can start building your timeline.</p><a href="/dashboard">Log a period</a></div>:<div className="ch-month-groups">{Array.from(new Set(visibleCycles.map(c=>fromKey(c.start).getMonth()))).sort((a,b)=>b-a).map(month=>{const monthCycles=visibleCycles.filter(c=>fromKey(c.start).getMonth()===month);return <section className="ch-month-group" key={month}><h3>{new Date(selectedYear,month,1).toLocaleDateString(undefined,{month:'long'})}<span>{monthCycles.length}</span></h3>{monthCycles.map(cycle=><article className="ch-cycle-card" key={cycle.start}>
     <div className="ch-cycle-card__top"><div><p className="ch-cycle-length">{cycle.cycleDays!==null?<><strong>{cycle.cycleDays}</strong> days</>:cycle.current?<><strong>{Math.max(1,diffDays(cycle.start,today)+1)}</strong> days so far</>:<><strong>—</strong> days</>}</p><p className="ch-cycle-dates">{pretty(cycle.start)} – {pretty(cycle.end)}{cycle.current?' · current cycle':''}</p></div><a href={'/dashboard?date='+cycle.start} aria-label={'Open floral calendar at '+pretty(cycle.start)} title="Open this date in your floral calendar"><ArrowRight/></a></div>
     <div className="ch-flower-track" aria-label="Estimated cycle phases">{Array.from({length:Math.min(45,Math.max(1,cycle.cycleDays??data.profile.average_cycle_length??28))},(_,i)=><span key={i} className={'ch-flower ch-flower--'+flowerTone(cycle,i,data.profile.average_cycle_length??null)} title={flowerTone(cycle,i,data.profile.average_cycle_length??28)==='period'?'Recorded period day':flowerTone(cycle,i,data.profile.average_cycle_length??28)==='ovulation'?'Estimated ovulation':flowerTone(cycle,i,data.profile.average_cycle_length??28)==='fertile'?'Estimated fertile day':'Lower estimated fertility'}>✿</span>)}</div>
     <div className="ch-cycle-card__legend"><span><i className="ch-dot period"/>Period</span><span><i className="ch-dot lower"/>Lower estimated fertility</span><span><i className="ch-dot fertile"/>Fertile estimate</span><span><i className="ch-dot ovulation"/>Ovulation estimate</span></div>
     <div className="ch-cycle-facts"><span><b>Period length</b>{cycle.periodDays!==null?cycle.periodDays+' days':'Not recorded'}</span><span><b>Period dates</b>{cycle.periodEnd?pretty(cycle.start)+' – '+pretty(cycle.periodEnd):'End date not recorded'}</span></div>
    </article>)}</section>;})}</div>}
-   {yearCycles.length>4&&<button type="button" className="ch-show-all" onClick={()=>{setShowAll(v=>!v);setExpandedYears(v=>v.includes(selectedYear)?v.filter(y=>y!==selectedYear):[...v,selectedYear]);}}>{showAll||expandedYears.includes(selectedYear)?'Show fewer cycles':'View all '+yearCycles.length+' cycles for '+selectedYear}<ChevronDown size={16}/></button>}
+   {yearCycles.length>4&&<button type="button" className="ch-show-all" onClick={()=>setExpandedYears(v=>v.includes(selectedYear)?v.filter(y=>y!==selectedYear):[...v,selectedYear])>{expandedYears.includes(selectedYear)?'Show fewer cycles':'View all '+yearCycles.length+' cycles for '+selectedYear}<ChevronDown size={16}/></button>}
    <p className="ch-swipe-hint">♡ Swipe left or right to move between years</p>
   </section>
   <section className="ch-chart-panel"><div className="ch-year-heading"><div><p className="ch-eyebrow">YOUR PATTERNS AT A GLANCE</p><h2>Cycle length over time <span>✧</span></h2><p>Completed cycles with two recorded period start dates.</p></div><span className="ch-chart-flower">✿</span></div>
