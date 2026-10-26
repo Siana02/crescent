@@ -88,7 +88,6 @@ export default function LandingPage() {
                     <a href="#why-crescent" onClick={() => setIsMenuOpen(false)}>Why Crescent</a>
                     <a href="#how-it-works" onClick={() => setIsMenuOpen(false)}>How it works</a>
                     <a href="#our-promise" onClick={() => setIsMenuOpen(false)}>Our promise</a>
-                    <a href="#journal" onClick={() => setIsMenuOpen(false)}>The journal</a>
                     <a href="/login" onClick={() => setIsMenuOpen(false)}>Log in</a>
                 </nav>
 
@@ -194,26 +193,6 @@ export default function LandingPage() {
                             </article>
                         ))}
                     </div>
-                </section>
-
-                <section className="landing-journal" id="journal">
-                    <div className="landing-journal-heading">
-                        <div>
-                            <p className="editorial-kicker">THE CRESCENT JOURNAL</p>
-                            <h2>Knowledge is a kind of <em>self-care.</em></h2>
-                            <p>Evidence-informed stories for understanding your body, with more nuance and less noise.</p>
-                        </div>
-                        <span className="landing-journal-edition">BODY, BEAUTY<br />& KNOWLEDGE <b>✳</b></span>
-                    </div>
-                    <div className="landing-journal-grid">
-                        {journalStories.map((story, index) => (
-                            <a className={'landing-journal-card landing-journal-card--' + (index + 1)} href={'/read/' + story.slug} key={story.slug}>
-                                <div className="landing-journal-image"><img src={story.image} alt="" loading="lazy" /><span>{String(index + 1).padStart(2, '0')}</span></div>
-                                <div className="landing-journal-copy"><p>{story.category}</p><h3>{story.title}</h3><div><small>{story.read}</small><span>READ ARTICLE ↗</span></div></div>
-                            </a>
-                        ))}
-                    </div>
-                    <p className="landing-journal-note">Grounded in recognised health guidance. Made to inform, never to diagnose.</p>
                 </section>
 
                 <section className="promise-section" id="our-promise">
