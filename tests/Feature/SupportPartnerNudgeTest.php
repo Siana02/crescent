@@ -42,7 +42,7 @@ class SupportPartnerNudgeTest extends TestCase
         PushSubscription::create(['user_id' => $primary->id, 'endpoint_hash' => hash('sha256', 'https://push.example.test/lyrra'), 'endpoint' => 'https://push.example.test/lyrra', 'public_key' => 'public-key', 'auth_token' => 'auth-token', 'content_encoding' => 'aes128gcm']);
         config(['services.webpush.public_key' => 'public', 'services.webpush.private_key' => 'private', 'services.webpush.subject' => 'mailto:hello@example.test']);
         $push = Mockery::mock(CrescentPushService::class);
-        $push->shouldReceive('notify')->once()->with($primary->id, 'symptom_nudge', 'Sean');
+        $push->shouldReceive('notify')->once()->with($primary->id, 'symptom_nudge', 'Sean')->andReturn(true);
         $this->app->instance(CrescentPushService::class, $push);
 
         $this->actingAs($support)->postJson('/api/relationships/'.$relationship->id.'/nudge')
