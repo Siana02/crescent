@@ -246,6 +246,7 @@ class DashboardController extends Controller
                     'companion_name' => $relationship->status === 'accepted'
                         ? ($companionProfile?->display_name ?: $companion?->name)
                         : null,
+                    'companion_today' => CarbonImmutable::today($companionProfile?->timezone ?: config('app.timezone', 'UTC'))->toDateString(),
                     'companion_role' => $companionRole,
                     'companion_journey' => $journeyIsShared ? $companionJourney : null,
                     'companion_goal' => $journeyIsShared ? $companionProfile?->primary_goal : null,
