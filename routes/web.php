@@ -79,6 +79,7 @@ Route::middleware(['auth', 'active.account'])->group(function () {
     Route::post('/api/relationships/accept', [RelationshipController::class, 'accept'])->middleware('throttle:10,1');
     Route::patch('/api/relationships/{relationship}/sharing', [RelationshipController::class, 'sharing']);
     Route::post('/api/relationships/{relationship}/disconnect', [RelationshipController::class, 'disconnect']);
+    Route::post('/api/relationships/{relationship}/nudge', [RelationshipController::class, 'nudge'])->middleware('throttle:5,1');
     Route::patch('/api/relationships/{relationship}/companion-birth-details', [RelationshipController::class, 'companionBirthDetails']);
     Route::get('/api/relationships/{relationship}/notes', [RelationshipNotesController::class, 'index']);
     Route::post('/api/relationships/{relationship}/notes', [RelationshipNotesController::class, 'store'])->middleware('throttle:20,1');
