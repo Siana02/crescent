@@ -1269,3 +1269,17 @@
  .cosmic-support-dashboard .cosmic-support-permission-list article{grid-template-columns:30px minmax(0,1fr)}
  .cosmic-support-dashboard .cosmic-support-permission-list b{grid-column:2}
 }
+
+
+/* The Cosmic Atelier owns shared relationship astrology and its daily sky summary. */
+.cosmic-atelier-redirect{display:flex;gap:12px;align-items:flex-start;padding:16px;border:1px solid #e9dced;border-radius:18px;background:linear-gradient(130deg,#fff3f8,#f4efff)}
+.cosmic-atelier-redirect>span{flex:0 0 auto;font-size:1.5rem;color:#9c7ba8}
+.cosmic-atelier-redirect p{margin:6px 0;color:#82728a;line-height:1.5}
+.cosmic-atelier-redirect a{display:inline-block;margin-top:5px;color:#8f6b9b;font-weight:750;text-decoration:none}
+.cosmic-atelier-daily-aspects{display:grid;gap:12px;margin-top:15px;padding:17px;border:1px solid rgba(204,173,212,.45);border-radius:20px;background:linear-gradient(140deg,#fff5fa,#f6f1ff 72%,#f2faf8)}
+.cosmic-atelier-daily-aspects>div:first-child>p{margin-top:5px}
+.cosmic-atelier-aspect-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.cosmic-atelier-aspect-list article{display:grid;gap:6px;padding:12px;border:1px solid #e8dceb;border-radius:14px;background:rgba(255,255,255,.8)}
+.cosmic-atelier-aspect-list strong{color:#684f73;font-size:.82rem;overflow-wrap:anywhere}
+.cosmic-atelier-aspect-list span{color:#9b879f;font-size:.7rem}
+@media(max-width:640px){.cosmic-atelier-daily-aspects{padding:13px}.cosmic-atelier-aspect-list{grid-template-columns:minmax(0,1fr)}.cosmic-atelier-aspect-list article{padding:11px}}
