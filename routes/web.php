@@ -18,13 +18,13 @@ use Illuminate\Support\Facades\Route;
 Route::view('/', 'welcome');
 Route::view('/login', 'welcome')->name('login');
 Route::view('/register', 'welcome')->name('register');
-Route::get('/read/{slug}', fn () => view('welcome'))->where('slug', '[a-z0-9-]+');
 
 Route::get('/auth/invitation-preview', [AuthController::class, 'invitationPreview'])->middleware('throttle:20,1');
 Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 
 Route::middleware(['auth', 'active.account'])->group(function () {
+    Route::get('/read/{slug}', fn () => view('welcome'))->where('slug', '[a-z0-9-]+');
     Route::get('/cycle-history', fn () => view('welcome'));
     Route::get('/connections', fn () => view('welcome'));
     Route::get('/astrology', fn () => view('welcome'));
