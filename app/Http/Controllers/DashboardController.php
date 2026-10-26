@@ -231,6 +231,7 @@ class DashboardController extends Controller
                                 'log_date' => $latestSharedCheckin->log_date->format('Y-m-d'),
                                 'mood' => $latestSharedCheckin->mood ? explode(',', $latestSharedCheckin->mood) : [],
                                 'symptoms' => $latestSharedCheckin->symptoms ?? [],
+                                'energy_level' => $latestSharedCheckin->energy_level ?? null,
                             ];
                         }
                     }
