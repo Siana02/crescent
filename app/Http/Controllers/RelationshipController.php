@@ -2,7 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DailyCheckin;
+use App\Models\NotificationPreference;
+use App\Models\PushSubscription;
 use App\Models\Relationship;
+use App\Services\CrescentPushService;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -67,6 +72,36 @@ class RelationshipController extends Controller
         ], 201);
     }
 
+    public function nudge(Relationship $relationship, Request $request, CrescentPushService $push): JsonResponse
+    {
+        abort_unless($relationship->relationship_type === 'observer' && $relationship->status === 'accepted' && $request->user()->id === $relationship->user_two_id, 404);
+        $sharing = $relationship->sharing_preferences ?? [];
+        $primarySharing = $sharing[(string) $relationship->user_one_id] ?? $sharing;
+        abort_unless((bool) ($primarySharing['wellbeing_updates'] ?? false), 403, 'Your partner has not enabled wellbeing sharing.');
+        $primary = $relationship->initiator;
+        abort_unless($primary, 404);
+        $timezone = $primary->cycleProfile?->timezone ?: config('app.timezone', 'UTC');
+        $today = CarbonImmutable::now($timezone)->toDateString();
+        if (DailyCheckin::where('user_id', $primary->id)->whereDate('log_date', $today)->exists()) {
+            $primaryName = $primary->cycleProfile?->display_name ?: 'Your partner';
+            return response()->json(['message' => $primaryName . ' has already shared a check-in today.'], 409);
+        }
+        $preferences = NotificationPreference::where('user_id', $primary->id)->first();
+        if (! $preferences?->push_enabled || ! $preferences->daily_checkin_reminders) {
+            return response()->json(['message' => 'Your partner needs push notifications and daily check-in reminders enabled to receive a nudge.'], 422);
+        }
+        if (! PushSubscription::where('user_id', $primary->id)->exists()) {
+            return response()->json(['message' => 'Your partner has not enabled notifications on a device yet.'], 422);
+        }
+        if (! config('services.webpush.public_key') || ! config('services.webpush.private_key') || ! config('services.webpush.subject')) {
+            return response()->json(['message' => 'Push notifications are not configured on this Crescent environment yet.'], 503);
+        }
+        $senderName = trim((string) ($request->user()->cycleProfile?->display_name ?: $request->user()->name));
+        $senderName = $senderName !== '' ? $senderName : 'Your partner';
+        $push->notify($primary->id, 'symptom_nudge', $senderName);
+        $primaryName = $primary->cycleProfile?->display_name ?: 'your partner';
+        return response()->json(['message' => 'A gentle nudge has been sent to ' . $primaryName . '.'], 202);
+    }
     public function disconnect(Relationship $relationship, Request $request): JsonResponse
     {
         abort_unless(
