@@ -56,7 +56,7 @@ export default function NotificationSettings() {
       if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
         throw new Error('Push notifications are not supported by this browser. Try a supported browser or install Crescent from your Home Screen.');
       }
-      if (!configured) throw new Error('Push delivery is not configured on the server yet. VAPID keys and the web-push server package are required.');
+      if (!configured) throw new Error('Push delivery is not configured on this server yet. Ask the Crescent administrator to set VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY and VAPID_SUBJECT in the deployment environment, then redeploy.');
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') throw new Error('Notifications are off in your browser settings. You can enable them there whenever you are ready.');
       const keyResponse = await fetch('/api/push/public-key', { credentials: 'same-origin', headers: { Accept: 'application/json' } });
