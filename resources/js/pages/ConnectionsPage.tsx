@@ -105,7 +105,7 @@ export default function ConnectionsPage() {
     }
 
     useEffect(() => { void load().catch(() => setError('Could not load your connections. Please refresh.')); }, []);
-    async function toggleAstrologyConsent(relationship: Relationship) {
+    async function toggleAstrologyConsent() {
         const next = !astrologyOptIn;
         setSavingAstrologyOptIn(true); setError(''); setNotice('');
         try {
@@ -262,7 +262,7 @@ export default function ConnectionsPage() {
                         {(profileRole === 'support' && relationship.relationship_type === 'observer') && <div className="cosmic-sharing-panel cosmic-astrology-consent-panel">
                             <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">YOUR ASTROLOGY OPT-IN</p><h4>Include your natal details?</h4></div><span aria-hidden="true">✧</span></div>
                             <p className="cosmic-muted">Astrology compatibility appears only when both people opt in. This is separate from the other person's sharing permissions, and you can change your mind at any time.</p>
-                            <button type="button" className={astrologyOptIn ? 'cosmic-sharing-option is-enabled' : 'cosmic-sharing-option'} aria-pressed={astrologyOptIn} disabled={savingAstrologyOptIn} onClick={() => void toggleAstrologyConsent(relationship)}><span className="material-symbols-rounded">auto_awesome</span><span><strong>Share my astrology profile</strong><small>{astrologyOptIn ? 'Your natal details are opted in.' : 'Your natal details are not included yet.'}</small></span><span className="cosmic-sharing-toggle">{savingAstrologyOptIn ? 'Saving…' : astrologyOptIn ? 'On' : 'Off'}</span></button>
+                            <button type="button" className={astrologyOptIn ? 'cosmic-sharing-option is-enabled' : 'cosmic-sharing-option'} aria-pressed={astrologyOptIn} disabled={savingAstrologyOptIn} onClick={() => void toggleAstrologyConsent()}><span className="material-symbols-rounded">auto_awesome</span><span><strong>Share my astrology profile</strong><small>{astrologyOptIn ? 'Your natal details are opted in.' : 'Your natal details are not included yet.'}</small></span><span className="cosmic-sharing-toggle">{savingAstrologyOptIn ? 'Saving…' : astrologyOptIn ? 'On' : 'Off'}</span></button>
                         </div>}
                         {profileRole !== 'support' && relationship.relationship_type === 'observer' && relationship.sharing_preferences.astrology && <div className="cosmic-birth-details-panel">
                             <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">THEIR NATAL CHART</p><h4>Birth details for your companion</h4></div><span aria-hidden="true">✦</span></div>
