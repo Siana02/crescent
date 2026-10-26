@@ -99,6 +99,36 @@ $this->actingAs($user)
             ->assertJsonPath('estimated_next_period', null);
     }
 
+    public function test_support_partner_can_save_profile_without_cycle_length_or_regularity_fields(): void
+    {
+        $user = User::factory()->create();
+        CycleProfile::create([
+            'user_id' => $user->id,
+            'relationship_role' => 'support',
+            'timezone' => 'Africa/Nairobi',
+            'cycle_regularity' => 'unknown',
+            'onboarding_completed' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->putJson('/api/cycle-profile', [
+                'display_name' => 'Sean',
+                'timezone' => 'Africa/Nairobi',
+                'primary_goal' => 'track_cycle',
+                'wants_astrology' => false,
+                'onboarding_completed' => true,
+            ])
+            ->assertOk()
+            ->assertJsonPath('profile.display_name', 'Sean')
+            ->assertJsonPath('profile.relationship_role', 'support');
+
+        $this->assertDatabaseHas('cycle_profiles', [
+            'user_id' => $user->id,
+            'display_name' => 'Sean',
+            'relationship_role' => 'support',
+        ]);
+    }
+
     public function test_user_can_save_onboarding_and_sun_sign_is_derived_from_birth_date(): void
     {
         $user = User::factory()->create();
