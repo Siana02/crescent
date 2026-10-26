@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import '../styles/cosmic-dashboard.css';
 import SharedPartnerSpace from '../components/SharedPartnerSpace';
 import FloralSharedCycleCalendar from '../components/FloralSharedCycleCalendar';
@@ -38,13 +39,34 @@ function wellbeingLabel(value:string){return wellbeingLabels[value]??{label:valu
 function dateLabel(value: string) {
     return new Date(value + 'T12:00:00').toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
 }
-function cyclePhase(day: number | null) {
+function cyclePhase(day: number | null, summary?: SharedRelationship['companion_cycle_summary']) {
     if (!day || day < 1) return { key: 'unknown', label: 'Phase not available', title: 'Let them lead the rhythm', summary: 'Cycle timing is an estimate. Their own check-in is more useful than a calendar prediction.' };
-    if (day <= 5) return { key: 'menstrual', label: 'Menstrual phase · estimated', title: 'Comfort first, plans flexible', summary: 'Bleeding days can come with cramps, fatigue or headaches for some people. Others feel well; ask what today feels like for them.' };
-    if (day <= 13) return { key: 'follicular', label: 'Follicular phase · estimated', title: 'Make room for what feels good', summary: 'Energy may rise for some people after menstruation, but there is no universal energy pattern. Offer a walk, a fun plan or a quiet day—their call.' };
-    if (day <= 16) return { key: 'ovulatory', label: 'Around ovulation · estimated', title: 'Follow their lead, not the calendar', summary: 'Some people notice changes in energy, cervical fluid or desire around ovulation; others notice nothing. Ask what they feel like doing.' };
-    return { key: 'luteal', label: 'Luteal phase · estimated', title: 'A little extra thoughtfulness goes far', summary: 'Some people notice PMS symptoms such as irritability, low mood, tiredness, bloating or cravings before a period. Never assume or take feelings personally—listen and ask what would help.' };
+    const periodLength = summary?.average_period_length ?? 5;
+    const cycleLength = summary?.average_cycle_length ?? 28;
+    const ovulationDay = Math.max(periodLength + 1, cycleLength - 14);
+    if (day <= periodLength) return { key: 'menstrual', label: 'Menstruation · estimated', title: 'Comfort, softness & room to rest', summary: 'Bleeding days can bring cramps, tenderness, fatigue or headaches for some people, while others feel much as usual. Offer practical comfort, keep plans flexible and let their own check-in guide you.' };
+    if (Math.abs(day - ovulationDay) <= 1) return { key: 'ovulatory', label: 'Ovulation · estimated', title: 'Connection without assumptions', summary: 'Around estimated ovulation, some people notice changes in discharge, energy or desire; many do not. Ask what kind of connection feels good and never treat a calendar estimate as consent or a promise about fertility.' };
+    if (day < ovulationDay - 1) return { key: 'follicular', label: 'Follicular phase · estimated', title: 'Make space for curiosity & momentum', summary: 'After menstruation and before estimated ovulation, some people notice energy or mood shifting upward; others do not. Invite a favourite activity, shared plans or a fresh start, without expecting extra energy.' };
+    return { key: 'luteal', label: 'Luteal phase · estimated', title: 'Steady reassurance, fewer assumptions', summary: 'After estimated ovulation, some people notice PMS-related bloating, cravings, sleep changes, tenderness or shifts in mood. Offer consistency and practical help, but do not label feelings as hormones or assume symptoms are present.' };
 }
+function phaseCareIdeas(phase: ReturnType<typeof cyclePhase>, name: string) {
+    const ideas: Record<string, {icon:string;title:string;body:string}[]> = {
+        menstrual:[{icon:'spa',title:'Make comfort easy',body:`Offer a heat pack, water, a favourite snack or help with a task if ${name} wants it.`},{icon:'bedtime',title:'Keep plans gentle',body:'Suggest a slower evening or flexible plans; let them choose whether company or quiet feels better.'},{icon:'favorite',title:'Ask before helping',body:'Try “Would comfort, practical help or space feel best today?” rather than assuming pain or low energy.'}],
+        follicular:[{icon:'wb_sunny',title:'Invite, don’t prescribe',body:`Offer a walk, café date or creative plan ${name} enjoys, with no expectation they will feel more energetic.`},{icon:'diversity_3',title:'Share something new',body:'Choose a small activity together or ask what they are looking forward to this week.'},{icon:'spa',title:'Follow their pace',body:'Energy can vary even within a phase. Keep the plan easy to change and listen to their preference.'}],
+        ovulatory:[{icon:'favorite',title:'Let connection be mutual',body:'Ask what kind of closeness feels good today. Cycle timing never replaces consent or an actual conversation.'},{icon:'local_florist',title:'Make room for their voice',body:'Some people notice changes around ovulation; others do not. Their own words matter more than a prediction.'},{icon:'wb_twilight',title:'Keep plans flexible',body:'Offer a date, a chat or quiet time, and let them decide what sounds right.'}],
+        luteal:[{icon:'self_care',title:'Offer steady support',body:`Ask whether ${name} would appreciate help with dinner, errands or making the evening less busy.`},{icon:'forum',title:'Listen without labelling',body:'If feelings are difficult, validate what they say rather than blaming hormones or trying to fix everything immediately.'},{icon:'bedtime',title:'Protect breathing room',body:'Offer rest or a little space if wanted, while remembering that symptoms and needs vary from cycle to cycle.'}],
+        unknown:[{icon:'favorite',title:'Ask what would help',body:'Their own check-in and preferences are more useful than a phase estimate.'},{icon:'spa',title:'Offer one small kindness',body:'A snack, a practical task, company or quiet can be offered without expectation.'},{icon:'chat',title:'Keep talking',body:'Ask what support would feel good today and respect the answer.'}]
+    };
+    return ideas[phase.key] ?? ideas.unknown;
+}
+function localDateKey(date = new Date()) { return [date.getFullYear(), String(date.getMonth()+1).padStart(2,'0'), String(date.getDate()).padStart(2,'0')].join('-'); }
+const supportArticles = [
+ {slug:'painful-period-cramps',category:'THE BODY / PAIN & PERIODS',title:'When cramps mean more',description:'What might be behind pain that keeps coming back?',tag:'15 MIN READ',image:'/Painful-period-cramps-is-it-normal-or-could-it-be-something-else.jpg'},
+ {slug:'menstrual-cycle-stages',category:'THE BODY / CYCLE LITERACY',title:'Your cycle, beyond the calendar',description:'Four phases, real-life variation, and what tracking can tell you.',tag:'12 MIN READ',image:'/The-different-stages-of-the-menstrual-cycle-symptoms-and-tips.jpg'},
+ {slug:'contraception-and-period-products',category:'YOUR CHOICES / SEXUAL HEALTH',title:'Protection that fits your life',description:'Compare methods, trade-offs, and period-care options.',tag:'15 MIN READ',image:'/The-different-types-of-conteaceptives-and-different-methods-of-period-blood-collection-explained.jpg'},
+ {slug:'vaginal-discharge',category:'BODY LITERACY / VAGINAL HEALTH',title:'What discharge can tell you',description:'Texture, changes, and the signs worth checking.',tag:'12 MIN READ',image:'/Vaginal-discharge-the-different-types-and-colors-explained-how-to-spot-yeast-infection-when-to-seek-help.jpg'},
+ {slug:'pregnancy-or-pms',category:'CYCLE QUESTIONS / PREGNANCY',title:'PMS or pregnancy?',description:'Similar symptoms, clearer next steps.',tag:'15 MIN READ',image:'/pregnancy-or-pms-the-symptoms-explained.jpg'}
+];
 function careIdeas(wellbeing: SharedRelationship['companion_wellbeing'], partnerName: string) {
     const tags = [...(wellbeing?.symptoms ?? []), ...(wellbeing?.mood ?? []), wellbeing?.category ?? ''].join(' ').toLowerCase().replace(/[_-]+/g, ' ');
     const ideas: string[] = [];
@@ -78,7 +100,7 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
             </section>
             {connection?.companion_cycle_summary && permissions?.cycle_details && (() => {
                 const summary = connection.companion_cycle_summary!;
-                const phase = cyclePhase(summary.cycle_day);
+                const phase = cyclePhase(summary.cycle_day, summary);
                 return <section className={'cosmic-week-card cosmic-support-cycle-hero cosmic-support-cycle-hero--' + phase.key} aria-labelledby="support-cycle-title">
                     <span className="cosmic-support-cycle-spark cosmic-support-cycle-spark--one" aria-hidden="true">✧</span><span className="cosmic-support-cycle-spark cosmic-support-cycle-spark--two" aria-hidden="true">✿</span>
                     <div className="cosmic-support-cycle-copy"><p className="cosmic-eyebrow">{primaryName.toUpperCase()}'S CYCLE JOURNEY · SHARED WITH YOU</p><span className="cosmic-support-phase-pill">☾ {phase.label}</span><h2 id="support-cycle-title">Day {summary.cycle_day}<span> of {primaryName}'s cycle</span></h2><p className="cosmic-support-cycle-lead">{phase.title}</p><p>{phase.summary}</p><div className="cosmic-support-cycle-dates"><div><span>♡</span><small>Last period began</small><strong>{dateLabel(summary.last_period_start)}</strong></div><div><span>✧</span><small>Next period estimate</small><strong>{summary.estimated_next_period ? dateLabel(summary.estimated_next_period) : 'Not available yet'}</strong></div></div><p className="cosmic-fineprint">Cycle day is based on shared dates; the phase is a rough guide using a typical cycle pattern. Neither predicts anyone's mood, energy, fertility or needs.</p></div>
