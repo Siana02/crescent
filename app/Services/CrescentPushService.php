@@ -14,7 +14,7 @@ class CrescentPushService
      * Send a privacy-preserving notification to opted-in devices.
      * Event types are intentionally allow-listed; arbitrary message bodies are not accepted.
      */
-    public function notify(int $userId, string $event): void
+    public function notify(int $userId, string $event, ?string $senderName = null): void
     {
         $preferences = NotificationPreference::where('user_id', $userId)->first();
         if (! $preferences || ! $preferences->push_enabled) {
@@ -26,6 +26,7 @@ class CrescentPushService
             'partner_update' => ['enabled' => $preferences->partner_updates, 'title' => 'A partner update'],
             'cycle_reminder' => ['enabled' => $preferences->cycle_reminders, 'title' => 'A gentle Crescent reminder'],
             'daily_checkin' => ['enabled' => $preferences->daily_checkin_reminders, 'title' => 'A moment for yourself'],
+            'symptom_nudge' => ['enabled' => $preferences->daily_checkin_reminders, 'title' => 'A gentle nudge from ' . trim(strip_tags($senderName ?: 'your partner'))],
         ];
         if (! isset($allowed[$event]) || ! $allowed[$event]['enabled']) {
             return;
@@ -53,10 +54,13 @@ class CrescentPushService
                 'authToken' => $stored->auth_token,
                 'contentEncoding' => $stored->content_encoding,
             ]);
-            // Do not include names, dates, symptoms, cycle data, or note contents in push payloads.
+            // The explicit symptom-nudge event includes only the sender's display name and reminder intent; no symptom values, cycle dates, or note contents are sent.
+            $safeSenderName = trim(preg_replace('/[\r\n\t]+/', ' ', strip_tags($senderName ?: 'Your partner')) ?? 'Your partner');
+            $safeSenderName = mb_substr($safeSenderName !== '' ? $safeSenderName : 'Your partner', 0, 60);
+            $body = $event === 'symptom_nudge' ? $safeSenderName . ' has nudged you to log your symptoms today.' : 'You have a new update in Crescent.';
             $payload = json_encode([
-                'title' => $allowed[$event]['title'],
-                'body' => 'You have a new update in Crescent.',
+                'title' => $event === 'symptom_nudge' ? 'A gentle nudge from ' . $safeSenderName : $allowed[$event]['title'],
+                'body' => $body,
                 'url' => '/dashboard',
                 'tag' => 'crescent-' . $event,
             ], JSON_THROW_ON_ERROR);
