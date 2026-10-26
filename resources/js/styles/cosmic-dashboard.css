@@ -1182,3 +1182,90 @@
 @media(max-width:900px){.cosmic-support-article-grid{grid-template-columns:1fr}.cosmic-support-article-image{min-height:190px}.cosmic-support-care-ideas{grid-template-columns:1fr}}
 @media(max-width:560px){.cosmic-support-dashboard .cosmic-support-wellbeing-card:before{display:none}.cosmic-support-wellbeing-heading{align-items:flex-start}.cosmic-support-wellbeing-flower{width:40px;height:40px;flex-basis:40px;font-size:21px}.cosmic-support-checkin-empty{align-items:flex-start;padding:13px}.cosmic-support-checkin-empty>span{flex-basis:38px;height:38px}.cosmic-support-nudge-button{width:100%;white-space:normal}.cosmic-support-care-feature{padding:14px;gap:11px}.cosmic-support-care-feature>span{flex-basis:40px;height:40px;font-size:21px}.cosmic-support-care-feature h3{font-size:17px}.cosmic-support-article{grid-template-columns:105px minmax(0,1fr)}.cosmic-support-article-image{min-height:200px}.cosmic-support-article-copy{padding:12px}.cosmic-support-article-copy h3{font-size:14px}.cosmic-support-article-copy>p:not(.cosmic-eyebrow){font-size:11px}}
 @media(prefers-reduced-motion:reduce){.cosmic-support-article,.cosmic-support-article-image img,.cosmic-support-nudge-button{transition:none}}
+
+
+/* Support partner dashboard: carefully reflow every card for narrow screens. */
+.cosmic-support-dashboard,
+.cosmic-support-dashboard *{min-width:0;box-sizing:border-box}
+.cosmic-support-dashboard .cosmic-main{width:min(100% - 32px,1120px);margin-inline:auto}
+.cosmic-support-dashboard .cosmic-welcome{gap:clamp(18px,4vw,44px);align-items:center}
+.cosmic-support-dashboard .cosmic-welcome>div:first-child{flex:1 1 320px}
+.cosmic-support-dashboard .cosmic-welcome__art{flex:0 1 220px;max-width:35%}
+.cosmic-support-dashboard .cosmic-week-card{max-width:100%;overflow:hidden}
+.cosmic-support-dashboard .cosmic-section-heading,
+.cosmic-support-dashboard .cosmic-support-wellbeing-heading,
+.cosmic-support-dashboard .cosmic-support-care-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.cosmic-support-dashboard .cosmic-support-care-heading>div,
+.cosmic-support-dashboard .cosmic-section-heading>div,
+.cosmic-support-dashboard .cosmic-support-wellbeing-heading>div{flex:1 1 auto;min-width:0}
+.cosmic-support-dashboard .cosmic-support-care-ideas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.cosmic-support-dashboard .cosmic-support-care-ideas article,
+.cosmic-support-dashboard .cosmic-support-permission-list article,
+.cosmic-support-dashboard .cosmic-support-article{min-width:0}
+.cosmic-support-dashboard .cosmic-support-article-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.cosmic-support-dashboard .cosmic-support-article-copy h3,
+.cosmic-support-dashboard .cosmic-support-article-copy p,
+.cosmic-support-dashboard .cosmic-support-care-ideas p,
+.cosmic-support-dashboard .cosmic-support-reflection p{overflow-wrap:anywhere}
+.cosmic-support-dashboard .cosmic-support-nudge-button,
+.cosmic-support-dashboard .cosmic-support-link{max-width:100%;white-space:normal}
+.cosmic-support-dashboard .cosmic-support-tags{align-items:flex-start}
+.cosmic-support-dashboard .cosmic-support-tags span{max-width:100%;overflow-wrap:anywhere}
+.cosmic-support-dashboard blockquote{overflow-wrap:anywhere}
+.cosmic-support-dashboard .cosmic-atelier-redirect{display:flex;gap:12px;align-items:flex-start;padding:16px;border:1px solid #e9dced;border-radius:18px;background:linear-gradient(130deg,#fff3f8,#f4efff)}
+.cosmic-support-dashboard .cosmic-atelier-redirect>span{flex:0 0 auto;font-size:1.5rem;color:#9c7ba8}
+.cosmic-support-dashboard .cosmic-atelier-redirect p{margin:6px 0;color:#82728a;line-height:1.5}
+.cosmic-support-dashboard .cosmic-atelier-redirect a{display:inline-block;margin-top:5px;color:#8f6b9b;font-weight:750;text-decoration:none}
+@media(max-width:900px){
+ .cosmic-support-dashboard .cosmic-main{width:min(100% - 28px,760px)}
+ .cosmic-support-dashboard .cosmic-support-care-ideas{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .cosmic-support-dashboard .cosmic-support-article-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .cosmic-support-dashboard .cosmic-support-signs{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:640px){
+ .cosmic-support-dashboard .cosmic-main{width:calc(100% - 24px);padding-inline:0}
+ .cosmic-support-dashboard .cosmic-welcome{display:flex;flex-direction:column;align-items:stretch;padding:22px 18px;gap:12px}
+ .cosmic-support-dashboard .cosmic-welcome h1{font-size:clamp(2rem,9vw,2.7rem);line-height:1.05;overflow-wrap:anywhere}
+ .cosmic-support-dashboard .cosmic-welcome__art{display:none}
+ .cosmic-support-dashboard .cosmic-week-card{padding:17px 15px;border-radius:21px;margin-top:13px}
+ .cosmic-support-dashboard .cosmic-section-heading h2,
+ .cosmic-support-dashboard .cosmic-support-care-heading h2,
+ .cosmic-support-dashboard .cosmic-support-wellbeing-heading h2{font-size:clamp(1.2rem,5vw,1.55rem);line-height:1.2;overflow-wrap:anywhere}
+ .cosmic-support-dashboard .cosmic-support-care-heading{gap:8px}
+ .cosmic-support-dashboard .cosmic-support-care-heading>span,
+ .cosmic-support-dashboard .cosmic-support-wellbeing-flower{flex:0 0 auto}
+ .cosmic-support-dashboard .cosmic-support-care-feature{display:grid;grid-template-columns:42px minmax(0,1fr);gap:11px;padding:14px}
+ .cosmic-support-dashboard .cosmic-support-care-feature>span{font-size:1.8rem}
+ .cosmic-support-dashboard .cosmic-support-care-ideas,
+ .cosmic-support-dashboard .cosmic-support-article-grid{grid-template-columns:minmax(0,1fr);gap:10px}
+ .cosmic-support-dashboard .cosmic-support-care-ideas article{padding:14px;border-radius:16px}
+ .cosmic-support-dashboard .cosmic-support-article{display:grid;grid-template-columns:minmax(88px,32%) minmax(0,1fr);gap:12px;padding:10px}
+ .cosmic-support-dashboard .cosmic-support-article-image{min-height:128px;align-self:stretch}
+ .cosmic-support-dashboard .cosmic-support-article-image img{width:100%;height:100%;object-fit:cover}
+ .cosmic-support-dashboard .cosmic-support-article-copy{padding:2px 0}
+ .cosmic-support-dashboard .cosmic-support-article-copy h3{font-size:1rem;line-height:1.25}
+ .cosmic-support-dashboard .cosmic-support-article-copy p{font-size:.82rem;line-height:1.45}
+ .cosmic-support-dashboard .cosmic-support-article-copy>div{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+ .cosmic-support-dashboard .cosmic-support-permission-list{grid-template-columns:minmax(0,1fr);gap:8px}
+ .cosmic-support-dashboard .cosmic-support-permission-list article{grid-template-columns:34px minmax(0,1fr) auto;gap:9px;padding:11px}
+ .cosmic-support-dashboard .cosmic-support-permission-list article>span{width:32px;height:32px}
+ .cosmic-support-dashboard .cosmic-support-signs{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .cosmic-support-dashboard .cosmic-support-signs article{padding:11px}
+ .cosmic-support-dashboard .cosmic-support-shared-card .cosmic-support-cycle{gap:10px}
+ .cosmic-support-dashboard .cosmic-support-cycle>.material-symbols-rounded{flex-basis:40px;width:40px;height:40px;font-size:1.3rem}
+ .cosmic-support-dashboard .cosmic-support-cycle h2{font-size:1.08rem}
+ .cosmic-support-dashboard .cosmic-support-nudge-button{width:100%;justify-content:center;padding:12px 14px}
+ .cosmic-support-dashboard .cosmic-support-previous-checkin{padding:12px}
+ .cosmic-support-dashboard .cosmic-support-reflection{grid-template-columns:34px minmax(0,1fr);gap:10px;padding:13px}
+ .cosmic-support-dashboard .cosmic-atelier-redirect{padding:13px;gap:9px}
+ .cosmic-support-dashboard .cosmic-atelier-redirect>span{font-size:1.2rem}
+ .cosmic-support-dashboard .cosmic-footer{display:flex;flex-wrap:wrap;gap:12px}
+ .cosmic-support-dashboard .cosmic-footer>div{width:100%;display:flex;flex-wrap:wrap;gap:14px}
+}
+@media(max-width:380px){
+ .cosmic-support-dashboard .cosmic-support-article{grid-template-columns:1fr}
+ .cosmic-support-dashboard .cosmic-support-article-image{height:150px;min-height:150px}
+ .cosmic-support-dashboard .cosmic-support-signs{grid-template-columns:1fr 1fr}
+ .cosmic-support-dashboard .cosmic-support-permission-list article{grid-template-columns:30px minmax(0,1fr)}
+ .cosmic-support-dashboard .cosmic-support-permission-list b{grid-column:2}
+}
