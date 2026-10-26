@@ -67,29 +67,18 @@ const supportArticles = [
  {slug:'vaginal-discharge',category:'BODY LITERACY / VAGINAL HEALTH',title:'What discharge can tell you',description:'Texture, changes, and the signs worth checking.',tag:'12 MIN READ',image:'/Vaginal-discharge-the-different-types-and-colors-explained-how-to-spot-yeast-infection-when-to-seek-help.jpg'},
  {slug:'pregnancy-or-pms',category:'CYCLE QUESTIONS / PREGNANCY',title:'PMS or pregnancy?',description:'Similar symptoms, clearer next steps.',tag:'15 MIN READ',image:'/pregnancy-or-pms-the-symptoms-explained.jpg'}
 ];
-function careIdeas(wellbeing: SharedRelationship['companion_wellbeing'], partnerName: string) {
-    const tags = [...(wellbeing?.symptoms ?? []), ...(wellbeing?.mood ?? []), wellbeing?.category ?? ''].join(' ').toLowerCase().replace(/[_-]+/g, ' ');
-    const ideas: string[] = [];
-    if (/cramp|pain|headache|sore|ache|bloat/.test(tags)) ideas.push('Offer a heat pack, water, a comfortable setup or help with a practical task.');
-    if (/tired|fatigue|low energy|exhaust/.test(tags) || (wellbeing?.energy_level != null && wellbeing.energy_level <= 2)) ideas.push(`Take one thing off ${partnerName}'s plate, make or order dinner, and offer an early night or a lie-in.`);
-    if (/anxious|stress|overwhelm|sad|low|irritable|angry/.test(tags)) ideas.push('Listen without debating or diagnosing. Ask: “Would you like comfort, help solving it, or a little space?”');
-    if (/crav|appetite|hungry/.test(tags)) ideas.push(`Bring a snack or treat ${partnerName} actually wants, without commenting on what they should eat.`);
-    if (/happy|good|energ|excited/.test(tags) || (wellbeing?.energy_level != null && wellbeing.energy_level >= 4)) ideas.push(`If ${partnerName} is up for it, suggest a walk, a favourite café, a little date or another activity they enjoy.`);
-    if (!ideas.length) ideas.push('Ask what would feel loving today: make dinner, plan something outdoors, run a bath, choose a favourite film or give them uninterrupted rest.');
-    return ideas.slice(0, 3);
-}
-
-
 export default function SupportDashboard({ data, onLogout }: { data: SupportDashboardData; onLogout: () => void }) {
     const [nudgeBusy, setNudgeBusy] = useState(false);
     const [nudgeMessage, setNudgeMessage] = useState('');
     const [relationshipInsight, setRelationshipInsight] = useState<{title:string;tip:string}|null>(null);
-    const connection = (data.relationships ?? []).find(item => item.status === 'accepted' && item.relationship_type === 'observer');
+    const [liveRelationships, setLiveRelationships] = useState<SharedRelationship[]>(data.relationships ?? []);
+    const connection = liveRelationships.find(item => item.status === 'accepted' && item.relationship_type === 'observer');
     const permissions = connection?.companion_sharing_preferences ?? connection?.sharing_preferences;
     const supportName = data.profile.display_name?.trim() || data.user.name?.trim().split(/\s+/)[0] || 'there';
     const primaryName = connection?.companion_name?.trim() || 'your partner';
     const latestWellbeing = connection?.companion_wellbeing ?? null;
     const hasCheckinToday = latestWellbeing?.log_date === localDateKey();
+    useEffect(() => { let active = true; const refresh = () => { fetch('/api/dashboard', { credentials: 'same-origin', headers: { Accept: 'application/json' } }).then(response => response.ok ? response.json() : Promise.reject()).then(payload => { if (active && Array.isArray(payload.relationships)) setLiveRelationships(payload.relationships as SharedRelationship[]); }).catch(() => { /* Keep the last successfully loaded shared view. */ }); }; refresh(); const timer = window.setInterval(refresh, 60000); return () => { active = false; window.clearInterval(timer); }; }, []);
     useEffect(() => { let active = true; if (!connection || !permissions?.cycle_details) return () => { active = false; }; fetch('/api/relationships/' + connection.id + '/insights', { credentials: 'same-origin', headers: { Accept: 'application/json' } }).then(response => response.ok ? response.json() : Promise.reject()).then(result => { if (active && result.daily) setRelationshipInsight({ title: result.daily.title, tip: result.daily.tip }); }).catch(() => { if (active) setRelationshipInsight(null); }); return () => { active = false; }; }, [connection?.id, permissions?.cycle_details]);
     async function nudgePrimary() { if (!connection) return; setNudgeBusy(true); setNudgeMessage(''); try { const response = await fetch('/api/relationships/' + connection.id + '/nudge', { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '' } }); const result = await response.json().catch(() => ({})); if (!response.ok) throw new Error(result.message ?? 'The nudge could not be sent.'); setNudgeMessage(result.message ?? ('A gentle nudge has been sent to ' + primaryName + '.')); } catch (error) { setNudgeMessage(error instanceof Error ? error.message : 'The nudge could not be sent.'); } finally { setNudgeBusy(false); } }
     return <div className="cosmic-dashboard cosmic-support-dashboard">
