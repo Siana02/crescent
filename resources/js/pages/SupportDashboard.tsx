@@ -11,6 +11,7 @@ type SharedRelationship = {
     relationship_type: 'observer' | 'co_tracker';
     status: 'pending' | 'accepted' | 'revoked';
     companion_name: string | null;
+    companion_today?: string;
     companion_journey: 'cycle' | 'fertility' | 'pregnancy' | 'postpartum' | null;
     companion_cycle_summary: { last_period_start:string; cycle_day:number; estimated_next_period:string|null; average_cycle_length:number|null; average_period_length:number|null; cycle_regularity:string; fertility_estimate_available:boolean; estimated_ovulation_date:string|null; estimated_fertile_start:string|null; estimated_fertile_end:string|null; period_history:{start_date:string;end_date:string|null}[] } | null;
     companion_pregnancy_summary: { status: string; due_date: string; gestational_week: number | null; trimester: number | null; days_until_due: number | null } | null;
@@ -77,7 +78,7 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
     const supportName = data.profile.display_name?.trim() || data.user.name?.trim().split(/\s+/)[0] || 'there';
     const primaryName = connection?.companion_name?.trim() || 'your partner';
     const latestWellbeing = connection?.companion_wellbeing ?? null;
-    const hasCheckinToday = latestWellbeing?.log_date === localDateKey();
+    const hasCheckinToday = latestWellbeing?.log_date === (connection?.companion_today ?? localDateKey());
     useEffect(() => { let active = true; const refresh = () => { fetch('/api/dashboard', { credentials: 'same-origin', headers: { Accept: 'application/json' } }).then(response => response.ok ? response.json() : Promise.reject()).then(payload => { if (active && Array.isArray(payload.relationships)) setLiveRelationships(payload.relationships as SharedRelationship[]); }).catch(() => { /* Keep the last successfully loaded shared view. */ }); }; refresh(); const timer = window.setInterval(refresh, 60000); return () => { active = false; window.clearInterval(timer); }; }, []);
     useEffect(() => { let active = true; if (!connection || !permissions?.cycle_details) return () => { active = false; }; fetch('/api/relationships/' + connection.id + '/insights', { credentials: 'same-origin', headers: { Accept: 'application/json' } }).then(response => response.ok ? response.json() : Promise.reject()).then(result => { if (active && result.daily) setRelationshipInsight({ title: result.daily.title, tip: result.daily.tip }); }).catch(() => { if (active) setRelationshipInsight(null); }); return () => { active = false; }; }, [connection?.id, permissions?.cycle_details]);
     async function nudgePrimary() { if (!connection) return; setNudgeBusy(true); setNudgeMessage(''); try { const response = await fetch('/api/relationships/' + connection.id + '/nudge', { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '' } }); const result = await response.json().catch(() => ({})); if (!response.ok) throw new Error(result.message ?? 'The nudge could not be sent.'); setNudgeMessage(result.message ?? ('A gentle nudge has been sent to ' + primaryName + '.')); } catch (error) { setNudgeMessage(error instanceof Error ? error.message : 'The nudge could not be sent.'); } finally { setNudgeBusy(false); } }
