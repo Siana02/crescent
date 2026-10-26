@@ -98,7 +98,9 @@ class RelationshipController extends Controller
         }
         $senderName = trim((string) ($request->user()->cycleProfile?->display_name ?: $request->user()->name));
         $senderName = $senderName !== '' ? $senderName : 'Your partner';
-        $push->notify($primary->id, 'symptom_nudge', $senderName);
+        if (! $push->notify($primary->id, 'symptom_nudge', $senderName)) {
+            return response()->json(['message' => 'Crescent could not deliver the nudge to a subscribed device. Please try again later.'], 503);
+        }
         $primaryName = $primary->cycleProfile?->display_name ?: 'your partner';
         return response()->json(['message' => 'A gentle nudge has been sent to ' . $primaryName . '.'], 202);
     }
