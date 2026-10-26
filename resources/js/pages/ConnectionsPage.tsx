@@ -31,10 +31,6 @@ type Relationship = {
 };
 type Note = { id: number; author_id: number; author_name: string; note_date: string; body: string; is_mine: boolean; read_at: string | null; created_at: string | null };
 type NotesPayload = { notes: Note[]; can_write: boolean; today_note: { id: number; body: string; read_at: string | null } | null };
-type InsightPayload = {
-    compatibility: { available: boolean; score?: number | null; summary: string; themes: { label: string; left: string; right: string; tone: string; text: string }[]; aspects?: { left: string; right: string; aspect: string; orb: number; tone: string; text: string }[] };
-    daily: { date: string; title: string; tip: string; cycle_context?: { phase: string; cycle_day: number | null; available?: boolean }; transit_note: string; transits: { name: string; sign?: string | null; degree?: number | null }[]; personal_transits?: { left: string; right: string; aspect: string; orb: number; tone: string; text: string; chart_owner?: string }[]; source: string };
-};
 const emptySharing: SharingPreferences = { cycle_details: false, pregnancy_details: false, wellbeing_updates: false, astrology: false };
 const sharingOptions: { key: SharingKey; title: string; detail: string; icon: string }[] = [
     { key: 'cycle_details', title: 'Cycle updates', detail: 'Cycle journey and cycle-related updates', icon: 'water_drop' },
@@ -64,18 +60,6 @@ function journeyLabel(journey: Relationship['companion_journey'], role?: Relatio
     return journey === 'pregnancy' ? 'Pregnancy journey' : journey === 'postpartum' ? 'Postpartum journey' : journey === 'fertility' ? 'Trying to conceive' : journey === 'cycle' ? 'Cycle tracking' : 'Journey not shared yet';
 }
 function dateLabel(value: string) { return new Date(value + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }); }
-function aspectReflection(aspect: { left: string; right: string; aspect: string; tone?: string }) {
-    const pair = aspect.left + ' and ' + aspect.right;
-    const kind = aspect.aspect.toLowerCase();
-    if (kind.includes('conjunction')) return pair + ' meet in one symbolic theme. Notice where your attention overlaps, and make room for both perspectives.';
-    if (kind.includes('square')) return pair + ' may represent a point of friction. Pause before reacting and get curious about what each person needs.';
-    if (kind.includes('opposition')) return pair + ' point toward different approaches. Look for a middle ground instead of deciding one side is right.';
-    if (kind.includes('trine')) return pair + ' are traditionally associated with easier flow. Appreciate what comes naturally and use it to support one another.';
-    if (kind.includes('sextile')) return pair + ' suggest a possible opening for cooperation. A thoughtful question or shared plan can help you explore it.';
-    return pair + ' offer a symbolic prompt for conversation. Keep what resonates and leave the rest.';
-}
-
-
 export default function ConnectionsPage() {
     const [relationships, setRelationships] = useState<Relationship[]>([]);
     const [profileRole, setProfileRole] = useState<'tracker' | 'support'>('tracker');
@@ -92,7 +76,6 @@ export default function ConnectionsPage() {
     const [notice, setNotice] = useState('');
     const [notes, setNotes] = useState<Record<number, NotesPayload>>({});
     const [drafts, setDrafts] = useState<Record<number, string>>({});
-    const [insights, setInsights] = useState<Record<number, InsightPayload>>({});
     const [savingNote, setSavingNote] = useState<number | null>(null);
     const [savingSharing, setSavingSharing] = useState<number | null>(null);
     const [astrologyOptIn, setAstrologyOptIn] = useState(false);
@@ -131,11 +114,6 @@ export default function ConnectionsPage() {
             if (!response.ok) throw new Error(data.message ?? 'Could not update your astrology opt-in.');
             setAstrologyOptIn(Boolean(data.wants_astrology));
             setNotice(data.wants_astrology ? 'You have opted in to shared astrology reflections.' : 'Your astrology profile is no longer included in shared compatibility.');
-            const responseRefresh = await fetch('/api/relationships/' + relationship.id + '/insights', { credentials: 'same-origin', headers: { Accept: 'application/json' } });
-            if (responseRefresh.ok) {
-                const refreshed = await readJson(responseRefresh);
-                if (refreshed.daily) setInsights(current => ({ ...current, [relationship.id]: refreshed as InsightPayload }));
-            }
         } catch (exception) { setError(exception instanceof Error ? exception.message : 'Could not update your astrology opt-in.'); }
         finally { setSavingAstrologyOptIn(false); }
     }
@@ -148,9 +126,6 @@ export default function ConnectionsPage() {
                     setNotes(current => ({ ...current, [relationship.id]: data as NotesPayload }));
                     if (data.today_note) setDrafts(current => current[relationship.id]?.trim() ? current : ({ ...current, [relationship.id]: data.today_note.body }));
                 }).catch(() => undefined);
-            fetch('/api/relationships/' + relationship.id + '/insights', { credentials: 'same-origin', headers: { Accept: 'application/json' } })
-                .then(readJson).then(data => { if (data.daily) setInsights(current => ({ ...current, [relationship.id]: data as InsightPayload })); })
-                .catch(() => undefined);
         });
     }, [relationships]);
 
@@ -267,9 +242,7 @@ export default function ConnectionsPage() {
                 {pending.map(relationship => <article className="cosmic-pending-relationship" key={relationship.id}><span className="material-symbols-rounded">hourglass_top</span><div><strong>Invitation waiting</strong><p>{relationship.relationship_type === 'co_tracker' ? 'Co-cycling / co-tracking partner' : 'Partner / support partner'} · waiting for your companion to accept.</p>{relationship.invite_code && <small>Code: <strong>{relationship.invite_code}</strong></small>}</div></article>)}
                 <div className="cosmic-connection-list">{accepted.map(relationship => {
                     const noteData = notes[relationship.id];
-                    const insight = insights[relationship.id];
                     const partnerName = relationship.companion_name?.trim() || 'your partner';
-                    const pairNames = displayName && partnerName ? displayName + ' & ' + partnerName : 'your shared space';
                     return <article className="cosmic-connection-card" key={relationship.id}>
                         <div className="cosmic-connection-card__header"><div className="cosmic-connection-avatar" aria-hidden="true">✿</div><div><p className="cosmic-eyebrow">{relationship.relationship_type === 'co_tracker' ? 'CO-TRACKING CONNECTION' : 'SUPPORT CONNECTION'}</p><h3>{relationship.companion_name ?? 'Your companion'}</h3><p className="cosmic-connection-journey">{journeyLabel(relationship.companion_journey, relationship.companion_role)}</p></div><span className="cosmic-connection-status">Connected</span>{(relationship.relationship_type === 'co_tracker' || (profileRole !== 'support' && relationship.relationship_type === 'observer')) && <button type="button" className="cosmic-disconnect-button" disabled={disconnecting === relationship.id} onClick={() => void disconnectRelationship(relationship)}>{disconnecting === relationship.id ? 'Disconnecting…' : relationship.relationship_type === 'observer' ? 'End support connection' : 'Close shared space'}</button>}</div>
                         {(relationship.companion_pregnancy_summary || (profileRole !== 'support' && (relationship.companion_cycle_summary || relationship.companion_wellbeing))) && <div className="cosmic-shared-summaries">
