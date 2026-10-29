@@ -26,5 +26,7 @@
 @media(max-width:480px){.auth-invite-code-row{grid-template-columns:1fr}.auth-invite-code-row button{width:100%}}
 
 .auth-consent{display:flex!important;flex-direction:row!important;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid #e8d4ef;border-radius:14px;background:#fbf5ff;font-size:12px;line-height:1.55;color:#5d4a68;font-weight:400}
-.auth-consent input{flex:none;width:18px;height:18px;margin-top:2px;accent-color:#a76bc4}
+.auth-form label.auth-consent{display:flex!important;flex-direction:row!important;align-items:flex-start;gap:10px;width:100%;box-sizing:border-box;font-size:12px;font-weight:400}
+.auth-form .auth-consent input{flex:0 0 18px;width:18px;min-width:18px;height:18px;min-height:18px;padding:0;margin:2px 0 0;accent-color:#a76bc4}
+.auth-consent>span{flex:1 1 auto;min-width:0;display:block;overflow-wrap:break-word}
 .auth-consent a{color:#8b4fa8;font-weight:700;text-decoration:underline}

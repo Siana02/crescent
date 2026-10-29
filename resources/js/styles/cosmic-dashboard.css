@@ -1222,7 +1222,9 @@
 .cosmic-chat-msg.is-mine .cosmic-chat-msg__name{text-align:right}
 
 /* Footer legal links */
-.site-footer__legal{display:flex;gap:14px;flex-wrap:wrap}
-.site-footer__legal a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+.site-footer__legal{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center}
+.site-footer__legal a{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 18px;border:1px solid #d9c3e3;border-radius:999px;background:#fff;color:#6b4a7d;font-weight:700;font-size:13px;text-decoration:none;transition:background .2s,transform .2s}
+.site-footer__legal a:hover,.site-footer__legal a:focus-visible{background:#f3e7f8;transform:translateY(-1px)}
+@media(max-width:560px){.site-footer__legal{flex-direction:column;align-items:stretch;width:100%}}
 .cosmic-footer > div{flex-wrap:wrap}
 .pregnancy-footer a+a,.editorial-footer>a+a,.ch-footer>a+a{margin-left:12px}
