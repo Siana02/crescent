@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import SiteCredit from '../components/SiteCredit';
 import Button from '../components/Button';
 
 const journalStories = [
@@ -256,7 +257,7 @@ export default function LandingPage() {
                 <p>Made with care, for every cycle.</p>
                 <nav className="site-footer__legal" aria-label="Legal and help"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/support">Help &amp; support</a></nav>
                 <span className="site-footer__copyright">© {new Date().getFullYear()} Crescent</span>
-            </footer>
+            <SiteCredit /></footer>
         </div>
     );
 }

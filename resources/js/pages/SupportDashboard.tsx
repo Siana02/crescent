@@ -1,4 +1,5 @@
 import '../styles/cosmic-dashboard.css';
+import SiteCredit from '../components/SiteCredit';
 import RemindCheckin from '../components/RemindCheckin';
 import SharedCompatibilityCard from '../components/SharedCompatibilityCard';
 import { symptomCareIdeas, careIdeasFor, dailyGuidance, phaseFor } from '../utils/supportGuidance';
@@ -128,7 +129,7 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
                 </section>}
                 <section className="cosmic-week-card cosmic-support-next"><p className="cosmic-eyebrow">STAY CONNECTED</p><h2>Keep the conversation open</h2><p>Your partner's private notes and connection reflections live in the shared space. You can visit Connections to read or write a note and see any available relationship insights.</p><a className="cosmic-support-link" href="/connections">Open Connections →</a></section>
             </>}
- <footer className="cosmic-footer"><a className="cosmic-brand" href="/dashboard"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a><p>Your journey, your boundaries, your little universe.</p><div><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/support">Help &amp; support</a><a href="/connections">Connections</a><a href="/profile">Profile & settings</a></div></footer>
+ <footer className="cosmic-footer"><a className="cosmic-brand" href="/dashboard"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a><p>Your journey, your boundaries, your little universe.</p><div><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/support">Help &amp; support</a><a href="/connections">Connections</a><a href="/profile">Profile & settings</a></div><SiteCredit /></footer>
         </main>
     </div>;
 }

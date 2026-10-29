@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import SiteCredit from '../components/SiteCredit';
 import Button from '../components/Button';
 import JourneyNavigation from '../components/JourneyNavigation';
 import SharedPartnerSpace from '../components/SharedPartnerSpace';
@@ -172,6 +173,6 @@ export default function PostpartumDashboard({ data, onLogout, onRefresh }: Props
             </section>
             <p className="pregnancy-medical-note">Crescent is a personal journal, not medical care. For concerns about your recovery or your baby’s health, contact your healthcare professional or local emergency service.</p>
         </main>
-        <footer className="pregnancy-footer"><span>crescent. · your rhythm, your rules</span><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/support">Help &amp; support</a><a href="/">Back to the beginning ↑</a></footer>
+        <footer className="pregnancy-footer"><span>crescent. · your rhythm, your rules</span><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/support">Help &amp; support</a><a href="/">Back to the beginning ↑</a><SiteCredit /></footer>
     </div>;
 }
