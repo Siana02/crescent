@@ -282,7 +282,7 @@ export default function ConnectionsPage() {
                     </article>;
                 })}</div>
             </section>
-            <footer className="cosmic-footer"><a className="cosmic-brand" href="/dashboard"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a><p>Your journey, your boundaries, your little universe.</p><div><a href="/astrology">The Cosmic Atelier</a><a href="/profile">Profile & settings</a></div></footer>
+            <footer className="cosmic-footer"><a className="cosmic-brand" href="/dashboard"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a><p>Your journey, your boundaries, your little universe.</p><div><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/support">Help &amp; support</a><a href="/astrology">The Cosmic Atelier</a><a href="/profile">Profile & settings</a></div></footer>
         </main>
     </div>;
 }

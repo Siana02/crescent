@@ -254,6 +254,7 @@ export default function LandingPage() {
                     <span className="brand-word">crescent<span>.</span></span>
                 </a>
                 <p>Made with care, for every cycle.</p>
+                <nav className="site-footer__legal" aria-label="Legal and help"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/support">Help &amp; support</a></nav>
                 <span className="site-footer__copyright">© {new Date().getFullYear()} Crescent</span>
             </footer>
         </div>

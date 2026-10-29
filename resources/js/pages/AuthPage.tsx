@@ -24,6 +24,7 @@ function csrfToken(): string {
 export default function AuthPage({ mode }: AuthPageProps) {
     const isRegister = mode === 'register';
     const [name, setName] = useState('');
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [relationshipRole, setRelationshipRole] = useState<'tracker' | 'support' | 'co_tracker'>(() => {
         const params = new URLSearchParams(window.location.search);
         if (params.get('role') === 'support') return 'support';
@@ -71,6 +72,7 @@ export default function AuthPage({ mode }: AuthPageProps) {
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        if (!agreedToTerms) { setError('Please tick the box to agree to the Terms and Privacy Policy.'); return; }
         setError('');
         setExistingAccountEmail(false);
         setInviteNeedsLogin(false);
@@ -200,6 +202,7 @@ export default function AuthPage({ mode }: AuthPageProps) {
                                 <label>Birth place <small>Optional, but improves location-sensitive chart calculations.</small><input value={birthPlace} onChange={event => setBirthPlace(event.target.value)} maxLength={160} placeholder="City, country" /></label>
                             </fieldset>}
                         </div>}
+                        <label className="auth-consent"><input type="checkbox" checked={agreedToTerms} onChange={event => setAgreedToTerms(event.target.checked)} required /><span><strong>Important:</strong> by {isRegister ? 'creating an account' : 'signing in'} you agree to Crescent’s <a href="/terms" target="_blank" rel="noreferrer">Terms</a> and <a href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>. Need help? <a href="/support" target="_blank" rel="noreferrer">Help &amp; support</a>.</span></label>
                         {error && <div className="auth-error" role="alert"><p>{error}</p>{existingAccountEmail && <p><a href="/login">Sign in to your existing account →</a></p>}{inviteNeedsLogin && <p><a href="/login">Already registered? Sign in →</a></p>}</div>}
                         <Button type="submit" className="auth-submit" disabled={isSubmitting}>
                             {isSubmitting ? 'One moment…' : isRegister ? 'Create your account' : 'Sign in'}

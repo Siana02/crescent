@@ -279,6 +279,6 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
             </section>
             <p className="pregnancy-medical-note">Crescent is a personal journal, not a medical device or a substitute for prenatal care. Symptom logs do not assess risk or diagnose conditions. If a symptom worries you or feels urgent, contact your maternity care team or local emergency service.</p>
         </main>
-        <footer className="pregnancy-footer"><span>crescent. · one week, one moment, one breath at a time</span><a href="/">Back to the beginning ↑</a></footer>
+        <footer className="pregnancy-footer"><span>crescent. · one week, one moment, one breath at a time</span><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/support">Help &amp; support</a><a href="/">Back to the beginning ↑</a></footer>
     </div>;
 }
