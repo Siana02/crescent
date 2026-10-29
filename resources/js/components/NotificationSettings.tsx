@@ -106,6 +106,16 @@ export default function NotificationSettings() {
     finally { setBusy(false); }
   }
 
+  async function sendTest() {
+    setBusy(true); setMessage('');
+    try {
+      const response = await fetch('/api/notifications/test', { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrf() } });
+      const result = await response.json().catch(() => ({}));
+      setMessage(result.message || (response.ok ? 'Test notification sent.' : 'Could not send a test notification.'));
+    } catch { setMessage('Could not send a test notification.'); }
+    finally { setBusy(false); }
+  }
+
   async function toggle(key: keyof Preferences, checked: boolean) {
     const next = { ...preferences, [key]: checked };
     try { await save(next); setMessage('Notification preferences saved.'); }
@@ -130,7 +140,7 @@ export default function NotificationSettings() {
     </div>
     <div className="crescent-notification-actions">
       {subscribed
-        ? <button type="button" disabled={busy} onClick={disablePush}>{busy ? 'Updating…' : 'Turn off push notifications'}</button>
+        ? <><button type="button" disabled={busy} onClick={sendTest}>Send a test notification</button><button type="button" disabled={busy} onClick={disablePush}>{busy ? 'Updating…' : 'Turn off push notifications'}</button></>
         : <button type="button" disabled={busy} onClick={enablePush}>{busy ? 'Setting up…' : 'Enable push notifications'}</button>}
     </div>
     <p className="cosmic-fineprint">Privacy first: lock-screen notifications never include period dates, symptoms, fertility details, or shared note text. You can turn notifications off at any time in Crescent or your phone settings.</p>

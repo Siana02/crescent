@@ -40,3 +40,35 @@ Schedule::call(function () {
             }
         });
 })->name('crescent-daily-checkin-reminders')->everyMinute()->withoutOverlapping();
+
+// Morning (9am local) cycle notifications: tracker cycle-day reminders, plus phase changes
+// and the tip of the day for connected support partners. Cache keys prevent duplicates.
+Schedule::call(function () {
+    $nowUtc = now('UTC');
+    $push = app(CrescentPushService::class);
+    CycleProfile::query()
+        ->where(fn ($q) => $q->whereNull('relationship_role')->orWhere('relationship_role', '!=', 'support'))
+        ->with('user')
+        ->chunkById(100, function ($profiles) use ($nowUtc, $push) {
+            foreach ($profiles as $profile) {
+                $user = $profile->user;
+                $timezone = $profile->timezone ?: 'UTC';
+                if (! $user || $nowUtc->copy()->setTimezone($timezone)->format('H:i') !== '09:00') {
+                    continue;
+                }
+                $snapshot = $push->cycleSnapshot($user);
+                if ($snapshot['day'] === null) {
+                    continue;
+                }
+                $localDate = $nowUtc->copy()->setTimezone($timezone)->toDateString();
+                if (Cache::add('crescent:cycle-day:'.$user->id.':'.$localDate, true, now()->addDays(2))) {
+                    $push->notify((int) $user->id, 'cycle_day');
+                }
+                $phaseKey = 'crescent:phase:'.$user->id.':'.$snapshot['period_start'].':'.$snapshot['phase'];
+                if (Cache::add($phaseKey, true, now()->addDays(60))) {
+                    $push->notifyPartners($user, 'partner_'.$snapshot['phase'], 'cycle_details', 'crescent:phase-partner:'.$user->id.':'.$snapshot['period_start'].':'.$snapshot['phase'], 60 * 24 * 60);
+                }
+                $push->notifyPartners($user, 'partner_tip', 'cycle_details', 'crescent:partner-tip:'.$user->id.':'.$localDate, 2 * 24 * 60);
+            }
+        });
+})->name('crescent-morning-cycle-notifications')->everyMinute()->withoutOverlapping();

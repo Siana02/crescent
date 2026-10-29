@@ -15,9 +15,13 @@ use App\Http\Controllers\SexLogController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/api/app-version', fn () => response()->json(['version' => \App\Support\AppVersion::current()])->header('Cache-Control', 'no-store'));
 Route::view('/', 'welcome');
 Route::view('/login', 'welcome')->name('login');
 Route::view('/register', 'welcome')->name('register');
+Route::get('/privacy', fn () => view('welcome'));
+Route::get('/terms', fn () => view('welcome'));
+Route::get('/support', fn () => view('welcome'));
 Route::get('/read/{slug}', fn () => view('welcome'))->where('slug', '[a-z0-9-]+');
 
 Route::get('/auth/invitation-preview', [AuthController::class, 'invitationPreview'])->middleware('throttle:20,1');
@@ -52,6 +56,7 @@ Route::middleware(['auth', 'active.account'])->group(function () {
     Route::get('/api/notifications/preferences', [PushNotificationController::class, 'preferences']);
     Route::put('/api/notifications/preferences', [PushNotificationController::class, 'savePreferences']);
     Route::post('/api/notifications/subscribe', [PushNotificationController::class, 'subscribe'])->middleware('throttle:10,1');
+    Route::post('/api/notifications/test', [PushNotificationController::class, 'test'])->middleware('throttle:5,1');
     Route::delete('/api/notifications/subscribe', [PushNotificationController::class, 'unsubscribe'])->middleware('throttle:10,1');
     Route::get('/api/astrology/chart', [AstrologyController::class, 'chart'])->middleware('throttle:10,1');
     Route::get('/api/astrology/sky', [AstrologyController::class, 'sky'])->middleware('throttle:30,1');
@@ -76,6 +81,7 @@ Route::middleware(['auth', 'active.account'])->group(function () {
     Route::post('/api/pregnancy/postpartum-checkins', [PregnancyController::class, 'postpartumCheckin'])->middleware('throttle:30,1');
     Route::post('/api/pregnancy/return-to-cycle', [PregnancyController::class, 'returnToCycle']);
     Route::post('/api/relationships/invite', [RelationshipController::class, 'invite'])->middleware('throttle:10,1');
+    Route::post('/api/relationships/{relationship}/remind-checkin', [RelationshipController::class, 'remindCheckin'])->middleware('throttle:6,1');
     Route::post('/api/relationships/accept', [RelationshipController::class, 'accept'])->middleware('throttle:10,1');
     Route::patch('/api/relationships/{relationship}/sharing', [RelationshipController::class, 'sharing']);
     Route::post('/api/relationships/{relationship}/disconnect', [RelationshipController::class, 'disconnect']);

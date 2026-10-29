@@ -2,8 +2,13 @@
 
 namespace App\Services;
 
+use App\Models\CycleProfile;
 use App\Models\NotificationPreference;
 use App\Models\PushSubscription;
+use App\Models\Relationship;
+use App\Models\User;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Minishlink\WebPush\Subscription;
 use Minishlink\WebPush\WebPush;
@@ -11,66 +16,147 @@ use Minishlink\WebPush\WebPush;
 class CrescentPushService
 {
     /**
-     * Send a privacy-preserving notification to opted-in devices.
-     * Event types are intentionally allow-listed; arbitrary message bodies are not accepted.
+     * Allow-listed events. Wording is intentionally neutral: lock-screen text never includes
+     * names, dates, symptoms, fertility details or note contents.
      */
-    public function notify(int $userId, string $event): void
-    {
-        $preferences = NotificationPreference::where('user_id', $userId)->first();
-        if (! $preferences || ! $preferences->push_enabled) {
-            return;
-        }
+    public const EVENTS = [
+        'shared_note' => ['pref' => 'shared_notes', 'title' => 'A note from your partner', 'body' => 'A new note is waiting for you in Crescent.', 'url' => '/dashboard#shared-partner-space'],
+        'note_read' => ['pref' => 'shared_notes', 'title' => 'Your note was read', 'body' => 'Your partner has read your latest note.', 'url' => '/dashboard#shared-partner-space'],
+        'partner_symptoms' => ['pref' => 'partner_updates', 'title' => 'A new check-in was shared', 'body' => 'Your partner shared a wellbeing check-in. Open Crescent to see how you can show up.', 'url' => '/dashboard'],
+        'partner_menstruating' => ['pref' => 'partner_updates', 'title' => 'A cycle update', 'body' => 'A new cycle phase update is ready for you in Crescent.', 'url' => '/dashboard'],
+        'partner_follicular' => ['pref' => 'partner_updates', 'title' => 'A cycle update', 'body' => 'A new cycle phase update is ready for you in Crescent.', 'url' => '/dashboard'],
+        'partner_ovulatory' => ['pref' => 'partner_updates', 'title' => 'A cycle update', 'body' => 'A new cycle phase update is ready for you in Crescent.', 'url' => '/dashboard'],
+        'partner_luteal' => ['pref' => 'partner_updates', 'title' => 'A cycle update', 'body' => 'A new cycle phase update is ready for you in Crescent.', 'url' => '/dashboard'],
+        'partner_tip' => ['pref' => 'partner_updates', 'title' => 'Today’s tip is ready', 'body' => 'Take a moment to read today’s gentle care tip in Crescent.', 'url' => '/dashboard#care-guide'],
+        'cycle_day' => ['pref' => 'cycle_reminders', 'title' => 'Your cycle today', 'body' => 'Your estimated cycle day is ready in Crescent.', 'url' => '/dashboard'],
+        'daily_checkin' => ['pref' => 'daily_checkin_reminders', 'title' => 'A moment for yourself', 'body' => 'Would you like to log how you feel today?', 'url' => '/dashboard'],
+        'checkin_reminder' => ['pref' => 'daily_checkin_reminders', 'title' => 'A gentle nudge', 'body' => 'Your partner would love to hear how you feel. Would you like to log today\'s check-in?', 'url' => '/dashboard'],
+        'app_update' => ['pref' => null, 'title' => 'A Crescent update is ready ✨', 'body' => 'Open Crescent to get the latest version. No reinstall needed.', 'url' => '/dashboard'],
+        'test' => ['pref' => null, 'title' => 'Crescent notifications are on ☾', 'body' => 'This is a test. Your device is ready for gentle updates.', 'url' => '/profile'],
+    ];
 
-        $allowed = [
-            'shared_note' => ['enabled' => $preferences->shared_notes, 'title' => 'A note from your partner'],
-            'partner_update' => ['enabled' => $preferences->partner_updates, 'title' => 'A partner update'],
-            'cycle_reminder' => ['enabled' => $preferences->cycle_reminders, 'title' => 'A gentle Crescent reminder'],
-            'daily_checkin' => ['enabled' => $preferences->daily_checkin_reminders, 'title' => 'A moment for yourself'],
-        ];
-        if (! isset($allowed[$event]) || ! $allowed[$event]['enabled']) {
-            return;
+    public static function configured(): bool
+    {
+        return (bool) config('services.webpush.public_key') && (bool) config('services.webpush.private_key');
+    }
+
+    /** Returns true when at least one device accepted the message. */
+    public function notify(int $userId, string $event): bool
+    {
+        $definition = self::EVENTS[$event] ?? null;
+        $preferences = NotificationPreference::where('user_id', $userId)->first();
+        if (! $definition || ! $preferences || ! $preferences->push_enabled) {
+            return false;
+        }
+        if ($definition['pref'] && ! $preferences->{$definition['pref']}) {
+            return false;
         }
         if (! class_exists(WebPush::class)) {
             Log::warning('Crescent push package is not installed; notification not sent.');
-            return;
+            return false;
+        }
+        if (! self::configured()) {
+            Log::warning('Crescent Web Push is not configured (VAPID keys missing); notification not sent.');
+            return false;
         }
 
-        $publicKey = config('services.webpush.public_key');
-        $privateKey = config('services.webpush.private_key');
-        $subject = config('services.webpush.subject');
-        if (! $publicKey || ! $privateKey || ! $subject) {
-            Log::warning('Crescent Web Push is not configured; notification not sent.');
-            return;
+        $subscriptions = PushSubscription::where('user_id', $userId)->get();
+        if ($subscriptions->isEmpty()) {
+            return false;
         }
 
-        $webPush = new WebPush([
-            'VAPID' => ['subject' => $subject, 'publicKey' => $publicKey, 'privateKey' => $privateKey],
-        ]);
-        foreach (PushSubscription::where('user_id', $userId)->get() as $stored) {
-            $subscription = Subscription::create([
-                'endpoint' => $stored->endpoint,
-                'publicKey' => $stored->public_key,
-                'authToken' => $stored->auth_token,
-                'contentEncoding' => $stored->content_encoding,
+        try {
+            $webPush = new WebPush([
+                'VAPID' => [
+                    'subject' => config('services.webpush.subject') ?: 'mailto:admin@example.com',
+                    'publicKey' => config('services.webpush.public_key'),
+                    'privateKey' => config('services.webpush.private_key'),
+                ],
             ]);
-            // Do not include names, dates, symptoms, cycle data, or note contents in push payloads.
             $payload = json_encode([
-                'title' => $allowed[$event]['title'],
-                'body' => 'You have a new update in Crescent.',
-                'url' => '/dashboard',
-                'tag' => 'crescent-' . $event,
+                'title' => $definition['title'],
+                'body' => $definition['body'],
+                'url' => $definition['url'],
+                'tag' => 'crescent-'.$event,
             ], JSON_THROW_ON_ERROR);
-            $webPush->queueNotification($subscription, $payload);
-        }
+            foreach ($subscriptions as $stored) {
+                $webPush->queueNotification(Subscription::create([
+                    'endpoint' => $stored->endpoint,
+                    'publicKey' => $stored->public_key,
+                    'authToken' => $stored->auth_token,
+                    'contentEncoding' => $stored->content_encoding,
+                ]), $payload);
+            }
 
-        foreach ($webPush->flush() as $report) {
-            if ($report->isSuccess()) {
+            $delivered = false;
+            foreach ($webPush->flush() as $report) {
+                if ($report->isSuccess()) {
+                    $delivered = true;
+                    continue;
+                }
+                if ($report->isSubscriptionExpired()) {
+                    PushSubscription::where('endpoint_hash', hash('sha256', $report->getEndpoint()))->delete();
+                }
+                Log::info('Crescent push delivery failed.', ['reason' => $report->getReason()]);
+            }
+            return $delivered;
+        } catch (\Throwable $exception) {
+            report($exception);
+            return false;
+        }
+    }
+
+    /** Notify everyone connected to $primary who is allowed to see the given shared category. */
+    public function notifyPartners(User $primary, string $event, string $permission, ?string $dedupeKey = null, int $minutes = 0): void
+    {
+        foreach ($this->partnerIdsWithPermission($primary, $permission) as $partnerId) {
+            if ($dedupeKey && ! Cache::add($dedupeKey.':'.$partnerId, true, now()->addMinutes($minutes ?: 1440))) {
                 continue;
             }
-            if ($report->isSubscriptionExpired()) {
-                PushSubscription::where('endpoint_hash', hash('sha256', $report->getEndpoint()))->delete();
-            }
-            Log::info('Crescent push delivery failed.', ['reason' => $report->getReason()]);
+            $this->notify($partnerId, $event);
         }
+    }
+
+    public function partnerIdsWithPermission(User $primary, string $permission): array
+    {
+        $ids = [];
+        $relationships = Relationship::where('status', 'accepted')
+            ->where(fn ($q) => $q->where('user_one_id', $primary->id)->orWhere('user_two_id', $primary->id))
+            ->get();
+        foreach ($relationships as $relationship) {
+            $partnerId = (int) ($relationship->user_one_id === $primary->id ? $relationship->user_two_id : $relationship->user_one_id);
+            if (! $partnerId) {
+                continue;
+            }
+            $all = $relationship->sharing_preferences ?? [];
+            $mine = $all[(string) $primary->id] ?? $all;
+            if (! empty($mine[$permission])) {
+                $ids[] = $partnerId;
+            }
+        }
+        return array_values(array_unique($ids));
+    }
+
+    /** @return array{day:int|null,phase:string,period_start:string|null} */
+    public function cycleSnapshot(User $user, ?CarbonImmutable $on = null): array
+    {
+        $profile = $user->cycleProfile;
+        $timezone = $profile?->timezone ?: 'UTC';
+        $today = $on ?? CarbonImmutable::today($timezone);
+        $last = $user->periodLogs()->orderByDesc('start_date')->first();
+        $length = (int) ($profile?->average_cycle_length ?: 0);
+        if (! $last || $length < 21) {
+            return ['day' => null, 'phase' => 'unknown', 'period_start' => null];
+        }
+        $start = CarbonImmutable::parse($last->start_date->format('Y-m-d'), $timezone)->startOfDay();
+        $day = (($start->diffInDays($today->startOfDay()) % $length) + 1);
+        $periodLength = max(1, (int) ($profile->average_period_length ?: 5));
+        $phase = match (true) {
+            $day <= $periodLength => 'menstrual',
+            $day < max($periodLength + 1, $length - 13) => 'follicular',
+            $day <= $length - 12 => 'ovulatory',
+            default => 'luteal',
+        };
+        return ['day' => (int) $day, 'phase' => $phase, 'period_start' => $start->toDateString()];
     }
 }

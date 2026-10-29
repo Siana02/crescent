@@ -28,11 +28,19 @@ class RelationshipNotesController extends Controller
         $timezone = $request->user()->cycleProfile?->timezone ?: config('app.timezone', 'UTC');
         $today = CarbonImmutable::today($timezone);
 
-        RelationshipNote::query()
+        $unreadQuery = RelationshipNote::query()
             ->where('relationship_id', $relationship->id)
             ->where('author_id', '!=', $userId)
-            ->whereNull('read_at')
-            ->update(['read_at' => now(), 'updated_at' => now()]);
+            ->whereNull('read_at');
+        $authorsToNotify = (clone $unreadQuery)->distinct()->pluck('author_id');
+        $unreadQuery->update(['read_at' => now(), 'updated_at' => now()]);
+        foreach ($authorsToNotify as $authorId) {
+            try {
+                app(CrescentPushService::class)->notify((int) $authorId, 'note_read');
+            } catch (\Throwable $exception) {
+                report($exception);
+            }
+        }
 
         $notes = RelationshipNote::with('author:id,name')
             ->where('relationship_id', $relationship->id)
@@ -54,6 +62,7 @@ class RelationshipNotesController extends Controller
             ->where('relationship_id', $relationship->id)
             ->where('author_id', $userId)
             ->whereDate('note_date', $today->toDateString())
+            ->latest('id')
             ->first();
 
         return response()->json([
@@ -87,22 +96,21 @@ class RelationshipNotesController extends Controller
 
         $timezone = $request->user()->cycleProfile?->timezone ?: config('app.timezone', 'UTC');
         $today = CarbonImmutable::today($timezone)->toDateString();
-        $note = RelationshipNote::query()
+        $sentToday = RelationshipNote::query()
             ->where('relationship_id', $relationship->id)
             ->where('author_id', $userId)
             ->whereDate('note_date', $today)
-            ->first();
-
-        if ($note) {
-            $note->update(['body' => trim($validated['body']), 'read_at' => null]);
-        } else {
-            $note = RelationshipNote::create([
-                'relationship_id' => $relationship->id,
-                'author_id' => $userId,
-                'note_date' => $today,
-                'body' => trim($validated['body']),
-            ]);
+            ->count();
+        if ($sentToday >= 60) {
+            throw ValidationException::withMessages(['body' => 'You have sent plenty of messages today. Try again tomorrow.']);
         }
+
+        $note = RelationshipNote::create([
+            'relationship_id' => $relationship->id,
+            'author_id' => $userId,
+            'note_date' => $today,
+            'body' => trim($validated['body']),
+        ]);
 
         $recipientId = $relationship->user_one_id === $userId ? $relationship->user_two_id : $relationship->user_one_id;
         if ($recipientId) {
@@ -110,7 +118,7 @@ class RelationshipNotesController extends Controller
         }
 
         return response()->json([
-            'message' => 'Your little note has been saved.',
+            'message' => 'Your message has been sent.',
             'note' => [
                 'id' => $note->id,
                 'body' => $note->body,

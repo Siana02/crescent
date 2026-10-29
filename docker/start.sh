@@ -22,4 +22,10 @@ php -r 'foreach (["curl", "mbstring", "pdo_pgsql", "xml"] as $ext) { if (!extens
 # Cache configuration only after the host has supplied runtime environment values.
 php artisan config:cache
 
+# Run Laravel's scheduler (push reminders and cycle notifications) once a minute.
+(while true; do php artisan schedule:run >/dev/null 2>&1; sleep 60; done) &
+
+# Tell installed users once per deployed version that an update is available.
+(sleep 20; php artisan crescent:announce-update >/dev/null 2>&1) &
+
 exec apache2-foreground

@@ -1,4 +1,7 @@
 import '../styles/cosmic-dashboard.css';
+import RemindCheckin from '../components/RemindCheckin';
+import SharedCompatibilityCard from '../components/SharedCompatibilityCard';
+import { symptomCareIdeas, careIdeasFor, dailyGuidance, phaseFor } from '../utils/supportGuidance';
 import SharedPartnerSpace from '../components/SharedPartnerSpace';
 import FloralSharedCycleCalendar from '../components/FloralSharedCycleCalendar';
 import MobileNavigationMenu from '../components/MobileNavigationMenu';
@@ -7,6 +10,7 @@ type SharingKey = 'cycle_details' | 'pregnancy_details' | 'wellbeing_updates' | 
 type SharingPreferences = Record<SharingKey, boolean>;
 type SharedRelationship = {
     id: number;
+    checkin_reminder_sent?: boolean;
     relationship_type: 'observer' | 'co_tracker';
     status: 'pending' | 'accepted' | 'revoked';
     companion_name: string | null;
@@ -39,24 +43,17 @@ function dateLabel(value: string) {
     return new Date(value + 'T12:00:00').toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
 }
 function cyclePhase(day: number | null) {
-    if (!day || day < 1) return { key: 'unknown', label: 'Phase not available', title: 'Let them lead the rhythm', summary: 'Cycle timing is an estimate. Their own check-in is more useful than a calendar prediction.' };
-    if (day <= 5) return { key: 'menstrual', label: 'Menstrual phase · estimated', title: 'Comfort first, plans flexible', summary: 'Bleeding days can come with cramps, fatigue or headaches for some people. Others feel well; ask what today feels like for them.' };
-    if (day <= 13) return { key: 'follicular', label: 'Follicular phase · estimated', title: 'Make room for what feels good', summary: 'Energy may rise for some people after menstruation, but there is no universal energy pattern. Offer a walk, a fun plan or a quiet day—their call.' };
-    if (day <= 16) return { key: 'ovulatory', label: 'Around ovulation · estimated', title: 'Follow their lead, not the calendar', summary: 'Some people notice changes in energy, cervical fluid or desire around ovulation; others notice nothing. Ask what they feel like doing.' };
-    return { key: 'luteal', label: 'Luteal phase · estimated', title: 'A little extra thoughtfulness goes far', summary: 'Some people notice PMS symptoms such as irritability, low mood, tiredness, bloating or cravings before a period. Never assume or take feelings personally—listen and ask what would help.' };
+    const phase = phaseFor(day);
+    const guidance = dailyGuidance(day);
+    return { ...phase, ...guidance };
 }
-function careIdeas(wellbeing: SharedRelationship['companion_wellbeing'], partnerName: string) {
-    const tags = [...(wellbeing?.symptoms ?? []), ...(wellbeing?.mood ?? []), wellbeing?.category ?? ''].join(' ').toLowerCase().replace(/[_-]+/g, ' ');
-    const ideas: string[] = [];
-    if (/cramp|pain|headache|sore|ache|bloat/.test(tags)) ideas.push('Offer a heat pack, water, a comfortable setup or help with a practical task.');
-    if (/tired|fatigue|low energy|exhaust/.test(tags) || (wellbeing?.energy_level != null && wellbeing.energy_level <= 2)) ideas.push(`Take one thing off ${partnerName}'s plate, make or order dinner, and offer an early night or a lie-in.`);
-    if (/anxious|stress|overwhelm|sad|low|irritable|angry/.test(tags)) ideas.push('Listen without debating or diagnosing. Ask: “Would you like comfort, help solving it, or a little space?”');
-    if (/crav|appetite|hungry/.test(tags)) ideas.push(`Bring a snack or treat ${partnerName} actually wants, without commenting on what they should eat.`);
-    if (/happy|good|energ|excited/.test(tags) || (wellbeing?.energy_level != null && wellbeing.energy_level >= 4)) ideas.push(`If ${partnerName} is up for it, suggest a walk, a favourite café, a little date or another activity they enjoy.`);
-    if (!ideas.length) ideas.push('Ask what would feel loving today: make dinner, plan something outdoors, run a bath, choose a favourite film or give them uninterrupted rest.');
-    return ideas.slice(0, 3);
-}
-
+const supportArticles = [
+    { slug: 'menstrual-cycle-stages', symbol: '☾', tag: '12 MIN READ', title: 'Your cycle, beyond the calendar', image: '/The-different-stages-of-the-menstrual-cycle-symptoms-and-tips.jpg', blurb: (name: string) => `The four phases of a cycle and why no two cycles — including ${name}'s — look exactly alike.` },
+    { slug: 'painful-period-cramps', symbol: '✳', tag: '15 MIN READ', title: 'When cramps mean more', image: '/Painful-period-cramps-is-it-normal-or-could-it-be-something-else.jpg', blurb: (name: string) => `What counts as usual period pain, and when to encourage ${name} to see a doctor.` },
+    { slug: 'pregnancy-or-pms', symbol: '✧', tag: '15 MIN READ', title: 'PMS or pregnancy?', image: '/pregnancy-or-pms-the-symptoms-explained.jpg', blurb: (name: string) => `Similar symptoms, different explanations: how to support ${name} without guessing.` },
+    { slug: 'contraception-and-period-products', symbol: '♡', tag: '15 MIN READ', title: 'Protection that fits your life', image: '/The-different-types-of-conteaceptives-and-different-methods-of-period-blood-collection-explained.jpg', blurb: () => 'Contraception and period products explained, so you can have informed, kind conversations.' },
+    { slug: 'vaginal-discharge', symbol: '✿', tag: '12 MIN READ', title: 'What discharge can tell you', image: '/Vaginal-discharge-the-different-types-and-colors-explained-how-to-spot-yeast-infection-when-to-seek-help.jpg', blurb: () => 'A normal part of the cycle, and the signs worth checking with a clinician.' },
+];
 
 export default function SupportDashboard({ data, onLogout }: { data: SupportDashboardData; onLogout: () => void }) {
     const connection = (data.relationships ?? []).find(item => item.status === 'accepted' && item.relationship_type === 'observer');
@@ -81,34 +78,44 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
                 const phase = cyclePhase(summary.cycle_day);
                 return <section className={'cosmic-week-card cosmic-support-cycle-hero cosmic-support-cycle-hero--' + phase.key} aria-labelledby="support-cycle-title">
                     <span className="cosmic-support-cycle-spark cosmic-support-cycle-spark--one" aria-hidden="true">✧</span><span className="cosmic-support-cycle-spark cosmic-support-cycle-spark--two" aria-hidden="true">✿</span>
-                    <div className="cosmic-support-cycle-copy"><p className="cosmic-eyebrow">{primaryName.toUpperCase()}'S CYCLE JOURNEY · SHARED WITH YOU</p><span className="cosmic-support-phase-pill">☾ {phase.label}</span><h2 id="support-cycle-title">Day {summary.cycle_day}<span> of {primaryName}'s cycle</span></h2><p className="cosmic-support-cycle-lead">{phase.title}</p><p>{phase.summary}</p><div className="cosmic-support-cycle-dates"><div><span>♡</span><small>Last period began</small><strong>{dateLabel(summary.last_period_start)}</strong></div><div><span>✧</span><small>Next period estimate</small><strong>{summary.estimated_next_period ? dateLabel(summary.estimated_next_period) : 'Not available yet'}</strong></div></div><p className="cosmic-fineprint">Cycle day is based on shared dates; the phase is a rough guide using a typical cycle pattern. Neither predicts anyone's mood, energy, fertility or needs.</p></div>
+                    <div className="cosmic-support-cycle-copy"><p className="cosmic-eyebrow">{primaryName.toUpperCase()}'S CYCLE JOURNEY · SHARED WITH YOU</p><span className="cosmic-support-phase-pill">☾ {phase.label}</span><h2 id="support-cycle-title">Day {summary.cycle_day}<span> of {primaryName}'s cycle</span></h2><p className="cosmic-support-cycle-lead">{phase.title}</p><p>{phase.summary}</p><p className="cosmic-support-daily-tip"><span aria-hidden="true">✧</span> Today's idea: {phase.tip}</p><div className="cosmic-support-cycle-dates"><div><span>♡</span><small>Last period began</small><strong>{dateLabel(summary.last_period_start)}</strong></div><div><span>✧</span><small>Next period estimate</small><strong>{summary.estimated_next_period ? dateLabel(summary.estimated_next_period) : 'Not available yet'}</strong></div></div><p className="cosmic-fineprint">Cycle day is based on shared dates; the phase is a rough guide using a typical cycle pattern. Neither predicts anyone's mood, energy, fertility or needs.</p></div>
                     <div className="cosmic-support-cycle-orb" aria-hidden="true"><span>☾</span><strong>{summary.cycle_day}</strong><small>CYCLE DAY</small><i>✦</i></div>
                 </section>;
             })()}
             {connection?.companion_cycle_summary && permissions?.cycle_details && <FloralSharedCycleCalendar cycle={connection.companion_cycle_summary} ownerName={primaryName} viewerName={supportName} />}
-            {connection && permissions?.cycle_details && (() => {
-                const day = connection.companion_cycle_summary?.cycle_day ?? null;
-                const phase = cyclePhase(day);
-                return <section className="cosmic-week-card cosmic-support-care-guide">
-                    <div className="cosmic-support-care-heading"><div><p className="cosmic-eyebrow">YOUR GENTLE CARE GUIDE</p><h2>Small ways to make today softer</h2><p>Use these as ideas, not instructions. {primaryName}'s own words and preferences always come first.</p></div><span aria-hidden="true">♡</span></div>
-                    <div className="cosmic-support-care-feature"><span aria-hidden="true">✿</span><div><small>PHASE-AWARE NOTE · {phase.label}</small><h3>{phase.title}</h3><p>{phase.summary}</p></div></div>
-                    <div className="cosmic-support-care-ideas"><article><span aria-hidden="true">☀</span><h3>If {primaryName} has energy</h3><p>Ask whether {primaryName} would enjoy a walk, a favourite café, a picnic or an outing together. Let {primaryName} choose the pace.</p></article><article><span aria-hidden="true">☾</span><h3>If {primaryName} feels drained</h3><p>Offer dinner, a warm bath if {primaryName} enjoys one, a favourite film, help with chores or a chance to sleep in.</p></article><article><span aria-hidden="true">♡</span><h3>If feelings run high</h3><p>Don't dismiss feelings as hormones or assume they're about you. Stay curious, listen, and ask whether {primaryName} wants comfort, practical help or space.</p></article></div>
-                    <p className="cosmic-fineprint">Research-informed possibilities, not guarantees. PMS symptoms vary from person to person and from cycle to cycle.</p>
-                </section>;
-            })()}
             {!connection ? <section className="cosmic-week-card cosmic-support-empty"><p className="cosmic-eyebrow">YOUR SHARED SPACE</p><h2>No connected space yet</h2><p>Ask your partner for their Cosmic Sync Code. You can connect from the Connections page.</p><a className="cosmic-support-link" href="/connections">Open Connections →</a></section> : <>
+                {!connection.companion_wellbeing && permissions?.wellbeing_updates && <section className="cosmic-week-card cosmic-support-shared-card cosmic-support-wellbeing-card">
+                    <p className="cosmic-eyebrow">A LITTLE WELLBEING CHECK-IN</p><h2>How {primaryName} is feeling</h2><p className="cosmic-muted">{primaryName} hasn't logged today's symptoms yet.</p>
+                    <RemindCheckin relationshipId={connection.id} name={primaryName} alreadySent={Boolean(connection.checkin_reminder_sent)} />
+                </section>}
+                {connection.companion_wellbeing && permissions?.wellbeing_updates && <section className="cosmic-week-card cosmic-support-shared-card cosmic-support-wellbeing-card">
+                    <p className="cosmic-eyebrow">A LITTLE WELLBEING CHECK-IN</p><h2>How {primaryName} is feeling</h2><p className="cosmic-muted">Today's update · {dateLabel(connection.companion_wellbeing.log_date)}</p>
+                    <div className="cosmic-support-tags">{[...(connection.companion_wellbeing.mood ?? []), ...(connection.companion_wellbeing.symptoms ?? []), connection.companion_wellbeing.category ?? ''].filter(Boolean).filter((tag,index,all)=>all.indexOf(tag)===index).map(tag=>{const item=wellbeingLabel(tag);return <span className="cosmic-wellbeing-pill" key={tag}><span className="material-symbols-rounded" aria-hidden="true">{item.icon}</span>{item.label}</span>;})}{connection.companion_wellbeing.energy_level != null && <span className="cosmic-wellbeing-pill"><span className="material-symbols-rounded" aria-hidden="true">bolt</span>Energy {connection.companion_wellbeing.energy_level}/5</span>}</div>
+                    {connection.companion_wellbeing.notes && <blockquote>{connection.companion_wellbeing.notes}</blockquote>}
+                    <div className="cosmic-support-wellbeing-advice"><p className="cosmic-eyebrow">A FEW WAYS TO SHOW UP</p><div>{symptomCareIdeas([...(connection.companion_wellbeing.symptoms ?? []), ...(connection.companion_wellbeing.mood ?? []), connection.companion_wellbeing.category ?? ''], connection.companion_wellbeing.energy_level, primaryName).map((idea, index) => <p key={idea}><span aria-hidden="true">{['♡','✿','✧'][index]}</span>{idea}</p>)}</div></div>
+                    <p className="cosmic-fineprint">{primaryName}'s check-in is the best guide. These are invitations to offer care, never assumptions about what they need.</p>
+                </section>}
                 {connection.companion_pregnancy_summary && permissions?.pregnancy_details && <section className="cosmic-week-card cosmic-support-shared-card">
                     <p className="cosmic-eyebrow">PREGNANCY JOURNEY · SHARED WITH YOU</p><div className="cosmic-support-cycle"><span className="material-symbols-rounded">child_care</span><div><h2>{connection.companion_pregnancy_summary.status === 'postpartum' ? 'Postpartum journey' : `Week ${connection.companion_pregnancy_summary.gestational_week ?? '—'} · Trimester ${connection.companion_pregnancy_summary.trimester ?? '—'}`}</h2><p>{connection.companion_pregnancy_summary.status === 'active' ? `Estimated due date · ${dateLabel(connection.companion_pregnancy_summary.due_date)}` : 'A postpartum update from your partner.'}</p>{connection.companion_pregnancy_summary.status === 'active' && connection.companion_pregnancy_summary.days_until_due !== null && <p>{connection.companion_pregnancy_summary.days_until_due} days to estimated due date</p>}</div></div>
                     <p className="cosmic-fineprint">Pregnancy timing is an estimate and does not replace advice from their care team.</p>
                 </section>}
-                {connection.companion_wellbeing && permissions?.wellbeing_updates && <section className="cosmic-week-card cosmic-support-shared-card cosmic-support-wellbeing-card">
-                    <p className="cosmic-eyebrow">A LITTLE WELLBEING CHECK-IN</p><h2>How {primaryName} is feeling</h2><p className="cosmic-muted">Latest update · {dateLabel(connection.companion_wellbeing.log_date)}</p>
-                    <div className="cosmic-support-tags">{[...(connection.companion_wellbeing.mood ?? []), ...(connection.companion_wellbeing.symptoms ?? []), connection.companion_wellbeing.category ?? ''].filter(Boolean).filter((tag,index,all)=>all.indexOf(tag)===index).map(tag=>{const item=wellbeingLabel(tag);return <span className="cosmic-wellbeing-pill" key={tag}><span className="material-symbols-rounded" aria-hidden="true">{item.icon}</span>{item.label}</span>;})}{connection.companion_wellbeing.energy_level != null && <span className="cosmic-wellbeing-pill"><span className="material-symbols-rounded" aria-hidden="true">bolt</span>Energy {connection.companion_wellbeing.energy_level}/5</span>}</div>
-                    {connection.companion_wellbeing.notes && <blockquote>{connection.companion_wellbeing.notes}</blockquote>}
-                    <div className="cosmic-support-wellbeing-advice"><p className="cosmic-eyebrow">A FEW WAYS TO SHOW UP</p><div>{careIdeas(connection.companion_wellbeing, primaryName).map((idea, index) => <p key={idea}><span aria-hidden="true">{['♡','✿','✧'][index]}</span>{idea}</p>)}</div></div>
-                    <p className="cosmic-fineprint">{primaryName}'s check-in is the best guide. These are invitations to offer care, never assumptions about what they need.</p>
-                </section>}
+                {connection && permissions?.cycle_details && (() => {
+                const day = connection.companion_cycle_summary?.cycle_day ?? null;
+                const phase = cyclePhase(day);
+                const care = careIdeasFor(day, primaryName);
+                return <section id="care-guide" className={'cosmic-week-card cosmic-support-care-guide cosmic-support-care-guide--' + phase.key}>
+                    <div className="cosmic-support-care-heading"><div><p className="cosmic-eyebrow">YOUR GENTLE CARE GUIDE</p><h2>Small ways to make today softer</h2><p>Use these as ideas, not instructions. {primaryName}'s own words and preferences always come first.</p></div><span aria-hidden="true">♡</span></div>
+                    <div className="cosmic-support-care-feature"><span aria-hidden="true">✿</span><div><small>PHASE-AWARE NOTE · {phase.label}</small><h3>{phase.title}</h3><p>{phase.summary}</p><p className="cosmic-support-daily-tip"><span aria-hidden="true">✧</span> Today's idea: {phase.tip}</p></div></div>
+                    <div className="cosmic-support-care-ideas"><article><span aria-hidden="true">☀</span><h3>If {primaryName} has energy</h3><p>{care.energy}</p></article><article><span aria-hidden="true">☾</span><h3>If {primaryName} feels drained</h3><p>{care.drained}</p></article><article><span aria-hidden="true">♡</span><h3>If feelings run high</h3><p>{care.feelings}</p></article></div>
+                    <p className="cosmic-fineprint">Research-informed possibilities, not guarantees. PMS symptoms vary from person to person and from cycle to cycle.</p>
+                </section>;
+            })()}
                 <SharedPartnerSpace />
+                <section className="cosmic-week-card cosmic-support-reading" id="learn-together">
+                    <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">LEARN WITH LOVE</p><h2>Understand {primaryName}'s body &amp; cycle</h2><p>Knowing how bodies and cycles work makes it easier to show up with patience instead of guesses. These short reads are a good place to begin.</p></div><span className="cosmic-guide-stamp" aria-hidden="true">✿</span></div>
+                    <div className="cosmic-support-reading-grid">{supportArticles.map(article => <a key={article.slug} href={'/read/' + article.slug} className="cosmic-support-reading-card"><img src={article.image} alt="" loading="lazy" /><div><small>{article.symbol} {article.tag}</small><h3>{article.title}</h3><p>{article.blurb(primaryName)}</p><span>Read article <b aria-hidden="true">↗</b></span></div></a>)}</div>
+                    <p className="cosmic-fineprint">Educational reading, not medical advice. {primaryName}'s own words always come first.</p>
+                </section>
                 <section className="cosmic-week-card cosmic-support-permissions">
                     <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">{primaryName.toUpperCase()}'S SHARING CHOICES</p><h2>What {primaryName} shares with you</h2></div><span className="cosmic-guide-stamp" aria-hidden="true">♡</span></div>
                     <p className="cosmic-muted">{`These settings were chosen by ${primaryName} before they created the invitation.`} You can view them here; only they can change what is shared.</p>
@@ -117,7 +124,7 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
                 {permissions?.astrology && <section className="cosmic-week-card cosmic-support-shared-card">
                     <p className="cosmic-eyebrow">THE TWO OF YOU, CELESTIALLY</p><h2>Shared astrology</h2><p className="cosmic-muted">A reflective, just-for-fun look at your natal signs. Birth time and place can help refine time-sensitive placements.</p>
                     <div className="cosmic-support-signs"><article><span>☉</span><small>Your Sun</small><strong>{data.profile.sun_sign ?? 'Add your birth date'}</strong></article><article><span>☾</span><small>Their Sun</small><strong>{connection.companion_sun_sign ?? 'Birth date not added yet'}</strong></article><article><span>✧</span><small>Their Moon</small><strong>{connection.companion_moon_sign ?? 'Not available yet'}</strong></article><article><span>↟</span><small>Their Rising</small><strong>{connection.companion_rising_sign ?? 'Birth time may be needed'}</strong></article></div>
-                    <a className="cosmic-support-link" href="/astrology">Explore the Cosmic Atelier →</a><p className="cosmic-fineprint">Astrology is for reflection and entertainment, not a prediction or relationship diagnosis.</p>
+                    {connection.id&&<SharedCompatibilityCard relationshipId={connection.id} names={`${supportName} & ${primaryName}`} />}<a className="cosmic-support-link" href="/astrology#shared-compatibility">Explore the Cosmic Atelier →</a><p className="cosmic-fineprint">Astrology is for reflection and entertainment, not a prediction or relationship diagnosis.</p>
                 </section>}
                 <section className="cosmic-week-card cosmic-support-next"><p className="cosmic-eyebrow">STAY CONNECTED</p><h2>Keep the conversation open</h2><p>Your partner's private notes and connection reflections live in the shared space. You can visit Connections to read or write a note and see any available relationship insights.</p><a className="cosmic-support-link" href="/connections">Open Connections →</a></section>
             </>}

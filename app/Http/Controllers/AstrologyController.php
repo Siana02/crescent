@@ -164,7 +164,11 @@ class AstrologyController extends Controller
             return response()->json(['message' => 'Add your birthday in Profile & settings to see your Sun-sign reading.'], 422);
         }
 
-        return $this->cachedGet('cosmyday:content:daily:'.$sign.':'.now()->format('Ymd'), now()->addDay()->startOfDay(), '/content/daily/'.$sign);
+        // Key the reading to the reader's local calendar day so it refreshes at their midnight.
+        $timezone = $request->user()->cycleProfile?->timezone ?: 'UTC';
+        $localNow = now($timezone);
+
+        return $this->cachedGet('cosmyday:content:daily:'.$sign.':'.$localNow->format('Ymd'), $localNow->copy()->addDay()->startOfDay(), '/content/daily/'.$sign);
     }
 
     public function events(Request $request): JsonResponse
@@ -266,7 +270,7 @@ class AstrologyController extends Controller
                 }
                 return $response->json();
             });
-            return response()->json(['data' => $payload, 'source' => 'CosmyDay', 'source_url' => 'https://cosmyday.com']);
+            return response()->json(['data' => $payload, 'source' => 'CosmyDay', 'source_url' => 'https://cosmyday.com'])->header('Cache-Control', 'no-store, max-age=0');
         } catch (\Throwable $exception) {
             report($exception);
             return response()->json(['message' => 'Cosmic updates are temporarily unavailable. Please try again soon.'], 503);
