@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       libpq-dev \
       libxml2-dev \
       unzip \
-    && docker-php-ext-install -j"$(nproc)" curl mbstring pdo_pgsql xml \
+    && docker-php-ext-install -j"$(nproc)" bcmath curl mbstring pdo_pgsql xml \
     && a2enmod rewrite headers \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
