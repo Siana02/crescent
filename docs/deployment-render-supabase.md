@@ -56,7 +56,7 @@ Set these in the Render service's **Environment** page. Enter actual database va
 
 Generate an application key locally with PHP/Composer available by running `php artisan key:generate --show` from the repository root, or generate it in a trusted local Laravel environment. Copy the result into Render as `APP_KEY`; do not commit it. Do not regenerate it on every deploy because that invalidates encrypted application data and sessions.
 
-Set `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` only when you are ready to configure push notifications. Keep the private key secret. Push notifications must be tested separately on HTTPS and a real device.
+If `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` are unset, Crescent derives a stable key pair from `APP_KEY` so push works out of the box (changing `APP_KEY` invalidates existing device subscriptions). Set `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` (both), and `VAPID_SUBJECT` to override, only when you are ready to configure push notifications. Keep the private key secret. Push notifications must be tested separately on HTTPS and a real device.
 
 ## 4. Deploy and migrate the empty test database
 

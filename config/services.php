@@ -29,8 +29,8 @@ return [
     ],
 
     'webpush' => [
-        'public_key' => env('VAPID_PUBLIC_KEY'),
-        'private_key' => env('VAPID_PRIVATE_KEY'),
+        'public_key' => env('VAPID_PUBLIC_KEY') ?: (\App\Support\VapidKeys::derive(env('APP_KEY'))['public'] ?? null),
+        'private_key' => env('VAPID_PRIVATE_KEY') ?: (\App\Support\VapidKeys::derive(env('APP_KEY'))['private'] ?? null),
         'subject' => env('VAPID_SUBJECT', 'mailto:admin@example.com'),
     ],
 
