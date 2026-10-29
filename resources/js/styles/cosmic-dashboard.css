@@ -1115,3 +1115,17 @@
 .cosmic-floral-calendar__day.has-checkin::after{content:'';position:absolute;right:5px;top:5px;width:5px;height:5px;border-radius:50%;background:#9f79c9;box-shadow:0 0 0 2px rgba(255,255,255,.85)}
 .cosmic-floral-calendar__day{position:relative}
 .cosmic-floral-calendar__history-period{margin:0 0 .75rem;padding:.6rem .8rem;border-radius:14px;background:#fff0f5;color:#8e466c;font-size:.85rem}
+
+/* Pastel girly pattern redesign: flowers, stars, hearts and crescents */
+.cosmic-support-cycle-hero,.cosmic-support-care-guide{background-image:radial-gradient(circle at 12% 18%,rgba(255,214,232,.55) 0 2px,transparent 3px),radial-gradient(circle at 88% 78%,rgba(214,204,255,.6) 0 2px,transparent 3px),radial-gradient(ellipse at 100% 0,rgba(219,210,255,.8),transparent 39%),radial-gradient(ellipse at 0 100%,rgba(255,218,235,.85),transparent 43%),linear-gradient(135deg,#fffafd,#f8f2ff 60%,#fff8f3)}
+.cosmic-support-cycle-hero:after,.cosmic-support-care-guide:after{content:'♡ ✿ ✧ ☾ ✿ ♡ ✧ ☾';position:absolute;left:18px;bottom:8px;max-width:calc(100% - 36px);overflow:hidden;white-space:nowrap;color:#e8bfdc;font-size:16px;letter-spacing:14px;opacity:.55;pointer-events:none}
+.cosmic-support-care-guide{position:relative;overflow:hidden;padding-bottom:clamp(34px,4vw,44px)}
+.cosmic-support-care-guide--luteal{border-color:#e6cdf0}
+.cosmic-support-care-guide--menstrual{border-color:#f3c9d9}
+.cosmic-support-care-guide--follicular{border-color:#d5e8d8}
+.cosmic-support-care-guide--ovulatory{border-color:#f6e2b8}
+.cosmic-support-daily-tip{display:inline-flex;align-items:flex-start;gap:7px;max-width:660px;margin:8px 0 0;padding:9px 14px;border:1px dashed #e3bfd9;border-radius:16px;background:#fff0f7cc;color:#7a4f84!important;font-size:13px!important;line-height:1.6!important}
+.cosmic-support-daily-tip span{color:#c78bc0}
+.cosmic-support-care-ideas article{border-radius:22px;background:linear-gradient(145deg,#fff,#fff6fb)}
+.cosmic-support-care-ideas p,.cosmic-support-care-feature p{font-size:13px;line-height:1.7}
+@media(max-width:700px){.cosmic-support-cycle-hero{grid-template-columns:1fr}.cosmic-support-cycle-orb{max-width:140px}.cosmic-support-care-ideas{grid-template-columns:1fr!important}}
