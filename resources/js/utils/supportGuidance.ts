@@ -77,3 +77,108 @@ export function careIdeasFor(day: number | null, name: string): CareIdeas {
     const fill = (text: string) => text.replace(/\{n\}/g, name);
     return { energy: fill(picked.energy), drained: fill(picked.drained), feelings: fill(picked.feelings) };
 }
+
+type Category = { match: RegExp; ideas: string[] };
+
+/* Each category holds several different, practical suggestions. One is chosen per day, so the wording changes daily. {n} = partner name. */
+const symptomCategories: Category[] = [
+    { match: /cramp|pelvic|one sided|backache|back pain|joint|muscle|leg pain|ache/, ideas: [
+        'Cramps come from uterine contractions triggered by prostaglandins, and warmth relaxes the muscle. Offer a heat pack or hot water bottle and ask where it helps most.',
+        'Gentle movement such as a slow walk or stretching can ease period pain for some people. Offer to go together, and be fine with a no.',
+        'Pain can make everything feel harder. Take one practical task off {n}\'s list today and say nothing about how much they are doing.',
+        'Lower-back pain often travels with cramps. A shoulder or lower-back rub, if {n} wants one, can bring real relief.',
+        'If {n} already uses pain relief, offer to fetch it with water and a snack. Pain that is severe or getting worse is worth a doctor\'s visit; encourage that kindly.',
+        'Comfort is practical: a quiet sofa, blanket and their favourite show. Set it up without being asked.',
+    ] },
+    { match: /headache|migraine|light sens|dizz/, ideas: [
+        'Hormone shifts can trigger headaches and migraines in some people. Dim the lights, lower the noise and bring water.',
+        'Dehydration and skipped meals make headaches worse. Offer a glass of water and something simple to eat.',
+        'Screens and bright light can sharpen migraine pain. Offer to take over a screen-based task or keep the room calm.',
+        'With dizziness, encourage {n} to sit, sip water and move slowly. Stay close without hovering.',
+        'Ask whether {n} wants quiet company or to be left alone to rest in the dark; both are valid.',
+    ] },
+    { match: /fatigue|tired|low energy|sleepiness|insomnia|exhaust/, ideas: [
+        'Fatigue is one of the most commonly reported cycle symptoms. Offer to cook or order dinner so {n} can rest.',
+        'Poor sleep makes mood and pain feel stronger. Protect a calm evening: lower the lights, offer tea and an early night.',
+        'Take over one chore today without comment, so {n} has energy for what matters to them.',
+        'Offer a lie-in tomorrow by handling the morning routine. Rest is real recovery, not laziness.',
+        'Keep plans light and optional today. Ask "Would you rather go out or stay in?" and mean both answers.',
+        'If tiredness lingers for weeks or feels heavy, gently suggest a check-up. Low iron is one common, treatable cause.',
+    ] },
+    { match: /bloat|water retention|gas|constipation|diarrhea|nausea|bowel/, ideas: [
+        'Bloating is common around periods and usually eases once bleeding starts. Skip comments on {n}\'s body and offer comfortable-clothes plans.',
+        'Warm drinks such as ginger or peppermint tea help some people with nausea or bloating. Offer to make one.',
+        'Digestive changes can come with prostaglandin shifts. Be matter-of-fact and relaxed, with no jokes about it.',
+        'Offer a gentle walk or a warm bath, which can help with bloating. Let {n} decide.',
+        'Smaller, simpler meals may feel better today. Offer to prepare something light that {n} chooses.',
+    ] },
+    { match: /crav|appetite|hungry|sweet|savour/, ideas: [
+        'Appetite and cravings often rise before and during a period, and energy needs can increase slightly. Bring a treat {n} actually likes without commenting on it.',
+        'Stock the kitchen with {n}\'s favourites today. Cravings are normal and need no explanation.',
+        'Offer to cook a favourite meal together. Sharing food is a quiet way to show care.',
+        'If appetite is low instead, offer small, easy options and no pressure to finish anything.',
+        'Skip "are you sure you want that?" comments. Support, don\'t supervise.',
+    ] },
+    { match: /anxiety|anxious|stress|overwhelm|irritab|low mood|mood|moody|sad|angry|brain fog|concentrat|sensitive|tender/, ideas: [
+        'Feelings can run higher before a period for some people. Don\'t say "it\'s hormones". Ask: "Do you want comfort, help solving it, or space?"',
+        'Listening without fixing is often the most useful thing. Reflect back what you hear before offering any idea.',
+        'Reduce small stressors at home today: handle a bill, a message or a chore so {n} has less to carry.',
+        'If {n} is overwhelmed, offer one simple step at a time, such as "Shall I take care of dinner?"',
+        'Don\'t take sharp words personally. Stay calm, give space if asked, and return to the topic later when you both feel steady.',
+        'Gentle routines help: a short walk together, fresh air and a warm drink. Offer, then follow {n}\'s lead.',
+        'If low mood is heavy, lasts weeks or {n} feels hopeless, encourage them to speak to a doctor and offer to help find support.',
+    ] },
+    { match: /breast|tender breasts|swelling/, ideas: [
+        'Breast tenderness is common before a period and usually fades once bleeding starts. Ask before hugging and be gentle.',
+        'A soft, comfortable bra or loose top may feel better today. Offer to fetch something comfortable.',
+        'A warm compress can soothe tenderness. Offer one if {n} wants it.',
+        'If a lump or persistent one-sided pain appears, encourage a medical check without alarm.',
+    ] },
+    { match: /acne|oily|dry skin|hair|skin/, ideas: [
+        'Skin often changes with hormones across the cycle. Offer a kind word and skip any remarks about skin.',
+        'If {n} enjoys it, suggest a calm skincare or pamper evening and handle dinner so they can enjoy it.',
+        'Compliment something unrelated to appearance today, such as how {n} handled something recently.',
+        'Offer to pick up {n}\'s usual skincare or a comforting treat on the way home.',
+    ] },
+    { match: /discharge|itch|odor|odour|dryness|spotting|heavy bleeding|bleeding/, ideas: [
+        'Changes in discharge and spotting are common across a cycle. Respond with calm, matter-of-fact support and no embarrassment.',
+        'If bleeding is very heavy, such as soaking through protection every hour or two, encourage {n} to contact a clinician.',
+        'Itching, an unusual smell or discomfort can have simple, treatable causes. Encourage a check-up kindly if it persists.',
+        'Offer to pick up supplies on your way home without making it a big deal.',
+    ] },
+    { match: /high energy|libido|energ|happy|good|playful|calm/, ideas: [
+        'If {n} has energy today, invite them to a walk, a favourite café or something playful. Let them choose.',
+        'A good day is worth sharing. Ask what {n} is enjoying and plan something small together.',
+        'Libido and energy vary day to day. Keep affection and plans open-ended, with no expectation either way.',
+        'Make the most of the lift: cook together, go outside or take on a project {n} has been wanting to start.',
+    ] },
+];
+
+const generalIdeas = [
+    'Ask what would feel loving today: make dinner, plan something outdoors, run a bath or give them uninterrupted rest.',
+    'A simple "How can I make today easier?" is more reliable than guessing. Listen to the answer.',
+    'Small acts add up: a hot drink, a kind message or a chore done without being asked.',
+    'Check in without assuming: "How is your body feeling today?" works better than a guess.',
+];
+
+export function dayOfYear(date = new Date()): number {
+    const start = new Date(date.getFullYear(), 0, 0);
+    return Math.floor((date.getTime() - start.getTime()) / 86400000);
+}
+
+/** Up to 3 unique ideas drawn from today's logged symptoms, mood and energy. Varies by day. */
+export function symptomCareIdeas(
+    tags: string[],
+    energy: number | null | undefined,
+    name: string,
+    date = new Date(),
+): string[] {
+    const text = tags.join(' ').toLowerCase().replace(/[_-]+/g, ' ');
+    const day = dayOfYear(date);
+    const matched = symptomCategories.filter(category => category.match.test(text));
+    if (energy != null && energy <= 2 && !matched.some(c => c.match.test('fatigue'))) matched.push(symptomCategories[2]);
+    if (energy != null && energy >= 4 && !matched.some(c => c.match.test('high energy'))) matched.push(symptomCategories[9]);
+    const ideas = matched.slice(0, 3).map((category, index) => category.ideas[(day + index) % category.ideas.length]);
+    const pool = ideas.length ? ideas : [generalIdeas[day % generalIdeas.length]];
+    return pool.map(idea => idea.replace(/\{n\}/g, name));
+}

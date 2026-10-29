@@ -1187,3 +1187,19 @@
 .cosmic-support-compat-card p:not(.cosmic-eyebrow){margin:0;color:#7b6885;font-size:13px;line-height:1.6}
 @media(max-width:600px){.cosmic-chat-bubble{max-width:90%}.cosmic-chat-composer button{padding:10px 14px}.cosmic-chat-thread{max-height:340px}}
 @media(prefers-reduced-motion:reduce){.cosmic-chat-bubble{animation:none}.cosmic-chat-thread{scroll-behavior:auto}}
+
+.cosmic-remind{display:grid;gap:8px;justify-items:start;margin-top:12px}
+.cosmic-remind-button{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border:0;border-radius:999px;background:linear-gradient(135deg,#f4a9cf,#c7a6ee);color:#fff;font-weight:800;cursor:pointer;max-width:100%;text-align:left}
+.cosmic-remind-button:disabled{opacity:.6}
+.cosmic-remind small{color:#b04a7c}
+.cosmic-remind-sent{display:flex;gap:10px;align-items:flex-start;margin:12px 0 0;padding:12px 16px;border:1px solid #cfe9d8;border-radius:18px;background:#effaf3;color:#3f7455;line-height:1.5}
+.cosmic-remind-sent span{display:grid;place-items:center;flex:0 0 24px;height:24px;border-radius:50%;background:#7fcf9f;color:#fff;font-weight:800}
+
+/* Legal & help pages */
+.cosmic-legal{max-width:820px;margin:0 auto}
+.cosmic-legal section{margin:18px 0;padding:20px;border:1px solid #ecd9ee;border-radius:22px;background:linear-gradient(145deg,#fffafd,#f8f2ff)}
+.cosmic-legal h2{margin:0 0 8px;color:#674770;font-family:var(--serif,Georgia,serif);font-weight:400}
+.cosmic-legal p,.cosmic-legal li{color:#6b5876;line-height:1.75;font-size:14px}
+.cosmic-legal a{color:#a55e9e;font-weight:700}
+.cosmic-update-banner{position:fixed;left:50%;bottom:18px;z-index:80;display:flex;align-items:center;gap:12px;max-width:calc(100% - 24px);padding:12px 16px;transform:translateX(-50%);border:1px solid #e5c8e8;border-radius:999px;background:#fff;color:#674770;box-shadow:0 12px 30px rgba(113,75,132,.2)}
+.cosmic-update-banner button{padding:8px 16px;border:0;border-radius:999px;background:linear-gradient(135deg,#f4a9cf,#c7a6ee);color:#fff;font-weight:800;cursor:pointer}

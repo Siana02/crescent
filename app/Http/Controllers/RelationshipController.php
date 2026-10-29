@@ -262,4 +262,22 @@ class RelationshipController extends Controller
             'status' => $relationship->status,
         ]);
     }
+
+    public function remindCheckin(Request $request, Relationship $relationship): JsonResponse
+    {
+        $userId = (int) $request->user()->id;
+        abort_unless($relationship->status === 'accepted' && in_array($userId, [(int) $relationship->user_one_id, (int) $relationship->user_two_id], true), 404);
+        abort_unless($relationship->relationship_type === 'observer' && $userId === (int) $relationship->user_two_id, 403, 'Only a support partner can send this reminder.');
+        $primaryId = (int) $relationship->user_one_id;
+        $permissions = ($relationship->sharing_preferences ?? [])[(string) $primaryId] ?? ($relationship->sharing_preferences ?? []);
+        abort_unless(! empty($permissions['wellbeing_updates']), 403, 'Wellbeing updates are not shared with you.');
+
+        $key = 'crescent:checkin-reminder:'.$relationship->id.':'.$userId.':'.now()->toDateString();
+        if (! \Illuminate\Support\Facades\Cache::add($key, true, now()->addDay())) {
+            return response()->json(['message' => 'Your notification has been sent. We will notify you when your partner logs their symptoms.']);
+        }
+        app(\App\Services\CrescentPushService::class)->notify($primaryId, 'checkin_reminder');
+
+        return response()->json(['message' => 'Your notification has been sent. We will notify you when your partner logs their symptoms.']);
+    }
 }

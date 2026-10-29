@@ -1,6 +1,7 @@
 import '../styles/cosmic-dashboard.css';
+import RemindCheckin from '../components/RemindCheckin';
 import SharedCompatibilityCard from '../components/SharedCompatibilityCard';
-import { careIdeasFor, dailyGuidance, phaseFor } from '../utils/supportGuidance';
+import { symptomCareIdeas, careIdeasFor, dailyGuidance, phaseFor } from '../utils/supportGuidance';
 import SharedPartnerSpace from '../components/SharedPartnerSpace';
 import FloralSharedCycleCalendar from '../components/FloralSharedCycleCalendar';
 import MobileNavigationMenu from '../components/MobileNavigationMenu';
@@ -9,6 +10,7 @@ type SharingKey = 'cycle_details' | 'pregnancy_details' | 'wellbeing_updates' | 
 type SharingPreferences = Record<SharingKey, boolean>;
 type SharedRelationship = {
     id: number;
+    checkin_reminder_sent?: boolean;
     relationship_type: 'observer' | 'co_tracker';
     status: 'pending' | 'accepted' | 'revoked';
     companion_name: string | null;
@@ -45,19 +47,6 @@ function cyclePhase(day: number | null) {
     const guidance = dailyGuidance(day);
     return { ...phase, ...guidance };
 }
-function careIdeas(wellbeing: SharedRelationship['companion_wellbeing'], partnerName: string) {
-    const tags = [...(wellbeing?.symptoms ?? []), ...(wellbeing?.mood ?? []), wellbeing?.category ?? ''].join(' ').toLowerCase().replace(/[_-]+/g, ' ');
-    const ideas: string[] = [];
-    if (/cramp|pain|headache|sore|ache|bloat/.test(tags)) ideas.push('Offer a heat pack, water, a comfortable setup or help with a practical task.');
-    if (/tired|fatigue|low energy|exhaust/.test(tags) || (wellbeing?.energy_level != null && wellbeing.energy_level <= 2)) ideas.push(`Take one thing off ${partnerName}'s plate, make or order dinner, and offer an early night or a lie-in.`);
-    if (/anxious|stress|overwhelm|sad|low|irritable|angry/.test(tags)) ideas.push('Listen without debating or diagnosing. Ask: “Would you like comfort, help solving it, or a little space?”');
-    if (/crav|appetite|hungry/.test(tags)) ideas.push(`Bring a snack or treat ${partnerName} actually wants, without commenting on what they should eat.`);
-    if (/happy|good|energ|excited/.test(tags) || (wellbeing?.energy_level != null && wellbeing.energy_level >= 4)) ideas.push(`If ${partnerName} is up for it, suggest a walk, a favourite café, a little date or another activity they enjoy.`);
-    if (!ideas.length) ideas.push('Ask what would feel loving today: make dinner, plan something outdoors, run a bath, choose a favourite film or give them uninterrupted rest.');
-    return ideas.slice(0, 3);
-}
-
-
 const supportArticles = [
     { slug: 'menstrual-cycle-stages', symbol: '☾', tag: '12 MIN READ', title: 'Your cycle, beyond the calendar', image: '/The-different-stages-of-the-menstrual-cycle-symptoms-and-tips.jpg', blurb: (name: string) => `The four phases of a cycle and why no two cycles — including ${name}'s — look exactly alike.` },
     { slug: 'painful-period-cramps', symbol: '✳', tag: '15 MIN READ', title: 'When cramps mean more', image: '/Painful-period-cramps-is-it-normal-or-could-it-be-something-else.jpg', blurb: (name: string) => `What counts as usual period pain, and when to encourage ${name} to see a doctor.` },
@@ -95,11 +84,15 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
             })()}
             {connection?.companion_cycle_summary && permissions?.cycle_details && <FloralSharedCycleCalendar cycle={connection.companion_cycle_summary} ownerName={primaryName} viewerName={supportName} />}
             {!connection ? <section className="cosmic-week-card cosmic-support-empty"><p className="cosmic-eyebrow">YOUR SHARED SPACE</p><h2>No connected space yet</h2><p>Ask your partner for their Cosmic Sync Code. You can connect from the Connections page.</p><a className="cosmic-support-link" href="/connections">Open Connections →</a></section> : <>
+                {!connection.companion_wellbeing && permissions?.wellbeing_updates && <section className="cosmic-week-card cosmic-support-shared-card cosmic-support-wellbeing-card">
+                    <p className="cosmic-eyebrow">A LITTLE WELLBEING CHECK-IN</p><h2>How {primaryName} is feeling</h2><p className="cosmic-muted">{primaryName} hasn't logged today's symptoms yet.</p>
+                    <RemindCheckin relationshipId={connection.id} name={primaryName} alreadySent={Boolean(connection.checkin_reminder_sent)} />
+                </section>}
                 {connection.companion_wellbeing && permissions?.wellbeing_updates && <section className="cosmic-week-card cosmic-support-shared-card cosmic-support-wellbeing-card">
-                    <p className="cosmic-eyebrow">A LITTLE WELLBEING CHECK-IN</p><h2>How {primaryName} is feeling</h2><p className="cosmic-muted">Latest update · {dateLabel(connection.companion_wellbeing.log_date)}</p>
+                    <p className="cosmic-eyebrow">A LITTLE WELLBEING CHECK-IN</p><h2>How {primaryName} is feeling</h2><p className="cosmic-muted">Today's update · {dateLabel(connection.companion_wellbeing.log_date)}</p>
                     <div className="cosmic-support-tags">{[...(connection.companion_wellbeing.mood ?? []), ...(connection.companion_wellbeing.symptoms ?? []), connection.companion_wellbeing.category ?? ''].filter(Boolean).filter((tag,index,all)=>all.indexOf(tag)===index).map(tag=>{const item=wellbeingLabel(tag);return <span className="cosmic-wellbeing-pill" key={tag}><span className="material-symbols-rounded" aria-hidden="true">{item.icon}</span>{item.label}</span>;})}{connection.companion_wellbeing.energy_level != null && <span className="cosmic-wellbeing-pill"><span className="material-symbols-rounded" aria-hidden="true">bolt</span>Energy {connection.companion_wellbeing.energy_level}/5</span>}</div>
                     {connection.companion_wellbeing.notes && <blockquote>{connection.companion_wellbeing.notes}</blockquote>}
-                    <div className="cosmic-support-wellbeing-advice"><p className="cosmic-eyebrow">A FEW WAYS TO SHOW UP</p><div>{careIdeas(connection.companion_wellbeing, primaryName).map((idea, index) => <p key={idea}><span aria-hidden="true">{['♡','✿','✧'][index]}</span>{idea}</p>)}</div></div>
+                    <div className="cosmic-support-wellbeing-advice"><p className="cosmic-eyebrow">A FEW WAYS TO SHOW UP</p><div>{symptomCareIdeas([...(connection.companion_wellbeing.symptoms ?? []), ...(connection.companion_wellbeing.mood ?? []), connection.companion_wellbeing.category ?? ''], connection.companion_wellbeing.energy_level, primaryName).map((idea, index) => <p key={idea}><span aria-hidden="true">{['♡','✿','✧'][index]}</span>{idea}</p>)}</div></div>
                     <p className="cosmic-fineprint">{primaryName}'s check-in is the best guide. These are invitations to offer care, never assumptions about what they need.</p>
                 </section>}
                 {connection.companion_pregnancy_summary && permissions?.pregnancy_details && <section className="cosmic-week-card cosmic-support-shared-card">

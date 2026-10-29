@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Relationship;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -225,8 +226,9 @@ class DashboardController extends Controller
                             }
                         }
                     } else {
-                        $latestSharedCheckin = $companion->dailyCheckins()->latest('log_date')->first();
-                        if ($latestSharedCheckin) {
+                        $companionToday = CarbonImmutable::today($companionProfile?->timezone ?: config('app.timezone', 'UTC'))->toDateString();
+                        $latestSharedCheckin = $companion->dailyCheckins()->whereDate('log_date', $companionToday)->first();
+                        if ($latestSharedCheckin && (! empty($latestSharedCheckin->symptoms) || $latestSharedCheckin->mood)) {
                             $sharedWellbeing = [
                                 'log_date' => $latestSharedCheckin->log_date->format('Y-m-d'),
                                 'mood' => $latestSharedCheckin->mood ? explode(',', $latestSharedCheckin->mood) : [],
@@ -251,6 +253,7 @@ class DashboardController extends Controller
                     'companion_cycle_summary' => $sharedCycleSummary,
                     'companion_pregnancy_summary' => $sharedPregnancySummary,
                     'companion_wellbeing' => $sharedWellbeing,
+                    'checkin_reminder_sent' => $relationship->status === 'accepted' && Cache::has('crescent:checkin-reminder:'.$relationship->id.':'.$user->id.':'.now()->toDateString()),
                     'companion_sun_sign' => $astrologyShared ? $companionProfile?->sun_sign : null,
                     'companion_moon_sign' => $astrologyShared ? $companionProfile?->moon_sign : null,
                     'companion_rising_sign' => $astrologyShared ? $companionProfile?->rising_sign : null,

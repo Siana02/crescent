@@ -30,6 +30,8 @@ class CrescentPushService
         'partner_tip' => ['pref' => 'partner_updates', 'title' => 'Today’s tip is ready', 'body' => 'Take a moment to read today’s gentle care tip in Crescent.', 'url' => '/dashboard#care-guide'],
         'cycle_day' => ['pref' => 'cycle_reminders', 'title' => 'Your cycle today', 'body' => 'Your estimated cycle day is ready in Crescent.', 'url' => '/dashboard'],
         'daily_checkin' => ['pref' => 'daily_checkin_reminders', 'title' => 'A moment for yourself', 'body' => 'Would you like to log how you feel today?', 'url' => '/dashboard'],
+        'checkin_reminder' => ['pref' => 'daily_checkin_reminders', 'title' => 'A gentle nudge', 'body' => 'Your partner would love to hear how you feel. Would you like to log today\'s check-in?', 'url' => '/dashboard'],
+        'app_update' => ['pref' => null, 'title' => 'A Crescent update is ready ✨', 'body' => 'Open Crescent to get the latest version. No reinstall needed.', 'url' => '/dashboard'],
         'test' => ['pref' => null, 'title' => 'Crescent notifications are on ☾', 'body' => 'This is a test. Your device is ready for gentle updates.', 'url' => '/profile'],
     ];
 

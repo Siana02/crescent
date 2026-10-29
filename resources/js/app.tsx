@@ -12,6 +12,8 @@ import './styles/app.css';
 import InstallAppPrompt from './components/InstallAppPrompt';
 import EditorialArticlePage from './pages/EditorialArticlePage';
 import CycleHistoryPage from './pages/CycleHistoryPage';
+import LegalPage from './pages/LegalPage';
+import AppUpdater from './components/AppUpdater';
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -28,7 +30,10 @@ if (!mount) {
 }
 
 const path = window.location.pathname;
-const page = path === '/cycle-history' || path === '/read/cycle-length-guide' || path === '/read/period-length-guide'
+const page = path === '/privacy' ? <LegalPage kind="privacy" />
+    : path === '/terms' ? <LegalPage kind="terms" />
+    : path === '/support' ? <LegalPage kind="support" />
+    : path === '/cycle-history' || path === '/read/cycle-length-guide' || path === '/read/period-length-guide'
     ? <CycleHistoryPage />
     : path.startsWith('/read/')
     ? <EditorialArticlePage />
@@ -53,6 +58,7 @@ const page = path === '/cycle-history' || path === '/read/cycle-length-guide' ||
 createRoot(mount).render(
     <React.StrictMode>
         {page}
+        <AppUpdater />
         {!["/login", "/register", "/"].includes(path) && <InstallAppPrompt />}
     </React.StrictMode>,
 );
