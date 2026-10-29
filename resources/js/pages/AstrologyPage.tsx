@@ -157,7 +157,7 @@ export default function AstrologyPage(){
   setBusy(true);setError('');
   const getJson=async(url:string)=>{
    try{
-    const response=await fetch(url,{credentials:'same-origin',headers:{Accept:'application/json'}});
+    const response=await fetch(url,{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
     const data=await response.json().catch(()=>({}));
     return {ok:response.ok,status:response.status,data};
    }catch{

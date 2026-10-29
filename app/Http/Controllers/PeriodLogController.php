@@ -60,6 +60,12 @@ class PeriodLogController extends Controller
             }
         }
 
+        try {
+            app(\App\Services\CrescentPushService::class)->notifyPartners($request->user(), 'partner_menstruating', 'cycle_details', 'crescent:partner-period:'.$request->user()->id.':'.$validated['start_date'], 60 * 24 * 7);
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
+
         return response()->json([
             'period' => [
                 'start_date' => $period->start_date->format('Y-m-d'),

@@ -97,6 +97,14 @@ class DailyCheckinController extends Controller
             $checkin = $checkins->create(array_merge(['log_date' => $logDate], $attributes));
         }
 
+        if (! empty($checkin->symptoms)) {
+            try {
+                app(\App\Services\CrescentPushService::class)->notifyPartners($request->user(), 'partner_symptoms', 'wellbeing_updates', 'crescent:partner-symptoms:'.$request->user()->id, 120);
+            } catch (\Throwable $exception) {
+                report($exception);
+            }
+        }
+
         return response()->json([
             'checkin' => [
                 'log_date' => $checkin->log_date->format('Y-m-d'),

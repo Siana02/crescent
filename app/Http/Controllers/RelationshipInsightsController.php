@@ -6,6 +6,8 @@ use App\Models\CosmicCompatibility;
 use App\Models\Relationship;
 use App\Models\CycleProfile;
 use App\Models\User;
+use App\Support\AstroInterpreter;
+use App\Support\RelationshipReflections;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -35,19 +37,10 @@ class RelationshipInsightsController extends Controller
         return CycleProfile::whereIn('user_id', [$userId, $otherId])->get()->keyBy('user_id')->get($userId);
     }
 
-    private function signTone(?string $left, ?string $right): ?array
+    private function signTone(?string $left, ?string $right, string $label = 'Sun signs'): ?array
     {
         if (! $left || ! $right) return null;
-        $a = self::ELEMENTS[$left] ?? null;
-        $b = self::ELEMENTS[$right] ?? null;
-        if (! $a || ! $b) return null;
-        if ($left === $right) return ['tone' => 'familiar', 'text' => 'You may recognise something of yourself in each other. Make room for your differences, too.'];
-        if ($a === $b) return ['tone' => 'resonant', 'text' => 'You share an elemental style. It can feel easy to understand one another, while making it useful to slow down and check assumptions.'];
-        $pairs = [$a, $b]; sort($pairs);
-        if (in_array($pairs, [['air', 'fire'], ['earth', 'water']], true)) {
-            return ['tone' => 'complementary', 'text' => 'These elements are traditionally read as complementary. Notice where your different strengths help you meet in the middle.'];
-        }
-        return ['tone' => 'contrasting', 'text' => 'Your styles may approach things differently. Curiosity and clear questions can help a difference become a conversation rather than a conflict.'];
+        return AstroInterpreter::signTheme($label, $left, $right);
     }
 
     private function skySnapshot(): array
@@ -145,9 +138,7 @@ class RelationshipInsightsController extends Controller
                     'aspect' => $aspect['name'],
                     'orb' => $aspect['orb'],
                     'tone' => $supportive ? 'supportive' : (in_array($aspect['name'], ['Square', 'Opposition'], true) ? 'growth' : 'intense'),
-                    'text' => $transitMode
-                        ? ($supportive ? 'A potentially supportive opening for this theme. Notice what feels easier, without treating it as guaranteed.' : 'A reflective pressure point around this theme. Slow down, check assumptions and choose a practical response.')
-                        : ($supportive ? 'Traditionally read as a flowing connection between these planetary themes.' : 'Traditionally read as a more active connection that can invite awareness, negotiation and growth.'),
+                    'text' => AstroInterpreter::aspect($left['name'], $right['name'], $aspect['name'], (float) $aspect['orb'], $transitMode),
                 ];
             }
         }
@@ -195,7 +186,7 @@ class RelationshipInsightsController extends Controller
                 ['label' => 'Rising signs', 'left' => ($mineChart['birth_time_known'] ?? false) ? ($this->chartSign($mineChart['placements'] ?? [], 'rising') ?? $mine->rising_sign) : null, 'right' => ($theirChart['birth_time_known'] ?? false) ? ($this->chartSign($theirChart['placements'] ?? [], 'rising') ?? $theirs->rising_sign) : null],
             ];
             foreach ($pairs as $pair) {
-                $tone = $this->signTone($pair['left'], $pair['right']);
+                $tone = $this->signTone($pair['left'], $pair['right'], $pair['label']);
                 if ($tone) $compatibility['themes'][] = ['label' => $pair['label'], 'left' => $pair['left'], 'right' => $pair['right'], ...$tone];
             }
             $compatibility['aspects'] = $this->aspects(
@@ -263,51 +254,33 @@ class RelationshipInsightsController extends Controller
             }
             $checkin = $canUseSymptoms ? $primary?->dailyCheckins()->whereDate('log_date', $localToday->toDateString())->first() : null;
             $symptoms = array_map('strtolower', (array) ($checkin?->symptoms ?? []));
-            $phaseTips = [
-                'menstrual' => [
-                    ['A softer pace may help', 'Offer to handle one practical task, bring a warm drink or heat pack, or pick up their usual pain relief if they ask. Ask what kind of comfort feels good today.'],
-                    ['Comfort without assumptions', 'A favourite snack, a cosy evening or help with errands might be welcome. Ask what would help rather than guessing.'],
-                    ['Make rest easier to choose', 'Offer a low-effort plan and let your partner decide whether they want company, quiet or practical support.'],
-                ],
-                'follicular' => [
-                    ['Make room for a little adventure', 'If energy feels good, suggest a walk, a new recipe or an easy shared plan. Let your partner choose the pace.'],
-                    ['Try something side by side', 'Invite your partner to choose a small outing or shared activity, without treating higher energy as a requirement.'],
-                    ['Share the planning', 'Offer to organise a simple date or outdoor activity together, and keep an easy alternative if either of you feels tired.'],
-                ],
-                'ovulatory-estimate' => [
-                    ['Check in about closeness', 'Some people notice changes in desire around estimated ovulation and others do not. Ask openly what feels good; never assume interest or fertility from a calendar estimate.'],
-                    ['Talk about what you both want', 'If you are both trying to conceive, you can review the estimated fertile window together. Cycle estimates can be wrong and are not a guarantee of ovulation or pregnancy.'],
-                    ['Let your partner set the pace', 'Suggest affection or intimacy only if it feels welcome. A cycle estimate never tells you whether someone wants sex; ask and respect the answer.'],
-                ],
-                'luteal' => [
-                    ['Make comfort easy to ask for', 'Offer a favourite snack, help with a small task or make a quiet evening easier. Ask first instead of assuming what your partner needs.'],
-                    ['Take one thing off their plate', 'Offer to cook, tidy or handle a small errand. Let your partner choose whether that kind of help is useful today.'],
-                    ['Keep communication gentle', 'Check in without attributing feelings to hormones. Ask whether they want listening, practical help, affection or space.'],
-                ],
-                'cycle-unknown' => [
-                    ['Ask what support would feel useful', 'A simple check-in is more reliable than guessing: ask whether your partner would like practical help, company, listening or space.'],
-                    ['One thoughtful question', 'Try “What would make today a little easier?” and listen to the answer without assuming you already know.'],
-                    ['Offer, then let them choose', 'Suggest one specific act of care and make it easy to say no or ask for something different.'],
-                ],
-            ];
-            $tipChoices = $phaseTips[$phase] ?? $phaseTips['cycle-unknown'];
-            $tipIndex = $cycleDay !== null ? ($cycleDay + (int) $localToday->format('z')) % count($tipChoices) : (int) $localToday->format('z') % count($tipChoices);
-            $chosen = $tipChoices[$tipIndex];
+            $periodLengthForTip = max(1, (int) ($primaryProfile?->average_period_length ?? 5));
+            $cycleLengthForTip = (int) ($primaryProfile?->average_cycle_length ?? 28);
+            $phaseStart = match ($phase) {
+                'menstrual' => 1,
+                'follicular' => $periodLengthForTip + 1,
+                'ovulatory-estimate' => max($periodLengthForTip + 1, $cycleLengthForTip - 13),
+                'luteal' => $cycleLengthForTip - 11,
+                default => 1,
+            };
+            $dayInPhase = $cycleDay !== null ? max(0, $cycleDay - $phaseStart) : null;
+            $tipIndex = 0;
+            $chosen = RelationshipReflections::pick($phase, $dayInPhase, (int) $localToday->format('j'));
             if ($canUseSymptoms && array_intersect($symptoms, ['bloating', 'bloated', 'cramps', 'cramping', 'fatigue', 'tired', 'headache'])) {
                 $chosen = ['Notice what they logged today', 'Your partner logged '.implode(', ', array_slice(array_intersect($symptoms, ['bloating','bloated','cramps','cramping','fatigue','tired','headache']), 0, 3)).'. Offer a heat pack, comfy clothes, a kind compliment if welcome, or one practical task. Ask what would actually help and do not dismiss their discomfort.'];
             }
             if (!$canUseCycleContext) {
                 $phase = 'cycle-unknown';
                 $cycleDay = null;
-                $chosen = $phaseTips['cycle-unknown'][$tipIndex];
+                $chosen = RelationshipReflections::pick('cycle-unknown', null, (int) $localToday->format('j'));
             }
             if (!$canUseSymptoms) {
                 $symptoms = [];
             }
             $chosen = ['title' => $chosen[0], 'tip' => $chosen[1]];
             $personalTransits = $shareAstrology ? array_merge(
-                array_map(fn (array $aspect) => array_merge($aspect, ['chart_owner' => 'Your chart']), $this->aspects($sky, $mineChart['placements'] ?? [], true, (bool) ($mineChart['birth_time_known'] ?? false), true)),
-                array_map(fn (array $aspect) => array_merge($aspect, ['chart_owner' => 'Companion chart']), $this->aspects($sky, $theirChart['placements'] ?? [], true, (bool) ($theirChart['birth_time_known'] ?? false), true))
+                array_map(fn (array $aspect) => array_merge($aspect, ['chart_owner' => 'Your chart', 'text' => AstroInterpreter::aspect($aspect['left'], $aspect['right'], $aspect['aspect'], (float) $aspect['orb'], true, 'Your chart')]), $this->aspects($sky, $mineChart['placements'] ?? [], true, (bool) ($mineChart['birth_time_known'] ?? false), true)),
+                array_map(fn (array $aspect) => array_merge($aspect, ['chart_owner' => 'Companion chart', 'text' => AstroInterpreter::aspect($aspect['left'], $aspect['right'], $aspect['aspect'], (float) $aspect['orb'], true, 'Companion chart')]), $this->aspects($sky, $theirChart['placements'] ?? [], true, (bool) ($theirChart['birth_time_known'] ?? false), true))
             ) : [];
             usort($personalTransits, fn (array $a, array $b) => $a['orb'] <=> $b['orb']);
             $personalTransits = array_slice($personalTransits, 0, 5);

@@ -52,6 +52,7 @@ Route::middleware(['auth', 'active.account'])->group(function () {
     Route::get('/api/notifications/preferences', [PushNotificationController::class, 'preferences']);
     Route::put('/api/notifications/preferences', [PushNotificationController::class, 'savePreferences']);
     Route::post('/api/notifications/subscribe', [PushNotificationController::class, 'subscribe'])->middleware('throttle:10,1');
+    Route::post('/api/notifications/test', [PushNotificationController::class, 'test'])->middleware('throttle:5,1');
     Route::delete('/api/notifications/subscribe', [PushNotificationController::class, 'unsubscribe'])->middleware('throttle:10,1');
     Route::get('/api/astrology/chart', [AstrologyController::class, 'chart'])->middleware('throttle:10,1');
     Route::get('/api/astrology/sky', [AstrologyController::class, 'sky'])->middleware('throttle:30,1');

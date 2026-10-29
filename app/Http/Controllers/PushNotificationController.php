@@ -78,6 +78,15 @@ class PushNotificationController extends Controller
         return response()->json(['message' => 'This device is subscribed to Crescent notifications.'], 201);
     }
 
+    public function test(Request $request): JsonResponse
+    {
+        $delivered = app(\App\Services\CrescentPushService::class)->notify((int) $request->user()->id, 'test');
+        if (! $delivered) {
+            return response()->json(['message' => 'We could not deliver a test notification. Check that push is enabled on this device and that the server has VAPID keys.'], 422);
+        }
+        return response()->json(['message' => 'Test notification sent. It should arrive in a moment.']);
+    }
+
     public function unsubscribe(Request $request): JsonResponse
     {
         $validated = $request->validate(['endpoint' => ['required', 'url', 'max:4096']]);
