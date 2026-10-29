@@ -13,7 +13,7 @@ class CycleProfileController extends Controller
         $validated = $request->validate([
             'average_cycle_length' => ['nullable', 'integer', 'between:21,45'],
             'average_period_length' => ['nullable', 'integer', 'between:1,10'],
-            'cycle_regularity' => ['required', 'in:regular,irregular,unknown'],
+            'cycle_regularity' => ['sometimes', 'required', 'in:regular,irregular,unknown'],
             'timezone' => ['required', 'string', 'timezone'],
             'display_name' => ['nullable', 'string', 'max:100'],
             'wants_astrology' => ['sometimes', 'boolean'],
