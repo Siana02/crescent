@@ -5,5 +5,3 @@ Disallow: /connections
 Disallow: /profile
 Disallow: /api/
 Disallow: /auth/
-
-Sitemap: /sitemap.xml
