@@ -58,7 +58,7 @@ export default function NotificationSettings() {
       }
       if (!configured) throw new Error('Push delivery is not configured on the server yet. VAPID keys and the web-push server package are required.');
       const permission = await Notification.requestPermission();
-      if (permission !== 'granted') throw new Error('Notifications are off in your browser settings. You can enable them there whenever you are ready.');
+      if (permission !== 'granted') throw new Error('Notifications are blocked for Crescent. Browsers cannot open settings for you: on iPhone go to Settings → Notifications → Crescent; on Android go to Settings → Apps → Crescent → Notifications; then come back and tap Enable again.');
       const keyResponse = await fetch('/api/push/public-key', { credentials: 'same-origin', headers: { Accept: 'application/json' } });
       if (!keyResponse.ok) throw new Error('Crescent could not load its push configuration.');
       const { public_key } = await keyResponse.json();

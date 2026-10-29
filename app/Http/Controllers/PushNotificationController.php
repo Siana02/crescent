@@ -80,9 +80,10 @@ class PushNotificationController extends Controller
 
     public function test(Request $request): JsonResponse
     {
-        $delivered = app(\App\Services\CrescentPushService::class)->notify((int) $request->user()->id, 'test');
+        $push = app(\App\Services\CrescentPushService::class);
+        $delivered = $push->notify((int) $request->user()->id, 'test');
         if (! $delivered) {
-            return response()->json(['message' => 'We could not deliver a test notification. Check that push is enabled on this device and that the server has VAPID keys.'], 422);
+            return response()->json(['message' => 'We could not deliver a test notification. '.($push->lastError ?? 'Check that push is enabled on this device.')], 422);
         }
         return response()->json(['message' => 'Test notification sent. It should arrive in a moment.']);
     }

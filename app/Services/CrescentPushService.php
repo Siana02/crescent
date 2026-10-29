@@ -15,6 +15,9 @@ use Minishlink\WebPush\WebPush;
 
 class CrescentPushService
 {
+    /** Human-readable reason the last notify() call did not deliver. */
+    public ?string $lastError = null;
+
     /**
      * Allow-listed events. Wording is intentionally neutral: lock-screen text never includes
      * names, dates, symptoms, fertility details or note contents.
@@ -43,9 +46,11 @@ class CrescentPushService
     /** Returns true when at least one device accepted the message. */
     public function notify(int $userId, string $event): bool
     {
+        $this->lastError = null;
         $definition = self::EVENTS[$event] ?? null;
         $preferences = NotificationPreference::where('user_id', $userId)->first();
         if (! $definition || ! $preferences || ! $preferences->push_enabled) {
+            $this->lastError = 'Push notifications are not turned on for your account yet. Tap "Enable push notifications" first.';
             return false;
         }
         if ($definition['pref'] && ! $preferences->{$definition['pref']}) {
@@ -53,15 +58,18 @@ class CrescentPushService
         }
         if (! class_exists(WebPush::class)) {
             Log::warning('Crescent push package is not installed; notification not sent.');
+            $this->lastError = 'The server is missing the web-push package. Run "composer install" on the server.';
             return false;
         }
         if (! self::configured()) {
             Log::warning('Crescent Web Push is not configured (VAPID keys missing); notification not sent.');
+            $this->lastError = 'The server has no VAPID keys. Set APP_KEY (or VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY).';
             return false;
         }
 
         $subscriptions = PushSubscription::where('user_id', $userId)->get();
         if ($subscriptions->isEmpty()) {
+            $this->lastError = 'No device is subscribed. Tap "Enable push notifications" on this device.';
             return false;
         }
 
@@ -97,11 +105,13 @@ class CrescentPushService
                 if ($report->isSubscriptionExpired()) {
                     PushSubscription::where('endpoint_hash', hash('sha256', $report->getEndpoint()))->delete();
                 }
-                Log::info('Crescent push delivery failed.', ['reason' => $report->getReason()]);
+                $this->lastError = 'The push service rejected the message: '.$report->getReason();
+                Log::warning('Crescent push delivery failed.', ['reason' => $report->getReason()]);
             }
             return $delivered;
         } catch (\Throwable $exception) {
             report($exception);
+            $this->lastError = 'Push delivery error: '.$exception->getMessage();
             return false;
         }
     }
