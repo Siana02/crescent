@@ -1,4 +1,5 @@
 import React from 'react';
+import SiteCredit from '../components/SiteCredit';
 import '../styles/editorial-articles.css';
 
 type Section = { heading: string; paragraphs: string[]; points?: string[] };
@@ -352,6 +353,6 @@ export default function EditorialArticlePage() {
    </article>
    <section className="editorial-more"><div className="editorial-more-heading"><div><p className="editorial-kicker">KEEP EXPLORING</p><h2>Another article, another perspective.</h2></div><a href="/dashboard#read-next">All articles ↗</a></div><div className="editorial-more-grid">{otherStories.map((item,i)=><a className="editorial-more-card" href={'/read/'+item.slug} key={item.slug}><img src={item.image} alt="" /><div><span>0{i+1} / {item.category}</span><h3>{item.title}</h3><p>{item.readTime} <b>↗</b></p></div></a>)}</div></section>
   </main>
-  <footer className="editorial-footer"><a className="editorial-wordmark" href="/dashboard"><span>☾</span> crescent<span className="editorial-wordmark-dot">.</span></a><p>Your body, your story, your space.</p><a href="/dashboard">RETURN TO YOUR UNIVERSE ↑</a></footer>
+  <footer className="editorial-footer"><a className="editorial-wordmark" href="/dashboard"><span>☾</span> crescent<span className="editorial-wordmark-dot">.</span></a><p>Your body, your story, your space.</p><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/support">Help &amp; support</a><a href="/dashboard">RETURN TO YOUR UNIVERSE ↑</a><SiteCredit /></footer>
  </div>;
 }

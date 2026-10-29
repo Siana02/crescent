@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import SiteCredit from '../components/SiteCredit';
 import JourneyNavigation from '../components/JourneyNavigation';
 import '../styles/pregnancy.css';
 
@@ -21,5 +22,5 @@ export default function BabyAstrologyPage(){
  {error&&<section className="pregnancy-petal-card"><h2>One more detail for their sky</h2><p>{error}</p><p>{baby?.baby_birth_time?'Birth time saved: '+baby.baby_birth_time+'.':'If the birth time is unknown, a noon chart can show approximate placements, but it cannot reliably establish a Rising sign or houses.'}</p><a href="/dashboard">Update their birth details in the postpartum space ↗</a></section>}
  </>}
  <p className="pregnancy-medical-note">Astrology is entertainment, not science, a developmental assessment or a prediction of your child’s personality or future. Keep your baby’s birth details private and share them only when you choose.</p>
- </main><footer className="pregnancy-footer"><span>crescent. · a tiny sky, a whole universe</span><a href="/dashboard">Back to your journey ↑</a></footer></div>;
+ </main><footer className="pregnancy-footer"><span>crescent. · a tiny sky, a whole universe</span><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/support">Help &amp; support</a><a href="/dashboard">Back to your journey ↑</a><SiteCredit /></footer></div>;
 }

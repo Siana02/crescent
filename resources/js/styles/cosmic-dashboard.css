@@ -1211,3 +1211,18 @@
 .cosmic-quick-actions button,.cosmic-quick-actions a{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 14px;border:1px solid #ead2ea;border-radius:999px;background:#fff;color:#7c5686;font-size:13px;font-weight:800;text-decoration:none;cursor:pointer}
 .cosmic-quick-actions span{color:#e28bb8}
 .cosmic-quick-actions button:hover,.cosmic-quick-actions a:hover{background:#fdeaf4}
+
+/* Message board polish: avatars + names */
+.cosmic-chat-msg{display:flex;align-items:flex-end;gap:8px;max-width:100%}
+.cosmic-chat-msg.is-mine{flex-direction:row-reverse;align-self:flex-end}
+.cosmic-chat-msg .cosmic-chat-bubble{align-self:auto}
+.cosmic-chat-msg__avatar{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;color:#fff;background:linear-gradient(135deg,#d98bc0,#9b7ad8)}
+.cosmic-chat-msg.is-mine .cosmic-chat-msg__avatar{background:linear-gradient(135deg,#f3a3c8,#c58be0)}
+.cosmic-chat-msg__name{display:block;margin-bottom:2px;color:#a07fb0;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.cosmic-chat-msg.is-mine .cosmic-chat-msg__name{text-align:right}
+
+/* Footer legal links */
+.site-footer__legal{display:flex;gap:14px;flex-wrap:wrap}
+.site-footer__legal a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+.cosmic-footer > div{flex-wrap:wrap}
+.pregnancy-footer a+a,.editorial-footer>a+a,.ch-footer>a+a{margin-left:12px}

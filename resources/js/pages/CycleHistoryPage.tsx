@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import SiteCredit from '../components/SiteCredit';
 import { ArrowLeft, ArrowRight, ChevronDown, ChevronLeft, ChevronRight, Flower2, Heart, Info, MoonStar, Sparkles } from 'lucide-react';
 import '../styles/cycle-history.css';
 
@@ -117,6 +118,6 @@ function CycleHistoryContent(){
    {cycles.filter(c=>c.cycleDays!==null).length===0?<p className="ch-chart-empty">Log at least two period start dates to see your cycle-length graph.</p>:<div className="ch-chart" role="img" aria-label="Bar chart of recent cycle lengths">{cycles.filter(c=>c.cycleDays!==null).slice(0,8).reverse().map(c=><div className="ch-chart-column" key={c.start}><span>{c.cycleDays}d</span><div className="ch-chart-bar" style={{height:Math.max(12,Math.min(100,((c.cycleDays??0)/45)*100))+'%'}}/><small>{pretty(c.start)}</small></div>)}</div>}
    <p className="ch-chart-note"><Info size={15}/> Cycle lengths use the first day of one period to the first day of the next. Predictions and flower colours are estimates, not contraception or diagnosis.</p>
   </section>
-  <footer className="ch-footer"><a href="/dashboard"><ArrowLeft size={16}/> Back to your dashboard</a><p>Made with care, for every version of your rhythm. ✿</p></footer>
+  <footer className="ch-footer"><a href="/dashboard"><ArrowLeft size={16}/> Back to your dashboard</a><p>Made with care, for every version of your rhythm. ✿</p><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/support">Help &amp; support</a><SiteCredit /></footer>
  </main>;
 }

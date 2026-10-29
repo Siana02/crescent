@@ -24,3 +24,7 @@
 .auth-birth-fields legend{padding:0 5px;color:#8c6b98;font-size:.8rem;font-weight:800}
 .auth-birth-fields input{width:100%;box-sizing:border-box}
 @media(max-width:480px){.auth-invite-code-row{grid-template-columns:1fr}.auth-invite-code-row button{width:100%}}
+
+.auth-consent{display:flex!important;flex-direction:row!important;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid #e8d4ef;border-radius:14px;background:#fbf5ff;font-size:12px;line-height:1.55;color:#5d4a68;font-weight:400}
+.auth-consent input{flex:none;width:18px;height:18px;margin-top:2px;accent-color:#a76bc4}
+.auth-consent a{color:#8b4fa8;font-weight:700;text-decoration:underline}

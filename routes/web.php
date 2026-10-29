@@ -19,6 +19,13 @@ Route::get('/api/app-version', fn () => response()->json(['version' => \App\Supp
 Route::view('/', 'welcome');
 Route::view('/login', 'welcome')->name('login');
 Route::view('/register', 'welcome')->name('register');
+Route::get('/sitemap.xml', fn () => response(
+    '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+    .collect(['/', '/privacy', '/terms', '/support'])->map(fn ($path) => '<url><loc>'.e(url($path)).'</loc></url>')->implode('')
+    .'</urlset>',
+    200,
+    ['Content-Type' => 'application/xml']
+));
 Route::get('/privacy', fn () => view('welcome'));
 Route::get('/terms', fn () => view('welcome'));
 Route::get('/support', fn () => view('welcome'));

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import SiteCredit from '../components/SiteCredit';
 import '../styles/cosmic-dashboard.css';
 
 const EMAIL = 'hello@marswebz.com';
@@ -54,6 +55,6 @@ export default function LegalPage({ kind }: { kind: Kind }) {
             <section className="cosmic-welcome"><div><p className="cosmic-eyebrow">✧ {page.eyebrow} ✧</p><h1>{page.title}</h1><p>{page.intro}</p>{page.updated && <small>{page.updated}</small>}</div><div className="cosmic-welcome__art"><span>{kind === 'support' ? '💌' : '✿'}</span><i>✦</i></div></section>
             {page.blocks.map(block => <section key={block.title}><h2>{block.title}</h2>{block.body.map((paragraph, index) => <p key={index}>{paragraph}</p>)}</section>)}
         </main>
-        <footer className="cosmic-footer"><a className="cosmic-brand" href="/"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a><p>Your journey, your boundaries, your little universe.</p><div><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/support">Help &amp; support</a></div></footer>
+        <footer className="cosmic-footer"><a className="cosmic-brand" href="/"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a><p>Your journey, your boundaries, your little universe.</p><div><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/support">Help &amp; support</a></div><SiteCredit /></footer>
     </div>;
 }
