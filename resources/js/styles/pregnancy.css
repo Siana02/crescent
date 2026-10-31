@@ -207,3 +207,56 @@
 .journey-section-nav a:hover,.journey-section-nav a:focus-visible{border-color:#d9b3cf;color:#5b3a52}
 html{scroll-behavior:smooth}
 section[id]{scroll-margin-top:64px}
+
+/* Pregnancy portal views, calendar, check-in, trends */
+.pview-nav{padding:8px clamp(18px,5vw,68px);background:rgba(255,248,251,.96);border-bottom:1px solid #f0e3ee;position:sticky;top:0;z-index:6}
+.pview-nav ul{list-style:none;margin:0;padding:0;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.pview-nav button,.pview-nav a{font:inherit;font-size:13px;font-weight:700;padding:8px 14px;border-radius:999px;border:1px solid #f0e3ee;background:#fff;color:#7a5d73;text-decoration:none;white-space:nowrap;cursor:pointer}
+.pview-nav button.is-active{background:#a78bb4;border-color:#a78bb4;color:#fff}
+.pview-nav button:focus-visible,.pview-nav a:focus-visible,.pcal button:focus-visible,.pcheck button:focus-visible{outline:2px solid #7a5d99;outline-offset:2px}
+.pview-today,.pview-section{background:#fff;border:1px solid #f0e3ee;border-radius:24px;padding:clamp(18px,4vw,32px);margin:20px 0;max-width:100%}
+.pview-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:16px 0}
+.pview-card{background:#fff8fb;border:1px solid #f0e3ee;border-radius:18px;padding:16px}
+.pview-card h3{margin:.3em 0}
+.pview-note{font-size:13px;color:#7a5d73;background:#faf3f9;border-radius:12px;padding:8px 12px}
+.pview-empty{color:#8a7384;font-style:italic}
+.pview-actions,.pcheck-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.pview-link{background:none;border:0;color:#7a5d99;text-decoration:underline;cursor:pointer;font:inherit;padding:4px 0}
+.pview-tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:#f3e3ef;color:#7a5d73}
+.pview-weeknav{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.pview-weeknav button{border:1px solid #e3d2e0;background:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;font:inherit}
+.pview-weeknav button:disabled{opacity:.4;cursor:default}
+.pview-urgent{border-color:#e9b8b8;background:#fff6f6}
+.pview-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.pview-list li{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1px solid #f0e3ee;border-radius:14px;padding:12px;background:#fff}
+.pview-list li.is-done{opacity:.6}
+.pview-row-actions{display:flex;gap:8px}
+.pview-row-actions button{border:1px solid #e3d2e0;background:#fff;border-radius:999px;padding:4px 12px;cursor:pointer;font:inherit;font-size:12px}
+.pcheck fieldset{border:0;padding:0;margin:0 0 16px}
+.pcheck legend{font-weight:700;margin-bottom:8px}
+.pcheck-grid{display:flex;flex-wrap:wrap;gap:8px}
+.pcheck-chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0}
+.pcheck-chips button{border:1px solid #e3d2e0;background:#fff;border-radius:999px;padding:4px 12px;cursor:pointer;font:inherit;font-size:12px}
+.pcheck-chips button.is-selected{background:#a78bb4;color:#fff;border-color:#a78bb4}
+.pcheck-detail{padding:10px 0;border-bottom:1px dashed #f0e3ee}
+.pcal-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.pcal-head button{border:1px solid #e3d2e0;background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer;font:inherit;margin-left:6px}
+.pcal-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:#7a5d73;margin:8px 0}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%}
+.dot--entry{background:#a78bb4}.dot--reminder{background:#e08fae}.dot--est{background:#d9b46c}
+.pcal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.pcal-dow{text-align:center;font-size:11px;font-weight:700;color:#b18ba9}
+.pcal-day{min-height:58px;border:1px solid #f0e3ee;border-radius:12px;background:#fff;padding:4px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;font:inherit;min-width:0}
+.pcal-day small{font-size:10px;color:#8a7384}
+.pcal-day.t2{background:#fffaf6}.pcal-day.t3{background:#fbf7ff}
+.pcal-day.is-today{border-color:#a78bb4;font-weight:800}
+.pcal-day.is-selected{background:#a78bb4;color:#fff}.pcal-day.is-selected small{color:#fff}
+.pcal-dots{display:flex;gap:3px;min-height:7px}
+.pcal-panel{background:#fff;border:1px solid #f0e3ee;border-radius:20px;padding:clamp(16px,3vw,26px);margin-top:16px}
+.ptrends-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.ptrends-bars{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.ptrends-bars li{display:grid;grid-template-columns:110px 1fr 24px;gap:8px;align-items:center;font-size:13px}
+.ptrends-bars i{display:block;height:8px;border-radius:99px;background:#a78bb4}
+.ptrends-timeline{font-size:13px;padding-left:18px}
+.pregnancy-hero__date{font-size:13px;color:#7a5d73;margin:0}
+@media(max-width:520px){.pcal-day{min-height:48px}.pcal-day small{display:none}}

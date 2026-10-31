@@ -81,6 +81,11 @@ Route::middleware(['auth', 'active.account'])->group(function () {
     Route::post('/api/sex-logs', [SexLogController::class, 'store'])->middleware('throttle:30,1');
     Route::put('/api/pregnancy', [PregnancyController::class, 'update']);
     Route::post('/api/pregnancy/checkins', [PregnancyController::class, 'checkin'])->middleware('throttle:30,1');
+    Route::get('/api/pregnancy/checkins', [PregnancyController::class, 'checkins'])->middleware('throttle:60,1');
+    Route::put('/api/pregnancy/checkins/{date}', [PregnancyController::class, 'updateCheckin'])->middleware('throttle:30,1');
+    Route::delete('/api/pregnancy/checkins/{date}', [PregnancyController::class, 'destroyCheckin'])->middleware('throttle:30,1');
+    Route::patch('/api/pregnancy/reminders/{reminder}', [PregnancyController::class, 'updateReminder'])->middleware('throttle:30,1');
+    Route::delete('/api/pregnancy/reminders/{reminder}', [PregnancyController::class, 'destroyReminder'])->middleware('throttle:30,1');
     Route::post('/api/pregnancy/postpartum', [PregnancyController::class, 'transitionPostpartum']);
     Route::patch('/api/pregnancy/baby-details', [PregnancyController::class, 'updateBabyDetails']);
     Route::get('/api/pregnancy/reminders', [PregnancyController::class, 'reminders']);
