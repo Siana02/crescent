@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pregnancy;
+use App\Models\PregnancyCheckin;
 use App\Models\PregnancyReminder;
 use App\Models\Relationship;
 use Carbon\CarbonImmutable;
@@ -12,6 +13,8 @@ use Illuminate\Validation\Rule;
 
 class PregnancyController extends Controller
 {
+    public const REMINDER_CATEGORIES = ['appointment', 'scan', 'medication', 'class', 'shopping', 'wellbeing', 'support', 'other'];
+
     public function update(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -67,28 +70,83 @@ class PregnancyController extends Controller
         ], 201);
     }
 
-    public function checkin(Request $request): JsonResponse
+    public const SYMPTOMS = [
+        'nausea', 'vomiting', 'heartburn', 'constipation', 'appetite_changes', 'food_aversions', 'food_cravings',
+        'backache', 'pelvic_discomfort', 'headache', 'breast_tenderness', 'swelling', 'muscle_discomfort',
+        'fatigue', 'insomnia', 'sleep_changes',
+        'anxiety', 'irritability', 'low_mood', 'feeling_overwhelmed', 'hopefulness', 'mood_changes',
+        'movement_noticed', 'other_observation',
+    ];
+
+    private function checkinRules(string $today): array
     {
-        $pregnancy = $request->user()->pregnancies()->where('status', 'active')->latest()->firstOrFail();
-        $timezone = $request->user()->cycleProfile?->timezone ?: config('app.timezone', 'UTC');
-        $today = CarbonImmutable::today($timezone)->toDateString();
-
-        $symptoms = [
-            'nausea', 'fatigue', 'food_cravings', 'backache', 'heartburn',
-            'sleep_changes', 'headache', 'swelling', 'mood_changes',
-            'movement_noticed', 'constipation', 'pelvic_discomfort',
-        ];
-
-        $validated = $request->validate([
-            'log_date' => ['sometimes', 'date_format:Y-m-d', 'before_or_equal:'.$today],
-            'symptoms' => ['sometimes', 'array', 'max:12'],
-            'symptoms.*' => ['string', Rule::in($symptoms)],
+        return [
+            'symptoms' => ['sometimes', 'array', 'max:'.count(self::SYMPTOMS)],
+            'symptoms.*' => ['string', 'distinct', Rule::in(self::SYMPTOMS)],
             'mood' => ['nullable', Rule::in(['calm', 'happy', 'tender', 'anxious', 'overwhelmed', 'irritable', 'hopeful', 'tired'])],
             'energy_level' => ['nullable', Rule::in(['low', 'balanced', 'high'])],
             'notes' => ['nullable', 'string', 'max:1000'],
-        ]);
+            'details' => ['sometimes', 'nullable', 'array', 'max:3'],
+            'details.severity' => ['sometimes', 'array', 'max:'.count(self::SYMPTOMS)],
+            'details.severity.*' => ['integer', 'between:1,3'],
+            'details.duration' => ['sometimes', 'array', 'max:'.count(self::SYMPTOMS)],
+            'details.duration.*' => [Rule::in(['brief', 'part_of_day', 'all_day'])],
+            'details.frequency' => ['sometimes', 'array', 'max:'.count(self::SYMPTOMS)],
+            'details.frequency.*' => [Rule::in(['once', 'a_few_times', 'constant'])],
+            'details.sleep_quality' => ['sometimes', 'nullable', Rule::in(['poor', 'fair', 'good'])],
+        ];
+    }
 
-        if (empty($validated['symptoms']) && empty($validated['mood']) && empty($validated['energy_level']) && empty($validated['notes'])) {
+    /** Keep only per-symptom details for symptoms that were actually selected. */
+    private function cleanDetails(array $validated): ?array
+    {
+        $details = $validated['details'] ?? [];
+        $selected = $validated['symptoms'] ?? [];
+        $clean = [];
+        foreach (['severity', 'duration', 'frequency'] as $key) {
+            $values = array_intersect_key($details[$key] ?? [], array_flip($selected));
+            if ($values) {
+                $clean[$key] = $values;
+            }
+        }
+        if (! empty($details['sleep_quality'])) {
+            $clean['sleep_quality'] = $details['sleep_quality'];
+        }
+
+        return $clean ?: null;
+    }
+
+    private function checkinPayload(PregnancyCheckin $checkin): array
+    {
+        return [
+            'log_date' => $checkin->log_date->format('Y-m-d'),
+            'symptoms' => $checkin->symptoms ?? [],
+            'mood' => $checkin->mood,
+            'energy_level' => $checkin->energy_level,
+            'notes' => $checkin->notes,
+            'details' => $checkin->details ?? (object) [],
+        ];
+    }
+
+    /** The user's own pregnancy (active or, for history, postpartum). Never another user's. */
+    private function ownPregnancy(Request $request, array $statuses = ['active', 'postpartum']): Pregnancy
+    {
+        return $request->user()->pregnancies()->whereIn('status', $statuses)->latest()->firstOrFail();
+    }
+
+    private function userToday(Request $request): string
+    {
+        return CarbonImmutable::today($request->user()->cycleProfile?->timezone ?: config('app.timezone', 'UTC'))->toDateString();
+    }
+
+    public function checkin(Request $request): JsonResponse
+    {
+        $pregnancy = $request->user()->pregnancies()->where('status', 'active')->latest()->firstOrFail();
+        $today = $this->userToday($request);
+
+        $validated = $request->validate(['log_date' => ['sometimes', 'date_format:Y-m-d', 'before_or_equal:'.$today]] + $this->checkinRules($today));
+
+        if (empty($validated['symptoms']) && empty($validated['mood']) && empty($validated['energy_level']) && empty($validated['notes']) && empty($validated['details']['sleep_quality'])) {
             return response()->json(['message' => 'Choose one little thing to log first.'], 422);
         }
 
@@ -99,19 +157,98 @@ class PregnancyController extends Controller
                 'mood' => $validated['mood'] ?? null,
                 'energy_level' => $validated['energy_level'] ?? null,
                 'notes' => $validated['notes'] ?? null,
+                'details' => $this->cleanDetails($validated),
             ],
         );
 
         return response()->json([
             'message' => 'Your check-in is tucked safely into your pregnancy journal.',
-            'checkin' => [
-                'log_date' => $checkin->log_date->format('Y-m-d'),
-                'symptoms' => $checkin->symptoms ?? [],
-                'mood' => $checkin->mood,
-                'energy_level' => $checkin->energy_level,
-                'notes' => $checkin->notes,
-            ],
+            'checkin' => $this->checkinPayload($checkin),
         ], 201);
+    }
+
+    /** History: ?date=Y-m-d for one day, or ?from=&to= (max 400 days) for calendar markers, trends and editing. */
+    public function checkins(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'date' => ['sometimes', 'date_format:Y-m-d'],
+            'from' => ['required_without:date', 'date_format:Y-m-d'],
+            'to' => ['required_without:date', 'date_format:Y-m-d', 'after_or_equal:from'],
+        ]);
+        $pregnancy = $this->ownPregnancy($request);
+        $query = $pregnancy->checkins();
+        if (isset($validated['date'])) {
+            $query->whereDate('log_date', $validated['date']);
+        } else {
+            abort_if(CarbonImmutable::parse($validated['from'])->diffInDays(CarbonImmutable::parse($validated['to'])) > 400, 422, 'Please choose a date range of up to 400 days.');
+            $query->whereDate('log_date', '>=', $validated['from'])->whereDate('log_date', '<=', $validated['to']);
+        }
+
+        return response()->json(['checkins' => $query->orderBy('log_date')->get()->map(fn ($c) => $this->checkinPayload($c))->values()]);
+    }
+
+    public function updateCheckin(Request $request, string $date): JsonResponse
+    {
+        validator(['date' => $date], ['date' => ['date_format:Y-m-d']])->validate();
+        $pregnancy = $this->ownPregnancy($request);
+        $checkin = $pregnancy->checkins()->whereDate('log_date', $date)->firstOrFail();
+        $validated = $request->validate($this->checkinRules($this->userToday($request)));
+        if (empty($validated['symptoms']) && empty($validated['mood']) && empty($validated['energy_level']) && empty($validated['notes']) && empty($validated['details']['sleep_quality'])) {
+            return response()->json(['message' => 'Delete the entry if you would like to remove it.'], 422);
+        }
+        $checkin->update([
+            'symptoms' => $validated['symptoms'] ?? [],
+            'mood' => $validated['mood'] ?? null,
+            'energy_level' => $validated['energy_level'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+            'details' => $this->cleanDetails($validated),
+        ]);
+
+        return response()->json(['message' => 'Your entry has been updated.', 'checkin' => $this->checkinPayload($checkin->refresh())]);
+    }
+
+    public function destroyCheckin(Request $request, string $date): JsonResponse
+    {
+        validator(['date' => $date], ['date' => ['date_format:Y-m-d']])->validate();
+        $this->ownPregnancy($request)->checkins()->whereDate('log_date', $date)->firstOrFail()->delete();
+
+        return response()->json(['message' => 'Your entry has been removed.']);
+    }
+
+    private function ownReminder(Request $request, PregnancyReminder $reminder): PregnancyReminder
+    {
+        // Only reminders on the user's own pregnancy, or ones the user created for a connected partner's pregnancy.
+        $ownIds = $request->user()->pregnancies()->pluck('id');
+        abort_unless($ownIds->contains($reminder->pregnancy_id) || $reminder->created_by === $request->user()->id, 403);
+
+        return $reminder;
+    }
+
+    public function updateReminder(Request $request, PregnancyReminder $reminder): JsonResponse
+    {
+        $this->ownReminder($request, $reminder);
+        $validated = $request->validate([
+            'title' => ['sometimes', 'string', 'max:140'],
+            'category' => ['sometimes', Rule::in(self::REMINDER_CATEGORIES)],
+            'remind_at' => ['sometimes', 'date'],
+            'notes' => ['sometimes', 'nullable', 'string', 'max:1000'],
+            'share_with_partner' => ['sometimes', 'boolean'],
+            'completed' => ['sometimes', 'boolean'],
+        ]);
+        if (array_key_exists('completed', $validated)) {
+            $validated['completed_at'] = $validated['completed'] ? now() : null;
+            unset($validated['completed']);
+        }
+        $reminder->update($validated);
+
+        return response()->json(['message' => 'Reminder updated.', 'reminder' => $reminder->refresh()]);
+    }
+
+    public function destroyReminder(Request $request, PregnancyReminder $reminder): JsonResponse
+    {
+        $this->ownReminder($request, $reminder)->delete();
+
+        return response()->json(['message' => 'Reminder removed.']);
     }
 
     public function transitionPostpartum(Request $request): JsonResponse
@@ -180,7 +317,7 @@ class PregnancyController extends Controller
     {
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:140'],
-            'category' => ['required', Rule::in(['appointment', 'shopping', 'class', 'medication', 'support', 'other'])],
+            'category' => ['required', Rule::in(self::REMINDER_CATEGORIES)],
             'remind_at' => ['required', 'date', 'after:now'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'share_with_partner' => ['sometimes', 'boolean'],

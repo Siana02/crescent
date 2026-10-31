@@ -3,7 +3,7 @@ import '../styles/pregnancy.css';
 
 type Reminder = { id:number; title:string; category:string; remind_at:string; notes:string|null; share_with_partner:boolean; completed_at:string|null; created_by_name?:string|null };
 type Baby = { name?:string|null; birth_date?:string|null; birth_time?:string|null; birth_place?:string|null };
-type Props = { week:number; trimester:number; postpartum?:boolean; baby?:Baby|null; partnerView?:boolean };
+type Props = { week:number; trimester:number; postpartum?:boolean; baby?:Baby|null; partnerView?:boolean; showPlanner?:boolean };
 
 const WEEKLY_NUTRITION = [
  'This week, keep water within reach and sip regularly. If nausea makes large meals difficult, small, frequent meals may feel easier.',
@@ -116,7 +116,7 @@ function signForDate(value:string) {
 }
 function csrf() { return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? ''; }
 
-export default function PregnancyJourneyExtras({week,trimester,postpartum=false,baby=null,partnerView=false}:Props) {
+export default function PregnancyJourneyExtras({week,trimester,postpartum=false,baby=null,partnerView=false,showPlanner=true}:Props) {
  const [reminders,setReminders]=useState<Reminder[]>([]);
  const [title,setTitle]=useState('');
  const [category,setCategory]=useState('appointment');
@@ -176,7 +176,7 @@ export default function PregnancyJourneyExtras({week,trimester,postpartum=false,
    <p>{baby.birth_time&&baby.birth_place? `Birth details saved: ${baby.birth_time} · ${baby.birth_place}. `:'You can add a birth time and birthplace in Profile & settings to keep a fuller record. '}The Sun sign is date-based and approximate near sign boundaries; a complete natal chart needs accurate birth details and an astrology calculation.</p>
    <a href="/astrology?subject=baby">Open baby’s Cosmic Atelier ↗</a>
   </section>}
-  <section className="pregnancy-petal-card pregnancy-reminder-planner">
+  {showPlanner&&<section className="pregnancy-petal-card pregnancy-reminder-planner">
    <p className="pregnancy-eyebrow">LET YOUR PEOPLE HELP</p><h2>Appointments, errands & little reminders</h2><p>Create a reminder for a clinic visit, baby shopping, transport, a birth class or a practical check-in. Shared reminders appear in the linked partner’s Crescent space.</p>
    <form onSubmit={saveReminder} className="pregnancy-reminder-form">
     <label>What needs remembering?<input required maxLength={140} value={title} onChange={e=>setTitle(e.target.value)} placeholder="e.g. Anatomy scan appointment"/></label>
@@ -188,7 +188,7 @@ export default function PregnancyJourneyExtras({week,trimester,postpartum=false,
    </form>
    <div className="pregnancy-reminder-list"><h3>Upcoming reminders</h3>{upcomingReminders.length===0?<p>No upcoming reminders yet. Add one above when it would make life easier.</p>:upcomingReminders.map(reminder=><article key={reminder.id}><span aria-hidden="true">{reminder.category==='appointment'?'♡':reminder.category==='shopping'?'✿':'✧'}</span><div><strong>{reminder.title}</strong><small>{displayDate(reminder.remind_at)}{reminder.share_with_partner?' · Shared with partner':' · Private'}{reminder.created_by_name?' · Added by '+reminder.created_by_name:''}</small>{reminder.notes&&<p>{reminder.notes}</p>}</div></article>)}</div>
    <small className="pregnancy-reminder-disclaimer">These are in-app shared reminders, not emergency alerts or guaranteed push notifications. Keep using your clinic’s appointment system and your device calendar for time-critical reminders.</small>
-  </section>
+  </section>}
   {!postpartum&&<section className="pregnancy-petal-card"><p className="pregnancy-eyebrow">A GENTLE SAFETY NOTE</p><h2>When something feels wrong, ask for help</h2><p>Severe or persistent headache, vision changes, heavy bleeding, chest pain, trouble breathing, severe abdominal pain, or reduced fetal movement after you have an established movement pattern warrant urgent professional advice. Follow local emergency guidance; do not wait for an app response.</p><p className="pregnancy-source-links"><a href="https://www.acog.org/womens-health/faqs/urgent-maternal-warning-signs" target="_blank" rel="noreferrer">ACOG · urgent maternal warning signs</a></p></section>}
  </div>;
 }

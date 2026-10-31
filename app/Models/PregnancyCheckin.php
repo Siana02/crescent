@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['pregnancy_id', 'log_date', 'symptoms', 'mood', 'energy_level', 'notes'])]
+#[Fillable(['pregnancy_id', 'log_date', 'symptoms', 'mood', 'energy_level', 'notes', 'details'])]
 class PregnancyCheckin extends Model
 {
     public function pregnancy(): BelongsTo
@@ -19,6 +19,7 @@ class PregnancyCheckin extends Model
         return [
             'log_date' => 'date:Y-m-d',
             'symptoms' => 'array',
+            'details' => 'array',
         ];
     }
 }

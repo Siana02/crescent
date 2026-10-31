@@ -72,11 +72,11 @@ class DashboardController extends Controller
         $pregnancySummary = null;
 
         if ($pregnancy) {
-            $dueDate = CarbonImmutable::parse($pregnancy->due_date->format('Y-m-d'), $profile->timezone)->startOfDay();
-            $daysUntilDue = $today->diffInDays($dueDate, false);
-            $gestationalDays = max(0, 280 - $daysUntilDue);
-            $gestationalWeek = max(1, (int) floor($gestationalDays / 7));
-            $trimester = $gestationalWeek <= 13 ? 1 : ($gestationalWeek <= 27 ? 2 : 3);
+            $dating = \App\Support\PregnancyDating::onDate($pregnancy->due_date, $today, $profile->timezone);
+            $daysUntilDue = $dating['days_until_due'];
+            $gestationalDays = $dating['gestational_days'];
+            $gestationalWeek = $dating['gestational_week'];
+            $trimester = $dating['trimester'];
             $todayPregnancyCheckin = $isPostpartumJourney ? null : $pregnancy->checkins()->whereDate('log_date', $today->toDateString())->first();
             $postpartumLogsToday = $isPostpartumJourney ? $pregnancy->postpartumLogs()->whereDate('log_date', $today->toDateString())->latest()->get()->map(fn ($log) => ['id' => $log->id, 'log_date' => $log->log_date->format('Y-m-d'), 'category' => $log->category, 'notes' => $log->notes])->values() : collect();
 
@@ -103,6 +103,7 @@ class DashboardController extends Controller
                     'mood' => $todayPregnancyCheckin->mood,
                     'energy_level' => $todayPregnancyCheckin->energy_level,
                     'notes' => $todayPregnancyCheckin->notes,
+                    'details' => $todayPregnancyCheckin->details ?? (object) [],
                 ] : null,
             ];
         }
