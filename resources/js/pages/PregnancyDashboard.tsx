@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import SiteCredit from '../components/SiteCredit';
 import Button from '../components/Button';
 import JourneyNavigation from '../components/JourneyNavigation';
+import JourneySectionNav from '../components/JourneySectionNav';
 import SharedPartnerSpace from '../components/SharedPartnerSpace';
 import PregnancyJourneyExtras from '../components/PregnancyJourneyExtras';
 import { getMoonPhase } from '../utils/moonPhase';
@@ -206,6 +207,7 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
             <div className="pregnancy-header__actions"><span>A softer space for {firstName}</span><Button variant="outline" onClick={onLogout}>Sign out</Button></div>
         </header>
         <JourneyNavigation active="dashboard" journey="pregnancy" />
+        <JourneySectionNav sections={[{ id: 'pregnancy-overview', label: 'Right now' }, { id: 'pregnancy-week-guide', label: 'This week' }, { id: 'pregnancy-checkin', label: 'Check-in' }, ...(pregnancy.wants_baby_astrology ? [{ id: 'pregnancy-cosmos', label: 'Star child' }] : []), { id: 'pregnancy-companion', label: 'Your people' }, { id: 'pregnancy-transition', label: 'Next chapter' }]} />
         <main className="pregnancy-main">
             <section className="pregnancy-hero">
                 <div className="pregnancy-hero__sparkles" aria-hidden="true"><span>✦</span><span>✧</span><span>☾</span><span>❀</span></div>
@@ -215,7 +217,7 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
                 <div className="pregnancy-hero__chips"><span>Trimester {pregnancy.trimester}</span><span>{daysCopy}</span></div>
             </section>
 
-            <section className="pregnancy-overview">
+            <section id="pregnancy-overview" className="pregnancy-overview">
                 <article className="pregnancy-week-card">
                     <div className="pregnancy-week-ring" style={{ background: 'conic-gradient(#a78bb4 ' + progress + '%, #eee4f0 0)' }}><div><strong>{week}</strong><span>WEEK</span></div></div>
                     <div className="pregnancy-week-card__copy"><p className="pregnancy-eyebrow">YOUR PREGNANCY, RIGHT NOW</p><h2>Week {week} · {pregnancy.gestational_day_in_week} days</h2><p>{focus.title}</p><small>{focus.copy}</small>{sizeComparison(week) && <div className="pregnancy-size-comparison"><span aria-hidden="true">{sizeComparison(week)?.icon}</span><div><small>JUST-FOR-FUN SIZE COMPARISON</small><strong>About the size of a {sizeComparison(week)?.size}</strong><small className="pregnancy-size-note">A playful comparison only — growth varies and this is not a growth assessment.</small></div></div>}</div>
@@ -223,14 +225,14 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
                 <article className="pregnancy-due-card"><span aria-hidden="true">🌷</span><p className="pregnancy-eyebrow">YOUR ESTIMATED DUE DATE</p><strong>{prettyDate(pregnancy.due_date)}</strong><p>{daysCopy}</p><small>Dates are estimates, not promises. Your maternity care team may revise your due date.</small><a className="pregnancy-edit-link" href="/onboarding?journey=pregnancy">Update dates or cosmic preferences ↗</a></article>
             </section>
 
-            <section className="pregnancy-week-guide">
+            <section id="pregnancy-week-guide" className="pregnancy-week-guide">
                 <div><p className="pregnancy-eyebrow">A LITTLE WEEK-BY-WEEK SPACE</p><h2>{focus.title}</h2><p>{focus.copy}</p></div>
                 <div className="pregnancy-week-guide__seal"><span aria-hidden="true">✧</span><strong>{week <= 13 ? 'FIRST' : week <= 27 ? 'SECOND' : 'THIRD'} TRIMESTER</strong><small>One week at a time</small></div>
             </section>
 
             <PregnancyJourneyExtras week={week} trimester={pregnancy.trimester} />
 
-            {pregnancy.wants_baby_astrology && <section className="pregnancy-cosmos">
+            {pregnancy.wants_baby_astrology && <section id="pregnancy-cosmos" className="pregnancy-cosmos">
                 <div className="pregnancy-cosmos__intro"><p className="pregnancy-eyebrow">THE STAR CHILD KEEPSAKE</p><h2>A sky snapshot for the date you’re dreaming of</h2><p>A playful look at the sky around your estimated due date — not a prediction of the actual birth chart.</p></div>
                 <div className="pregnancy-cosmos__cards">
                     <article><span className="pregnancy-cosmos__icon">{sunSignForDate(pregnancy.due_date)}</span><small>Possible Sun sign if born on the due date</small><strong>{sunSignForDate(pregnancy.due_date)}</strong></article>
@@ -239,7 +241,7 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
                 <p className="pregnancy-cosmos__disclaimer">The actual birth date, time and place affect a birth chart. Due dates can change, and astrology is for enjoyment rather than medical or developmental guidance.</p>
             </section>}
 
-            <section className="pregnancy-checkin-section">
+            <section id="pregnancy-checkin" className="pregnancy-checkin-section">
                 <div className="pregnancy-section-heading"><p className="pregnancy-eyebrow">YOUR DAILY LITTLE CHECK-IN</p><h2>How are you feeling today?</h2><p>Log only what feels useful. There are no perfect answers here.</p></div>
                 <form className="pregnancy-checkin" onSubmit={saveCheckin}>
                     <fieldset><legend>Anything you’ve noticed? <small>Choose any that fit today.</small></legend><div className="pregnancy-symptom-grid">{SYMPTOMS.map(([value, label, icon]) => <button type="button" key={value} aria-pressed={symptoms.includes(value)} className={symptoms.includes(value) ? 'pregnancy-symptom is-selected' : 'pregnancy-symptom'} onClick={() => setSymptoms(current => current.includes(value) ? current.filter(item => item !== value) : [...current, value])}><span aria-hidden="true">{icon}</span><strong>{label}</strong><i aria-hidden="true">{symptoms.includes(value) ? '✦' : '+'}</i></button>)}</div></fieldset>
@@ -251,7 +253,7 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
                 </form>
             </section>
 
-            <section className="pregnancy-companion">
+            <section id="pregnancy-companion" className="pregnancy-companion">
                 <div><p className="pregnancy-eyebrow">YOUR PEOPLE, YOUR CHOICE</p><h2>Invite someone into this chapter</h2><p>You can begin solo and invite a partner or companion whenever you’re ready. Connecting never switches sharing on automatically.</p></div>
                 <form className="pregnancy-invite-form" onSubmit={createInvite}><label>Choose a companion role<select value={inviteType} onChange={event => setInviteType(event.target.value as 'observer' | 'co_tracker')}><option value="observer">Partner or observer</option><option value="co_tracker">Co-cycling companion</option></select></label>
                     <fieldset className="pregnancy-invite-sharing"><legend>Choose what to share from the start</legend>
@@ -266,7 +268,7 @@ export default function PregnancyDashboard({ data, onLogout, onRefresh }: Props)
 
             <SharedPartnerSpace />
 
-            <section className="pregnancy-transition">
+            <section id="pregnancy-transition" className="pregnancy-transition">
                 <div><p className="pregnancy-eyebrow">WHEN YOUR CHAPTER CHANGES</p><h2>Make room for the next little universe</h2><p>When your baby has arrived, enter their birth details to create a little keepsake and move into your postpartum and newborn journal. Your pregnancy history stays saved.</p></div>
                 {!showBirthForm && <Button type="button" variant="outline" onClick={() => setShowBirthForm(true)}>My baby has arrived · begin postpartum</Button>}
                 {showBirthForm && <form className="pregnancy-birth-form" onSubmit={transitionToPostpartum}>
