@@ -37,6 +37,8 @@ class CycleTimelineSyncTest extends TestCase
         $this->getJson('/api/dashboard')
             ->assertOk()
             ->assertJsonPath('cycle_day', 1)
+            ->assertJsonPath('period_is_active', true)
+            ->assertJsonPath('current_period_day', 1)
             ->assertJsonPath('latest_period.start_date', $currentStart)
             ->assertJsonPath('period_history.0.start_date', $previousStart)
             ->assertJsonPath('period_history.0.end_date', $previousEnd)
