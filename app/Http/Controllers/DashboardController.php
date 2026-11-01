@@ -159,6 +159,7 @@ class DashboardController extends Controller
                 $sharedPregnancySummary = null;
                 $sharedWellbeing = null;
                 $sharedIntimacy = null;
+                $sharedWellbeingHistory = null;
 
                 if ($companion && $companionJourney && in_array($companionJourney, ['cycle', 'fertility'], true) && $companionPreferences['cycle_details']) {
                     $sharedPeriods = $companion->periodLogs()->orderByDesc('start_date')->limit(12)->get();
@@ -272,8 +273,9 @@ class DashboardController extends Controller
 
                 if ($companion && $companionPreferences['intimate_updates'] && in_array($companionJourney, ['cycle', 'fertility'], true)) {
                     $sharedIntimacy = $companion->sexLogs()
+                        ->whereDate('log_date', '>=', CarbonImmutable::today($companionProfile?->timezone ?: 'UTC')->subMonths(6)->toDateString())
                         ->orderByDesc('log_date')
-                        ->limit(7)
+                        ->limit(180)
                         ->get()
                         ->map(fn ($log) => [
                             'log_date' => $log->log_date->format('Y-m-d'),
@@ -282,6 +284,22 @@ class DashboardController extends Controller
                             'protection_methods' => $log->protection_methods ?? [],
                             'orgasm' => $log->orgasm,
                             'notes' => $log->notes,
+                        ])->values();
+                }
+
+                if ($companion && $companionPreferences['wellbeing_updates'] && in_array($companionJourney, ['cycle', 'fertility'], true)) {
+                    $companionToday = CarbonImmutable::today($companionProfile?->timezone ?: 'UTC')->toDateString();
+                    $sharedWellbeingHistory = $companion->dailyCheckins()
+                        ->whereDate('log_date', '>=', CarbonImmutable::today($companionProfile?->timezone ?: 'UTC')->subMonths(6)->toDateString())
+                        ->orderByDesc('log_date')
+                        ->limit(180)
+                        ->get()
+                        ->map(fn ($checkin) => [
+                            'log_date' => $checkin->log_date->format('Y-m-d'),
+                            'mood' => $checkin->mood ? explode(',', $checkin->mood) : [],
+                            'symptoms' => $checkin->symptoms ?? [],
+                            'energy_level' => $checkin->energy_level,
+                            'notes' => $checkin->notes,
                         ])->values();
                 }
 
@@ -300,6 +318,7 @@ class DashboardController extends Controller
                     'companion_cycle_summary' => $sharedCycleSummary,
                     'companion_pregnancy_summary' => $sharedPregnancySummary,
                     'companion_wellbeing' => $sharedWellbeing,
+                    'companion_wellbeing_history' => $sharedWellbeingHistory,
                     'companion_intimacy' => $sharedIntimacy,
                     'checkin_reminder_sent' => $relationship->status === 'accepted' && Cache::has('crescent:checkin-reminder:'.$relationship->id.':'.$user->id.':'.now()->toDateString()),
                     'companion_sun_sign' => $astrologyShared ? $companionProfile?->sun_sign : null,
