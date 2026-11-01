@@ -97,7 +97,7 @@ class DailyCheckinController extends Controller
             $checkin = $checkins->create(array_merge(['log_date' => $logDate], $attributes));
         }
 
-        if (! empty($checkin->symptoms) || $checkin->mood || $checkin->energy_level) {
+        if (! empty($checkin->symptoms) || $checkin->mood || $checkin->energy_level || $checkin->notes) {
             try {
                 app(\App\Services\CrescentPushService::class)->notifyPartners(
                     $request->user(),
