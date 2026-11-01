@@ -124,7 +124,7 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
                 </section>
                 <section id="support-permissions" className="cosmic-week-card cosmic-support-permissions">
                     <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">{primaryName.toUpperCase()}'S SHARING CHOICES</p><h2>What {primaryName} shares with you</h2></div><span className="cosmic-guide-stamp" aria-hidden="true">♡</span></div>
-                    <p className="cosmic-muted">{`These settings were chosen by ${primaryName} before they created the invitation.`} You can view them here; only they can change what is shared.</p>
+                    <p className="cosmic-muted">{`These are ${primaryName}'s current sharing choices.`} They can change what is shared at any time; only they can update these permissions.</p>
                     <div className="cosmic-support-permission-list">{labels.map(item => <article key={item.key} className={permissions?.[item.key] ? 'is-enabled' : ''}><span className="material-symbols-rounded">{item.icon}</span><div><strong>{item.title}</strong><small>{permissions?.[item.key] ? 'Your partner has enabled this update.' : 'Your partner has kept this private.'}</small></div><b>{permissions?.[item.key] ? 'Shared' : 'Private'}</b></article>)}</div>
                 </section>
                 {permissions?.astrology && <section className="cosmic-week-card cosmic-support-shared-card">
