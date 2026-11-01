@@ -39,6 +39,10 @@ class PeriodLogController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
+        $existingPeriod = $request->user()->periodLogs()->whereDate('start_date', $validated['start_date'])->first();
+        $isNewPeriodStart = $existingPeriod === null;
+        $isNewPeriodEnd = $existingPeriod !== null && $existingPeriod->end_date === null && ! empty($validated['end_date']);
+
         $period = $request->user()->periodLogs()->updateOrCreate(
             ['start_date' => $validated['start_date']],
             [
@@ -61,7 +65,13 @@ class PeriodLogController extends Controller
         }
 
         try {
-            app(\App\Services\CrescentPushService::class)->notifyPartners($request->user(), 'partner_menstruating', 'cycle_details', 'crescent:partner-period:'.$request->user()->id.':'.$validated['start_date'], 60 * 24 * 7);
+            $push = app(\App\Services\CrescentPushService::class);
+            if ($isNewPeriodStart) {
+                $push->notifyPartners($request->user(), 'partner_menstruating', 'cycle_details', 'crescent:partner-period-start:'.$request->user()->id.':'.$validated['start_date'], 60 * 24 * 30);
+            }
+            if ($isNewPeriodEnd) {
+                $push->notifyPartners($request->user(), 'partner_period_ended', 'cycle_details', 'crescent:partner-period-end:'.$request->user()->id.':'.$validated['start_date'], 60 * 24 * 30);
+            }
         } catch (\Throwable $exception) {
             report($exception);
         }
