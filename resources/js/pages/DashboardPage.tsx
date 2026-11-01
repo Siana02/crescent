@@ -29,7 +29,7 @@ type DashboardData = {
   companion_pregnancy_summary:{status:string;due_date:string;gestational_week:number|null;trimester:number|null;days_until_due:number|null}|null;
   companion_wellbeing:{log_date:string;mood?:string[];symptoms?:string[];energy_level?:number|null;category?:string;notes?:string|null}|null;
   companion_sun_sign:string|null;companion_moon_sign:string|null;companion_rising_sign:string|null;
-  sharing_preferences:Record<'cycle_details'|'pregnancy_details'|'wellbeing_updates'|'astrology',boolean>;
+  sharing_preferences:Record<'cycle_details'|'pregnancy_details'|'wellbeing_updates'|'intimate_updates'|'astrology',boolean>;
   companion_sharing_preferences:Record<'cycle_details'|'pregnancy_details'|'wellbeing_updates'|'astrology',boolean>;
  }[];
  today_checkin:{log_date:string;energy_level:string|null;mood:string|null;symptoms:string[];notes:string|null}|null;
