@@ -273,7 +273,8 @@ class RelationshipController extends Controller
         abort_unless($relationship->status === 'accepted' && in_array($userId, [(int) $relationship->user_one_id, (int) $relationship->user_two_id], true), 404);
         abort_unless($relationship->relationship_type === 'observer' && $userId === (int) $relationship->user_two_id, 403, 'Only a support partner can send this reminder.');
         $primaryId = (int) $relationship->user_one_id;
-        $permissions = ($relationship->sharing_preferences ?? [])[(string) $primaryId] ?? ($relationship->sharing_preferences ?? []);
+        $allPreferences = $relationship->sharing_preferences ?? [];
+        $permissions = array_merge(['wellbeing_updates' => true], $allPreferences[(string) $primaryId] ?? (array_key_exists('cycle_details', $allPreferences) ? $allPreferences : []));
         abort_unless(! empty($permissions['wellbeing_updates']), 403, 'Wellbeing updates are not shared with you.');
 
         $key = 'crescent:checkin-reminder:'.$relationship->id.':'.$userId.':'.now()->toDateString();
