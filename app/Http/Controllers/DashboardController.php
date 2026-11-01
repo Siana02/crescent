@@ -37,6 +37,15 @@ class DashboardController extends Controller
         $lastStart = $latestPeriod
             ? CarbonImmutable::parse($latestPeriod->start_date->format('Y-m-d'), $profile->timezone)->startOfDay()
             : null;
+        $previousPeriod = $latestPeriod ? (clone $periodQuery)
+            ->whereDate('start_date', '<', $latestPeriod->start_date->format('Y-m-d'))
+            ->orderByDesc('start_date')
+            ->first() : null;
+        $previousStart = $previousPeriod
+            ? CarbonImmutable::parse($previousPeriod->start_date->format('Y-m-d'), $profile->timezone)->startOfDay()
+            : null;
+        $observedCycleLength = ($lastStart && $previousStart) ? (int) $previousStart->diffInDays($lastStart) : null;
+        $cycleLengthForEstimate = $observedCycleLength ?: $profile->average_cycle_length;
         $periodHistory = $isPregnancyJourney ? collect() : (clone $periodQuery)
             ->reorder('start_date')
             ->whereDate('start_date', '>=', $today->subMonths(6)->toDateString())
@@ -48,8 +57,8 @@ class DashboardController extends Controller
             ])
             ->values();
         $usesHormonalContraception = in_array($profile->contraception_type, ['pill', 'hormonal_iud', 'implant', 'injection', 'patch', 'ring'], true);
-        $estimatedNext = ($lastStart && $profile->average_cycle_length && ! $usesHormonalContraception)
-            ? $lastStart->addDays($profile->average_cycle_length)
+        $estimatedNext = ($lastStart && $cycleLengthForEstimate && ! $usesHormonalContraception)
+            ? $lastStart->addDays((int) $cycleLengthForEstimate)
             : null;
         $fertilityWindow = null;
 
@@ -308,6 +317,7 @@ class DashboardController extends Controller
             ] : null,
             'period_history' => $periodHistory,
             'cycle_day' => $cycleDay,
+            'estimated_cycle_length' => $cycleLengthForEstimate,
             'period_is_active' => $periodIsActive,
             'current_period_day' => $currentPeriodDay,
             'estimated_next_period' => $estimatedNext?->toDateString(),
