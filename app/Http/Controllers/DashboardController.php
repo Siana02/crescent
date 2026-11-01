@@ -62,6 +62,11 @@ class DashboardController extends Controller
             ];
         }
         $cycleDay = $lastStart ? ((int) $lastStart->diffInDays($today) + 1) : null;
+        $periodEnd = $latestPeriod?->end_date
+            ? CarbonImmutable::parse($latestPeriod->end_date->format('Y-m-d'), $profile->timezone)->startOfDay()
+            : null;
+        $periodIsActive = (bool) ($latestPeriod && $lastStart && ($periodEnd === null || $periodEnd->greaterThanOrEqualTo($today)));
+        $currentPeriodDay = $periodIsActive ? ((int) $lastStart->diffInDays($today) + 1) : null;
         $daysUntilEstimate = null;
 
         if ($estimatedNext) {
@@ -303,6 +308,8 @@ class DashboardController extends Controller
             ] : null,
             'period_history' => $periodHistory,
             'cycle_day' => $cycleDay,
+            'period_is_active' => $periodIsActive,
+            'current_period_day' => $currentPeriodDay,
             'estimated_next_period' => $estimatedNext?->toDateString(),
             'days_until_estimate' => $daysUntilEstimate,
             'fertility_window' => $fertilityWindow,
