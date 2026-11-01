@@ -42,7 +42,7 @@ class RelationshipController extends Controller
 
         $sharing = array_merge([
             'cycle_details' => true,
-            'pregnancy_details' => true,
+            'pregnancy_details' => false,
             'wellbeing_updates' => true,
             'intimate_updates' => true,
             'astrology' => false,
@@ -115,7 +115,7 @@ class RelationshipController extends Controller
         ]);
         $defaults = [
             'cycle_details' => true,
-            'pregnancy_details' => true,
+            'pregnancy_details' => false,
             'wellbeing_updates' => true,
             'intimate_updates' => true,
             'astrology' => false,
