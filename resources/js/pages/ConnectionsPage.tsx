@@ -32,7 +32,7 @@ type Relationship = {
 };
 type Note = { id: number; author_id: number; author_name: string; note_date: string; body: string; is_mine: boolean; read_at: string | null; created_at: string | null };
 type NotesPayload = { notes: Note[]; can_write: boolean; today_note: { id: number; body: string; read_at: string | null } | null };
-const emptySharing: SharingPreferences = { cycle_details: true, pregnancy_details: true, wellbeing_updates: true, intimate_updates: true, astrology: false };
+const emptySharing: SharingPreferences = { cycle_details: true, pregnancy_details: false, wellbeing_updates: true, intimate_updates: true, astrology: false };
 const sharingOptions: { key: SharingKey; title: string; detail: string; icon: string }[] = [
     { key: 'cycle_details', title: 'Cycle updates', detail: 'Cycle journey and cycle-related updates', icon: 'water_drop' },
     { key: 'pregnancy_details', title: 'Pregnancy updates', detail: 'Pregnancy or postpartum journey', icon: 'child_care' },
