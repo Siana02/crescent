@@ -159,6 +159,9 @@ class CycleTimelineSyncTest extends TestCase
         $primary->periodLogs()->create(['start_date' => $latestStart->toDateString(), 'end_date' => $latestStart->copy()->addDays(4)->toDateString(), 'flow_intensity' => 'medium']);
         $previousStart = $latestStart->copy()->subDays(28);
         $primary->periodLogs()->create(['start_date' => $previousStart->toDateString(), 'end_date' => $previousStart->copy()->addDays(4)->toDateString(), 'flow_intensity' => 'medium']);
+        $this->assertContains($support->id, app(\\App\\Services\\CrescentPushService::class)->partnerIdsWithPermission($primary, 'intimate_updates'));
+        $this->assertContains($support->id, app(\\App\\Services\\CrescentPushService::class)->partnerIdsWithPermission($primary, 'wellbeing_updates'));
+
         $primary->dailyCheckins()->create([
             'log_date' => today('UTC')->toDateString(),
             'energy_level' => 'low',
@@ -228,6 +231,9 @@ class CycleTimelineSyncTest extends TestCase
             ->assertJsonPath('sharing_preferences.cycle_details', false)
             ->assertJsonPath('sharing_preferences.wellbeing_updates', false)
             ->assertJsonPath('sharing_preferences.intimate_updates', false);
+
+        $this->assertNotContains($support->id, app(\\App\\Services\\CrescentPushService::class)->partnerIdsWithPermission($primary, 'intimate_updates'));
+        $this->assertNotContains($support->id, app(\\App\\Services\\CrescentPushService::class)->partnerIdsWithPermission($primary, 'wellbeing_updates'));
 
         $this->actingAs($support)->patchJson('/api/relationships/'.$relationship->id.'/sharing', [
             'wellbeing_updates' => true,
