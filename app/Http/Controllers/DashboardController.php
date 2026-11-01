@@ -288,7 +288,6 @@ class DashboardController extends Controller
                 }
 
                 if ($companion && $companionPreferences['wellbeing_updates'] && in_array($companionJourney, ['cycle', 'fertility'], true)) {
-                    $companionToday = CarbonImmutable::today($companionProfile?->timezone ?: 'UTC')->toDateString();
                     $sharedWellbeingHistory = $companion->dailyCheckins()
                         ->whereDate('log_date', '>=', CarbonImmutable::today($companionProfile?->timezone ?: 'UTC')->subMonths(6)->toDateString())
                         ->orderByDesc('log_date')
