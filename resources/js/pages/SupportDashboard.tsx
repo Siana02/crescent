@@ -8,7 +8,7 @@ import FloralSharedCycleCalendar from '../components/FloralSharedCycleCalendar';
 import JourneySectionNav from '../components/JourneySectionNav';
 import MobileNavigationMenu from '../components/MobileNavigationMenu';
 
-type SharingKey = 'cycle_details' | 'pregnancy_details' | 'wellbeing_updates' | 'astrology';
+type SharingKey = 'cycle_details' | 'pregnancy_details' | 'wellbeing_updates' | 'intimate_updates' | 'astrology';
 type SharingPreferences = Record<SharingKey, boolean>;
 type SharedRelationship = {
     id: number;
@@ -17,9 +17,11 @@ type SharedRelationship = {
     status: 'pending' | 'accepted' | 'revoked';
     companion_name: string | null;
     companion_journey: 'cycle' | 'fertility' | 'pregnancy' | 'postpartum' | null;
-    companion_cycle_summary: { last_period_start:string; cycle_day:number; estimated_next_period:string|null; average_cycle_length:number|null; average_period_length:number|null; cycle_regularity:string; fertility_estimate_available:boolean; estimated_ovulation_date:string|null; estimated_fertile_start:string|null; estimated_fertile_end:string|null; period_history:{start_date:string;end_date:string|null}[] } | null;
+    companion_cycle_summary: { last_period_start:string; last_period_end?:string|null; flow_intensity?:string|null; cycle_day:number; estimated_next_period:string|null; estimated_cycle_length?:number|null; period_is_active?:boolean; current_period_day?:number|null; average_cycle_length:number|null; average_period_length:number|null; cycle_regularity:string; fertility_estimate_available:boolean; estimated_ovulation_date:string|null; estimated_fertile_start:string|null; estimated_fertile_end:string|null; period_history:{start_date:string;end_date:string|null}[] } | null;
     companion_pregnancy_summary: { status: string; due_date: string; gestational_week: number | null; trimester: number | null; days_until_due: number | null } | null;
     companion_wellbeing: { log_date: string; mood?: string[]; symptoms?: string[]; energy_level?: number | null; category?: string; notes?: string | null } | null;
+    companion_wellbeing_history?: { log_date:string; mood:string[]; symptoms:string[]; energy_level:string|null; notes:string|null }[] | null;
+    companion_intimacy?: { id:number; log_date:string; sex_drive:number|null; activities:string[]; protection_methods:string[]; orgasm:boolean|null; notes:string|null }[] | null;
     companion_sun_sign: string | null;
     companion_moon_sign: string | null;
     companion_rising_sign: string | null;
@@ -35,6 +37,7 @@ const labels: { key: SharingKey; title: string; icon: string }[] = [
     { key: 'cycle_details', title: 'Cycle updates', icon: 'water_drop' },
     { key: 'pregnancy_details', title: 'Pregnancy updates', icon: 'child_care' },
     { key: 'wellbeing_updates', title: 'Wellbeing check-ins', icon: 'favorite' },
+    { key: 'intimate_updates', title: 'Intimate wellbeing', icon: 'lock_open' },
     { key: 'astrology', title: 'Astrology', icon: 'auto_awesome' },
 ];
 const wellbeingLabels: Record<string, { label: string; icon: string }> = {
@@ -81,18 +84,18 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
                 const phase = cyclePhase(summary.cycle_day);
                 return <section id="support-cycle" className={'cosmic-week-card cosmic-support-cycle-hero cosmic-support-cycle-hero--' + phase.key} aria-labelledby="support-cycle-title">
                     <span className="cosmic-support-cycle-spark cosmic-support-cycle-spark--one" aria-hidden="true">✧</span><span className="cosmic-support-cycle-spark cosmic-support-cycle-spark--two" aria-hidden="true">✿</span>
-                    <div className="cosmic-support-cycle-copy"><p className="cosmic-eyebrow">{primaryName.toUpperCase()}'S CYCLE JOURNEY · SHARED WITH YOU</p><span className="cosmic-support-phase-pill">☾ {phase.label}</span><h2 id="support-cycle-title">Day {summary.cycle_day}<span> of {primaryName}'s cycle</span></h2><p className="cosmic-support-cycle-lead">{phase.title}</p><p>{phase.summary}</p><p className="cosmic-support-daily-tip"><span aria-hidden="true">✧</span> Today's idea: {phase.tip}</p><div className="cosmic-support-cycle-dates"><div><span>♡</span><small>Last period began</small><strong>{dateLabel(summary.last_period_start)}</strong></div><div><span>✧</span><small>Next period estimate</small><strong>{summary.estimated_next_period ? dateLabel(summary.estimated_next_period) : 'Not available yet'}</strong></div></div><p className="cosmic-fineprint">Cycle day is based on shared dates; the phase is a rough guide using a typical cycle pattern. Neither predicts anyone's mood, energy, fertility or needs.</p></div>
+                    <div className="cosmic-support-cycle-copy"><p className="cosmic-eyebrow">{primaryName.toUpperCase()}'S CYCLE JOURNEY · SHARED WITH YOU</p><span className="cosmic-support-phase-pill">☾ {phase.label}</span><h2 id="support-cycle-title">Day {summary.cycle_day}<span> of {primaryName}'s cycle</span></h2><p className="cosmic-support-cycle-lead">{phase.title}</p><p>{phase.summary}</p><p className="cosmic-support-daily-tip"><span aria-hidden="true">✧</span> Today's idea: {phase.tip}</p><div className="cosmic-support-cycle-dates"><div><span>♡</span><small>Last period began</small><strong>{dateLabel(summary.last_period_start)}</strong></div><div><span>✿</span><small>{summary.period_is_active?'Period · confirmed':'Period ended'}</small><strong>{summary.period_is_active?'Day '+(summary.current_period_day??1):summary.last_period_end?dateLabel(summary.last_period_end):'End date not logged'}</strong></div><div><span>✧</span><small>Next period estimate</small><strong>{summary.estimated_next_period ? dateLabel(summary.estimated_next_period) : 'Not available yet'}</strong></div>{summary.estimated_ovulation_date&&<div><span>☾</span><small>Estimated ovulation</small><strong>{dateLabel(summary.estimated_ovulation_date)}</strong></div>}</div><p className="cosmic-fineprint">Cycle day is based on shared dates; the phase is a rough guide using a typical cycle pattern. Neither predicts anyone's mood, energy, fertility or needs.</p></div>
                     <div className="cosmic-support-cycle-orb" aria-hidden="true"><span>☾</span><strong>{summary.cycle_day}</strong><small>CYCLE DAY</small><i>✦</i></div>
                 </section>;
             })()}
-            {connection?.companion_cycle_summary && permissions?.cycle_details && <FloralSharedCycleCalendar cycle={connection.companion_cycle_summary} ownerName={primaryName} viewerName={supportName} />}
+            {connection?.companion_cycle_summary && permissions?.cycle_details && <FloralSharedCycleCalendar cycle={connection.companion_cycle_summary} ownerName={primaryName} viewerName={supportName} wellbeingHistory={permissions?.wellbeing_updates ? connection.companion_wellbeing_history ?? [] : undefined} sexLogHistory={permissions?.intimate_updates ? connection.companion_intimacy ?? [] : undefined} checkinDates={permissions?.wellbeing_updates ? (connection.companion_wellbeing_history ?? []).map(item=>item.log_date) : []} />}
             {!connection ? <section className="cosmic-week-card cosmic-support-empty"><p className="cosmic-eyebrow">YOUR SHARED SPACE</p><h2>No connected space yet</h2><p>Ask your partner for their Cosmic Sync Code. You can connect from the Connections page.</p><a className="cosmic-support-link" href="/connections">Open Connections →</a></section> : <>
                 {!connection.companion_wellbeing && permissions?.wellbeing_updates && <section id="support-wellbeing" className="cosmic-week-card cosmic-support-shared-card cosmic-support-wellbeing-card">
-                    <p className="cosmic-eyebrow">A LITTLE WELLBEING CHECK-IN</p><h2>How {primaryName} is feeling</h2><p className="cosmic-muted">{primaryName} hasn't logged today's symptoms yet.</p>
+                    <p className="cosmic-eyebrow">A LITTLE WELLBEING CHECK-IN</p><h2>How {primaryName} is feeling</h2><p className="cosmic-muted">{primaryName} hasn't shared a recent wellbeing check-in yet.</p>
                     <RemindCheckin relationshipId={connection.id} name={primaryName} alreadySent={Boolean(connection.checkin_reminder_sent)} />
                 </section>}
                 {connection.companion_wellbeing && permissions?.wellbeing_updates && <section id="support-wellbeing" className="cosmic-week-card cosmic-support-shared-card cosmic-support-wellbeing-card">
-                    <p className="cosmic-eyebrow">A LITTLE WELLBEING CHECK-IN</p><h2>How {primaryName} is feeling</h2><p className="cosmic-muted">Today's update · {dateLabel(connection.companion_wellbeing.log_date)}</p>
+                    <p className="cosmic-eyebrow">A LITTLE WELLBEING CHECK-IN</p><h2>How {primaryName} is feeling</h2><p className="cosmic-muted">Latest shared update · {dateLabel(connection.companion_wellbeing.log_date)}</p>
                     <div className="cosmic-support-tags">{[...(connection.companion_wellbeing.mood ?? []), ...(connection.companion_wellbeing.symptoms ?? []), connection.companion_wellbeing.category ?? ''].filter(Boolean).filter((tag,index,all)=>all.indexOf(tag)===index).map(tag=>{const item=wellbeingLabel(tag);return <span className="cosmic-wellbeing-pill" key={tag}><span className="material-symbols-rounded" aria-hidden="true">{item.icon}</span>{item.label}</span>;})}{connection.companion_wellbeing.energy_level != null && <span className="cosmic-wellbeing-pill"><span className="material-symbols-rounded" aria-hidden="true">bolt</span>Energy {connection.companion_wellbeing.energy_level}/5</span>}</div>
                     {connection.companion_wellbeing.notes && <blockquote>{connection.companion_wellbeing.notes}</blockquote>}
                     <div className="cosmic-support-wellbeing-advice"><p className="cosmic-eyebrow">A FEW WAYS TO SHOW UP</p><div>{symptomCareIdeas([...(connection.companion_wellbeing.symptoms ?? []), ...(connection.companion_wellbeing.mood ?? []), connection.companion_wellbeing.category ?? ''], connection.companion_wellbeing.energy_level, primaryName).map((idea, index) => <p key={idea}><span aria-hidden="true">{['♡','✿','✧'][index]}</span>{idea}</p>)}</div></div>
@@ -121,7 +124,7 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
                 </section>
                 <section id="support-permissions" className="cosmic-week-card cosmic-support-permissions">
                     <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">{primaryName.toUpperCase()}'S SHARING CHOICES</p><h2>What {primaryName} shares with you</h2></div><span className="cosmic-guide-stamp" aria-hidden="true">♡</span></div>
-                    <p className="cosmic-muted">{`These settings were chosen by ${primaryName} before they created the invitation.`} You can view them here; only they can change what is shared.</p>
+                    <p className="cosmic-muted">{`These are ${primaryName}'s current sharing choices.`} They can change what is shared at any time; only they can update these permissions.</p>
                     <div className="cosmic-support-permission-list">{labels.map(item => <article key={item.key} className={permissions?.[item.key] ? 'is-enabled' : ''}><span className="material-symbols-rounded">{item.icon}</span><div><strong>{item.title}</strong><small>{permissions?.[item.key] ? 'Your partner has enabled this update.' : 'Your partner has kept this private.'}</small></div><b>{permissions?.[item.key] ? 'Shared' : 'Private'}</b></article>)}</div>
                 </section>
                 {permissions?.astrology && <section className="cosmic-week-card cosmic-support-shared-card">

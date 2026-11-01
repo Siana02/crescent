@@ -20,6 +20,7 @@ class RelationshipController extends Controller
             'sharing_preferences.pregnancy_details' => ['sometimes', 'boolean'],
             'sharing_preferences.wellbeing_updates' => ['sometimes', 'boolean'],
             'sharing_preferences.astrology' => ['sometimes', 'boolean'],
+            'sharing_preferences.intimate_updates' => ['sometimes', 'boolean'],
         ]);
         if (($request->user()->cycleProfile?->relationship_role ?? 'tracker') === 'support') {
             throw ValidationException::withMessages([
@@ -40,9 +41,10 @@ class RelationshipController extends Controller
         }
 
         $sharing = array_merge([
-            'cycle_details' => false,
+            'cycle_details' => true,
             'pregnancy_details' => false,
-            'wellbeing_updates' => false,
+            'wellbeing_updates' => true,
+            'intimate_updates' => true,
             'astrology' => false,
         ], $validated['sharing_preferences'] ?? []);
 
@@ -109,11 +111,13 @@ class RelationshipController extends Controller
             'pregnancy_details' => ['sometimes', 'boolean'],
             'wellbeing_updates' => ['sometimes', 'boolean'],
             'astrology' => ['sometimes', 'boolean'],
+            'intimate_updates' => ['sometimes', 'boolean'],
         ]);
         $defaults = [
-            'cycle_details' => false,
+            'cycle_details' => true,
             'pregnancy_details' => false,
-            'wellbeing_updates' => false,
+            'wellbeing_updates' => true,
+            'intimate_updates' => true,
             'astrology' => false,
         ];
         $allPreferences = $relationship->sharing_preferences ?? [];
@@ -124,7 +128,7 @@ class RelationshipController extends Controller
         }
         $preferences = array_merge($defaults, $existing, $validated);
         $allPreferences[$userKey] = $preferences;
-        foreach (['cycle_details', 'pregnancy_details', 'wellbeing_updates', 'astrology'] as $key) {
+        foreach (['cycle_details', 'pregnancy_details', 'wellbeing_updates', 'intimate_updates', 'astrology'] as $key) {
             unset($allPreferences[$key]);
         }
         $relationship->update(['sharing_preferences' => $allPreferences]);
@@ -269,7 +273,8 @@ class RelationshipController extends Controller
         abort_unless($relationship->status === 'accepted' && in_array($userId, [(int) $relationship->user_one_id, (int) $relationship->user_two_id], true), 404);
         abort_unless($relationship->relationship_type === 'observer' && $userId === (int) $relationship->user_two_id, 403, 'Only a support partner can send this reminder.');
         $primaryId = (int) $relationship->user_one_id;
-        $permissions = ($relationship->sharing_preferences ?? [])[(string) $primaryId] ?? ($relationship->sharing_preferences ?? []);
+        $allPreferences = $relationship->sharing_preferences ?? [];
+        $permissions = array_merge(['wellbeing_updates' => true], $allPreferences[(string) $primaryId] ?? (array_key_exists('cycle_details', $allPreferences) ? $allPreferences : []));
         abort_unless(! empty($permissions['wellbeing_updates']), 403, 'Wellbeing updates are not shared with you.');
 
         $key = 'crescent:checkin-reminder:'.$relationship->id.':'.$userId.':'.now()->toDateString();

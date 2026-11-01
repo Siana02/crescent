@@ -37,6 +37,15 @@ class DashboardController extends Controller
         $lastStart = $latestPeriod
             ? CarbonImmutable::parse($latestPeriod->start_date->format('Y-m-d'), $profile->timezone)->startOfDay()
             : null;
+        $previousPeriod = $latestPeriod ? (clone $periodQuery)
+            ->whereDate('start_date', '<', $latestPeriod->start_date->format('Y-m-d'))
+            ->orderByDesc('start_date')
+            ->first() : null;
+        $previousStart = $previousPeriod
+            ? CarbonImmutable::parse($previousPeriod->start_date->format('Y-m-d'), $profile->timezone)->startOfDay()
+            : null;
+        $observedCycleLength = ($lastStart && $previousStart) ? (int) $previousStart->diffInDays($lastStart) : null;
+        $cycleLengthForEstimate = $observedCycleLength ?: $profile->average_cycle_length;
         $periodHistory = $isPregnancyJourney ? collect() : (clone $periodQuery)
             ->reorder('start_date')
             ->whereDate('start_date', '>=', $today->subMonths(6)->toDateString())
@@ -48,8 +57,8 @@ class DashboardController extends Controller
             ])
             ->values();
         $usesHormonalContraception = in_array($profile->contraception_type, ['pill', 'hormonal_iud', 'implant', 'injection', 'patch', 'ring'], true);
-        $estimatedNext = ($lastStart && $profile->average_cycle_length && ! $usesHormonalContraception)
-            ? $lastStart->addDays($profile->average_cycle_length)
+        $estimatedNext = ($lastStart && $cycleLengthForEstimate && ! $usesHormonalContraception)
+            ? $lastStart->addDays((int) $cycleLengthForEstimate)
             : null;
         $fertilityWindow = null;
 
@@ -62,6 +71,11 @@ class DashboardController extends Controller
             ];
         }
         $cycleDay = $lastStart ? ((int) $lastStart->diffInDays($today) + 1) : null;
+        $periodEnd = $latestPeriod?->end_date
+            ? CarbonImmutable::parse($latestPeriod->end_date->format('Y-m-d'), $profile->timezone)->startOfDay()
+            : null;
+        $periodIsActive = (bool) ($latestPeriod && $lastStart && ($periodEnd === null || $periodEnd->greaterThanOrEqualTo($today)));
+        $currentPeriodDay = $periodIsActive ? ((int) $lastStart->diffInDays($today) + 1) : null;
         $daysUntilEstimate = null;
 
         if ($estimatedNext) {
@@ -121,7 +135,7 @@ class DashboardController extends Controller
                 $isInitiator = $relationship->user_one_id === $user->id;
                 $companion = $isInitiator ? $relationship->companion : $relationship->initiator;
                 $allPreferences = $relationship->sharing_preferences ?? [];
-                $defaults = ['cycle_details' => false, 'pregnancy_details' => false, 'wellbeing_updates' => false, 'astrology' => false];
+                $defaults = ['cycle_details' => true, 'pregnancy_details' => false, 'wellbeing_updates' => true, 'intimate_updates' => true, 'astrology' => false];
                 $myPreferences = array_merge($defaults, $allPreferences[(string) $user->id] ?? []);
                 $companionPreferences = array_merge($defaults, $allPreferences[(string) ($companion?->id ?? 0)] ?? []);
                 // Older connections used one shared flat preference object; preserve it as a conservative fallback.
@@ -144,6 +158,8 @@ class DashboardController extends Controller
                 $sharedCycleSummary = null;
                 $sharedPregnancySummary = null;
                 $sharedWellbeing = null;
+                $sharedIntimacy = null;
+                $sharedWellbeingHistory = null;
 
                 if ($companion && $companionJourney && in_array($companionJourney, ['cycle', 'fertility'], true) && $companionPreferences['cycle_details']) {
                     $sharedPeriods = $companion->periodLogs()->orderByDesc('start_date')->limit(12)->get();
@@ -153,20 +169,30 @@ class DashboardController extends Controller
                         $todayForCompanion = CarbonImmutable::today($companionTimezone);
                         $periodStart = CarbonImmutable::parse($lastSharedPeriod->start_date->format('Y-m-d'), $companionTimezone)->startOfDay();
                         $hormonalMethods = ['pill', 'hormonal_iud', 'implant', 'injection', 'patch', 'ring'];
-                        $canEstimateCycle = $companionProfile?->average_cycle_length
-                            && ! in_array($companionProfile->contraception_type, $hormonalMethods, true);
+                        $previousSharedPeriod = $sharedPeriods->get(1);
+                        $observedSharedCycleLength = $previousSharedPeriod
+                            ? (int) CarbonImmutable::parse($previousSharedPeriod->start_date->format('Y-m-d'), $companionTimezone)->diffInDays($periodStart)
+                            : null;
+                        $sharedCycleLength = $observedSharedCycleLength ?: $companionProfile?->average_cycle_length;
+                        $canEstimateCycle = $sharedCycleLength
+                            && ! in_array($companionProfile?->contraception_type, $hormonalMethods, true);
                         $canEstimateFertility = $canEstimateCycle
                             && $companionProfile?->contraception_type === 'none'
                             && $companionProfile?->cycle_regularity !== 'irregular';
                         $estimatedNextDate = $canEstimateCycle
-                            ? $periodStart->addDays((int) $companionProfile->average_cycle_length)
+                            ? $periodStart->addDays((int) $sharedCycleLength)
                             : null;
                         $estimatedOvulation = $canEstimateFertility ? $estimatedNextDate?->subDays(15) : null;
                         $sharedCycleSummary = [
                             'last_period_start' => $lastSharedPeriod->start_date->format('Y-m-d'),
+                            'last_period_end' => $lastSharedPeriod->end_date?->format('Y-m-d'),
+                            'flow_intensity' => $lastSharedPeriod->flow_intensity,
                             'cycle_day' => (int) $periodStart->diffInDays($todayForCompanion) + 1,
                             'estimated_next_period' => $estimatedNextDate?->toDateString(),
+                            'period_is_active' => (bool) ($lastSharedPeriod->end_date === null || $lastSharedPeriod->end_date->format('Y-m-d') >= $todayForCompanion->toDateString()),
+                            'current_period_day' => ($lastSharedPeriod->end_date === null || $lastSharedPeriod->end_date->format('Y-m-d') >= $todayForCompanion->toDateString()) ? ((int) $periodStart->diffInDays($todayForCompanion) + 1) : null,
                             'average_cycle_length' => $companionProfile?->average_cycle_length,
+                            'estimated_cycle_length' => $sharedCycleLength,
                             'average_period_length' => $companionProfile?->average_period_length,
                             'cycle_regularity' => $companionProfile?->cycle_regularity ?? 'unknown',
                             'fertility_estimate_available' => (bool) $canEstimateFertility,
@@ -233,15 +259,48 @@ class DashboardController extends Controller
                     } else {
                         $companionToday = CarbonImmutable::today($companionProfile?->timezone ?: config('app.timezone', 'UTC'))->toDateString();
                         $latestSharedCheckin = $companion->dailyCheckins()->whereDate('log_date', $companionToday)->first();
-                        if ($latestSharedCheckin && (! empty($latestSharedCheckin->symptoms) || $latestSharedCheckin->mood || $latestSharedCheckin->energy_level)) {
+                        if ($latestSharedCheckin && (! empty($latestSharedCheckin->symptoms) || $latestSharedCheckin->mood || $latestSharedCheckin->energy_level || $latestSharedCheckin->notes)) {
                             $sharedWellbeing = [
                                 'log_date' => $latestSharedCheckin->log_date->format('Y-m-d'),
                                 'mood' => $latestSharedCheckin->mood ? explode(',', $latestSharedCheckin->mood) : [],
                                 'symptoms' => $latestSharedCheckin->symptoms ?? [],
                                 'energy_level' => $latestSharedCheckin->energy_level,
+                                'notes' => $latestSharedCheckin->notes,
                             ];
                         }
                     }
+                }
+
+                if ($companion && $companionPreferences['intimate_updates'] && in_array($companionJourney, ['cycle', 'fertility'], true)) {
+                    $sharedIntimacy = $companion->sexLogs()
+                        ->whereDate('log_date', '>=', CarbonImmutable::today($companionProfile?->timezone ?: 'UTC')->subMonths(6)->toDateString())
+                        ->orderByDesc('log_date')
+                        ->limit(180)
+                        ->get()
+                        ->map(fn ($log) => [
+                            'id' => $log->id,
+                            'log_date' => $log->log_date->format('Y-m-d'),
+                            'sex_drive' => $log->sex_drive,
+                            'activities' => $log->activities ?? [],
+                            'protection_methods' => $log->protection_methods ?? [],
+                            'orgasm' => $log->orgasm,
+                            'notes' => $log->notes,
+                        ])->values();
+                }
+
+                if ($companion && $companionPreferences['wellbeing_updates'] && in_array($companionJourney, ['cycle', 'fertility'], true)) {
+                    $sharedWellbeingHistory = $companion->dailyCheckins()
+                        ->whereDate('log_date', '>=', CarbonImmutable::today($companionProfile?->timezone ?: 'UTC')->subMonths(6)->toDateString())
+                        ->orderByDesc('log_date')
+                        ->limit(180)
+                        ->get()
+                        ->map(fn ($checkin) => [
+                            'log_date' => $checkin->log_date->format('Y-m-d'),
+                            'mood' => $checkin->mood ? explode(',', $checkin->mood) : [],
+                            'symptoms' => $checkin->symptoms ?? [],
+                            'energy_level' => $checkin->energy_level,
+                            'notes' => $checkin->notes,
+                        ])->values();
                 }
 
                 return [
@@ -259,6 +318,8 @@ class DashboardController extends Controller
                     'companion_cycle_summary' => $sharedCycleSummary,
                     'companion_pregnancy_summary' => $sharedPregnancySummary,
                     'companion_wellbeing' => $sharedWellbeing,
+                    'companion_wellbeing_history' => $sharedWellbeingHistory,
+                    'companion_intimacy' => $sharedIntimacy,
                     'checkin_reminder_sent' => $relationship->status === 'accepted' && Cache::has('crescent:checkin-reminder:'.$relationship->id.':'.$user->id.':'.now()->toDateString()),
                     'companion_sun_sign' => $astrologyShared ? $companionProfile?->sun_sign : null,
                     'companion_moon_sign' => $astrologyShared ? $companionProfile?->moon_sign : null,
@@ -268,7 +329,7 @@ class DashboardController extends Controller
                     'companion_birth_place' => $astrologyShared ? $companionProfile?->birth_place : null,
                     'sharing_preferences' => $myPreferences,
                     'companion_sharing_preferences' => $companionPreferences,
-                    'sharing_enabled' => (bool) ($companionPreferences['cycle_details'] || $companionPreferences['pregnancy_details']),
+                    'sharing_enabled' => (bool) ($companionPreferences['cycle_details'] || $companionPreferences['pregnancy_details'] || $companionPreferences['wellbeing_updates'] || $companionPreferences['intimate_updates']),
                 ];
             })
             ->values();
@@ -303,6 +364,9 @@ class DashboardController extends Controller
             ] : null,
             'period_history' => $periodHistory,
             'cycle_day' => $cycleDay,
+            'estimated_cycle_length' => $cycleLengthForEstimate,
+            'period_is_active' => $periodIsActive,
+            'current_period_day' => $currentPeriodDay,
             'estimated_next_period' => $estimatedNext?->toDateString(),
             'days_until_estimate' => $daysUntilEstimate,
             'fertility_window' => $fertilityWindow,
@@ -315,7 +379,7 @@ class DashboardController extends Controller
                 'symptoms' => $todayCheckin->symptoms ?? [],
                 'notes' => $todayCheckin->notes,
             ] : null,
-            // Sexual-wellbeing records remain private to their owner.
+            // The owner's personal logs stay in their dashboard; partner copies are permission-gated above.
             'today_sex_logs' => $todaySexLogs->map(fn ($log) => [
                 'id' => $log->id,
                 'log_date' => $log->log_date->format('Y-m-d'),

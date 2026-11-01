@@ -847,6 +847,8 @@
 /* Floral cycle calendar shared by the editable primary view and read-only partner view. */
 .cosmic-floral-marker{display:inline-grid;place-items:center;flex:0 0 auto;width:23px;height:23px;border:1.5px solid currentColor;border-radius:50%;font-size:14px;line-height:1;background:rgba(255,255,255,.72);font-style:normal}
 .cosmic-floral-marker--period{color:#cf536b;background:#fff0f2;border-color:#df8290}
+.cosmic-floral-marker--estimated-period{color:#dca8bc;background:#fff8fb;border-color:#efcfdd;opacity:.9}
+.cosmic-floral-calendar__history-period--estimate{color:#c99aaf;background:#fff8fb;border-color:#efd5e0}
 .cosmic-floral-marker--fertile{color:#398c65;background:#e9f8ef;border-color:#72bd94}
 .cosmic-floral-marker--ovulation{color:#a05da9;background:#f7e9ff;border-color:#c18ed0}
 .cosmic-floral-marker--lower{color:#3f86b9;background:#e9f5ff;border-color:#8fc7ed}
@@ -1269,3 +1271,4 @@
 .cosmic-checkin-symptom-summary > div { display: flex; flex-wrap: wrap; gap: 6px; }
 .cosmic-checkin-symptom-summary > div > span { padding: 6px 9px; border: 1px solid #ecd6e8; border-radius: 999px; background: #fff; color: #765b7c; font-size: 11px; }
 .cosmic-checkin-private-note { margin: 8px 0; color: #92769a; font-size: 11px; }
+.cosmic-checkin-period-confirmation{display:flex;align-items:center;gap:9px;margin:12px 0;padding:11px 14px;border:1px solid #e9bdca;border-radius:15px;background:linear-gradient(120deg,#fff0f4,#fff9fb);color:#a74d68;font-size:12px;font-weight:700}.cosmic-checkin-period-confirmation span{font-size:18px}.cosmic-current-flower-track{display:flex;align-items:center;gap:5px;overflow-x:auto;padding:9px 1px 4px;scrollbar-width:thin}.cosmic-current-flower-track .cosmic-current-flower{flex:0 0 auto;color:#d9d1dc;font-size:17px;line-height:1}.cosmic-current-flower.is-current{color:#d85c78}.cosmic-current-flower.is-complete{color:#e7a0b3}.cosmic-current-flower.is-estimated{color:#d9d1dc}.cosmic-current-flower.is-estimated-period{color:#edc8d6}.cosmic-current-flower-caption{display:block;margin-top:3px;color:#9a829f;font-size:10px}.cosmic-checkin-period-summary{margin:10px 0;padding:12px 14px;border:1px solid #efd9e8;border-radius:16px;background:#fff8fb;color:#875b77;font-size:12px}

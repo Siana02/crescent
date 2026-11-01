@@ -97,9 +97,15 @@ class DailyCheckinController extends Controller
             $checkin = $checkins->create(array_merge(['log_date' => $logDate], $attributes));
         }
 
-        if (! empty($checkin->symptoms)) {
+        if (! empty($checkin->symptoms) || $checkin->mood || $checkin->energy_level || $checkin->notes) {
             try {
-                app(\App\Services\CrescentPushService::class)->notifyPartners($request->user(), 'partner_symptoms', 'wellbeing_updates', 'crescent:partner-symptoms:'.$request->user()->id, 120);
+                app(\App\Services\CrescentPushService::class)->notifyPartners(
+                    $request->user(),
+                    'partner_symptoms',
+                    'wellbeing_updates',
+                    'crescent:partner-checkin:'.$request->user()->id.':'.$logDate,
+                    60 * 24
+                );
             } catch (\Throwable $exception) {
                 report($exception);
             }
@@ -113,7 +119,7 @@ class DailyCheckinController extends Controller
                 'symptoms' => $checkin->symptoms ?? [],
                 'notes' => $checkin->notes,
             ],
-            'message' => 'Your check-in is saved in your private space.',
+            'message' => 'Your check-in is saved to your cycle record. Sharing follows your connection preferences.',
         ], 201);
     }
 }

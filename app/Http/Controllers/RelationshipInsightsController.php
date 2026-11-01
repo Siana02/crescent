@@ -155,10 +155,10 @@ class RelationshipInsightsController extends Controller
         $mine = $profiles->get($userId);
         $theirs = $profiles->get($otherId);
         $allPreferences = $relationship->sharing_preferences ?? [];
-        $defaults = ['cycle_details' => false, 'pregnancy_details' => false, 'wellbeing_updates' => false, 'astrology' => false];
+        $defaults = ['cycle_details' => true, 'pregnancy_details' => false, 'wellbeing_updates' => true, 'intimate_updates' => true, 'astrology' => false];
         $myPreferences = array_merge($defaults, $allPreferences[(string) $userId] ?? []);
         $theirPreferences = array_merge($defaults, $allPreferences[(string) $otherId] ?? []);
-        $primaryPreferences = $allPreferences[(string) $relationship->user_one_id] ?? $allPreferences;
+        $primaryPreferences = array_merge($defaults, $allPreferences[(string) $relationship->user_one_id] ?? (array_key_exists('cycle_details', $allPreferences) ? $allPreferences : []));
         $shareAstrology = $relationship->relationship_type === 'observer'
             ? (bool) (($primaryPreferences['astrology'] ?? false)
                 && $mine?->wants_astrology && $theirs?->wants_astrology)

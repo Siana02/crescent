@@ -26,6 +26,8 @@ class CrescentPushService
         'shared_note' => ['pref' => 'shared_notes', 'title' => 'A note from your partner', 'body' => 'A new note is waiting for you in Crescent.', 'url' => '/dashboard#shared-partner-space'],
         'note_read' => ['pref' => 'shared_notes', 'title' => 'Your note was read', 'body' => 'Your partner has read your latest note.', 'url' => '/dashboard#shared-partner-space'],
         'partner_symptoms' => ['pref' => 'partner_updates', 'title' => 'A new check-in was shared', 'body' => 'Your partner shared a wellbeing check-in. Open Crescent to see how you can show up.', 'url' => '/dashboard'],
+        'partner_period_ended' => ['pref' => 'partner_updates', 'title' => 'A cycle update', 'body' => 'A period update is ready for you in Crescent.', 'url' => '/dashboard'],
+        'partner_intimacy' => ['pref' => 'partner_updates', 'title' => 'A personal update was shared', 'body' => 'Your partner shared a personal wellbeing update. Open Crescent when you have a moment.', 'url' => '/dashboard'],
         'partner_menstruating' => ['pref' => 'partner_updates', 'title' => 'A cycle update', 'body' => 'A new cycle phase update is ready for you in Crescent.', 'url' => '/dashboard'],
         'partner_follicular' => ['pref' => 'partner_updates', 'title' => 'A cycle update', 'body' => 'A new cycle phase update is ready for you in Crescent.', 'url' => '/dashboard'],
         'partner_ovulatory' => ['pref' => 'partner_updates', 'title' => 'A cycle update', 'body' => 'A new cycle phase update is ready for you in Crescent.', 'url' => '/dashboard'],
@@ -162,7 +164,7 @@ class CrescentPushService
                 continue;
             }
             $all = $relationship->sharing_preferences ?? [];
-            $theirs = $all[(string) $otherId] ?? $all;
+            $theirs = array_merge(['cycle_details' => true, 'wellbeing_updates' => true, 'intimate_updates' => true], $all[(string) $otherId] ?? (array_key_exists('cycle_details', $all) ? $all : []));
             if (! empty($theirs[$permission]) && ($other = User::with('cycleProfile')->find($otherId))) {
                 $primaries[] = $other;
             }
@@ -266,7 +268,7 @@ class CrescentPushService
                 continue;
             }
             $all = $relationship->sharing_preferences ?? [];
-            $mine = $all[(string) $primary->id] ?? $all;
+            $mine = array_merge(['cycle_details' => true, 'wellbeing_updates' => true, 'intimate_updates' => true], $all[(string) $primary->id] ?? (array_key_exists('cycle_details', $all) ? $all : []));
             if (! empty($mine[$permission])) {
                 $ids[] = $partnerId;
             }
