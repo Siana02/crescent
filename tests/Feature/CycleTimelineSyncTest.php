@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Relationship;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Testing\RefreshDatabase;
