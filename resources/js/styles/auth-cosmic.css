@@ -30,3 +30,10 @@
 .auth-form .auth-consent input{flex:0 0 18px;width:18px;min-width:18px;height:18px;min-height:18px;padding:0;margin:2px 0 0;accent-color:#a76bc4}
 .auth-consent>span{flex:1 1 auto;min-width:0;display:block;overflow-wrap:break-word}
 .auth-consent a{color:#8b4fa8;font-weight:700;text-decoration:underline}
+
+
+.auth-remember { display:flex!important; align-items:center; gap:9px; margin:2px 0 0; color:#75617d!important; font-size:.78rem!important; }
+.auth-remember input { flex:0 0 auto; width:16px!important; height:16px; margin:0; accent-color:#a77fb2; }
+.auth-help-link { margin:0; text-align:right; font-size:.74rem; }
+.auth-help-link a { color:#9875a1; text-decoration:none; }
+.auth-help-link a:hover { text-decoration:underline; }

@@ -1228,3 +1228,44 @@
 @media(max-width:560px){.site-footer__legal{flex-direction:column;align-items:stretch;width:100%}}
 .cosmic-footer > div{flex-wrap:wrap}
 .pregnancy-footer a+a,.editorial-footer>a+a,.ch-footer>a+a{margin-left:12px}
+
+
+/* Mobile update notice: keep the message and action on one readable line. */
+@media (max-width: 520px) {
+  .cosmic-update-banner {
+    box-sizing: border-box;
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+    min-width: 0;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 9px 11px;
+    white-space: nowrap;
+    font-size: 11px;
+    line-height: 1.2;
+  }
+  .cosmic-update-banner > span { flex: 0 0 auto; }
+  .cosmic-update-banner button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 8px 11px;
+    font-size: 11px;
+    line-height: 1.1;
+  }
+}
+@media (max-width: 360px) {
+  .cosmic-update-banner { gap: 6px; padding-inline: 9px; font-size: 10px; }
+  .cosmic-update-banner button { padding: 7px 9px; font-size: 10px; }
+}
+@media (max-width: 320px) {
+  .cosmic-update-banner > span { display: none; }
+  .cosmic-update-banner { justify-content: center; gap: 8px; font-size: 9px; }
+  .cosmic-update-banner button { padding: 6px 8px; font-size: 9px; }
+}
+
+.cosmic-checkin-symptom-summary { margin: 10px 0 2px; padding: 12px 14px; border: 1px solid #efd9e8; border-radius: 16px; background: linear-gradient(135deg,#fff6fa,#f8f3ff); }
+.cosmic-checkin-symptom-summary > span { display: block; margin-bottom: 8px; color: #a078a0; font-size: 9px; font-weight: 800; letter-spacing: 1.2px; }
+.cosmic-checkin-symptom-summary > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.cosmic-checkin-symptom-summary > div > span { padding: 6px 9px; border: 1px solid #ecd6e8; border-radius: 999px; background: #fff; color: #765b7c; font-size: 11px; }
+.cosmic-checkin-private-note { margin: 8px 0; color: #92769a; font-size: 11px; }

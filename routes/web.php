@@ -29,7 +29,13 @@ Route::get('/sitemap.xml', fn () => response(
 Route::get('/privacy', fn () => view('welcome'));
 Route::get('/terms', fn () => view('welcome'));
 Route::get('/support', fn () => view('welcome'));
-Route::get('/read/{slug}', fn () => view('welcome'))->where('slug', '[a-z0-9-]+');
+Route::get('/read/{slug}', function (Request $request, string $slug) {
+    if (! $request->user()) {
+        return redirect('/register?source=journal&article='.rawurlencode($slug));
+    }
+
+    return view('welcome');
+})->where('slug', '[a-z0-9-]+');
 
 Route::get('/auth/invitation-preview', [AuthController::class, 'invitationPreview'])->middleware('throttle:20,1');
 Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
@@ -78,6 +84,7 @@ Route::middleware(['auth', 'active.account'])->group(function () {
     Route::post('/api/periods', [PeriodLogController::class, 'store']);
     Route::get('/api/daily-checkins', [DailyCheckinController::class, 'show'])->middleware('throttle:60,1');
     Route::post('/api/daily-checkins', [DailyCheckinController::class, 'store'])->middleware('throttle:30,1');
+    Route::get('/api/sex-logs', [SexLogController::class, 'index'])->middleware('throttle:60,1');
     Route::post('/api/sex-logs', [SexLogController::class, 'store'])->middleware('throttle:30,1');
     Route::put('/api/pregnancy', [PregnancyController::class, 'update']);
     Route::post('/api/pregnancy/checkins', [PregnancyController::class, 'checkin'])->middleware('throttle:30,1');

@@ -6,9 +6,10 @@ type SharedNote = { id:number; author_name:string; note_date:string; body:string
 type Relationship = {
  id:number; relationship_type:'observer'|'co_tracker'; status:string; companion_name:string|null; companion_journey?:'cycle'|'fertility'|'pregnancy'|'postpartum'|null; companion_pregnancy_summary?:{status:string;due_date:string;gestational_week:number|null;trimester:number|null;days_until_due:number|null;baby_name?:string|null;baby_birth_date?:string|null;baby_birth_time?:string|null;baby_birth_place?:string|null}|null;
  companion_cycle_summary:{cycle_day:number;last_period_start:string;estimated_next_period:string|null}|null;
- companion_wellbeing:{log_date:string;symptoms?:string[];mood?:string[];energy_level?:number|null;notes?:string|null}|null;
+ companion_wellbeing:{log_date:string;symptoms?:string[];mood?:string[];energy_level?:string|null;notes?:string|null}|null;
+ companion_sharing_preferences?:{cycle_details?:boolean;wellbeing_updates?:boolean;pregnancy_details?:boolean;astrology?:boolean};
 };
-type Dashboard = { user:{name:string}; profile:{relationship_role:'tracker'|'support';active_journey:string;display_name?:string|null}; cycle_day:number|null; today_checkin:{symptoms:string[];mood:string[]|string|null;notes:string|null}|null; relationships:Relationship[] };
+type Dashboard = { user:{name:string}; profile:{relationship_role?:'tracker'|'support';active_journey?:string;display_name?:string|null}; cycle_day?:number|null; latest_period?:{start_date:string;end_date:string|null}|null; today_checkin?:{log_date?:string;symptoms:string[];mood:string[]|string|null;notes:string|null;energy_level?:string|null}|null; relationships?:Relationship[] };
 type Insight = { compatibility:{available:boolean;score:number|null;summary:string;themes:{label:string;left:string;right:string;text:string}[]}; daily:{title:string;tip:string;transit_note:string;cycle_context?:{phase:string;cycle_day:number|null;available?:boolean};transits:{name:string;sign?:string|null}[]} };
 type NotesPayload = {notes:SharedNote[];can_write:boolean;today_note:{body:string;read_at:string|null}|null};
 const wellbeingLabels: Record<string, { label: string; icon: string }> = {
@@ -32,7 +33,7 @@ function wellbeingPill(value: string) {
 }
 function csrf(){return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content??'';}
 async function json(response:Response){return response.json().catch(()=>({})) as Promise<Record<string,any>>;}
-export default function SharedPartnerSpace(){
+export default function SharedPartnerSpace({data}:{data?:Dashboard}){
  const [relationship,setRelationship]=useState<Relationship|null>(null);
  const [myName,setMyName]=useState('');
  const [role,setRole]=useState<'tracker'|'support'>('tracker');
@@ -44,21 +45,33 @@ export default function SharedPartnerSpace(){
  const [message,setMessage]=useState('');
  const threadRef=useRef<HTMLDivElement|null>(null);
  const relationshipId=relationship?.id;
- useEffect(()=>{let live=true;(async()=>{try{
-  const response=await fetch('/api/dashboard',{credentials:'same-origin',headers:{Accept:'application/json'}});
-  if(!response.ok)return;const data=await response.json() as Dashboard;
-  if(!live)return;setRole(data.profile.relationship_role);setMyName(data.profile.display_name?.trim()||data.user.name?.trim()||'You');setCheckin(data.today_checkin);
-  const rel=(data.relationships??[]).find(item=>item.status==='accepted'&&(item.relationship_type==='observer'||item.relationship_type==='co_tracker'));
-  if(!rel)return;setRelationship(rel);
-  const [noteResponse,insightResponse]=await Promise.all([
-   fetch('/api/relationships/'+rel.id+'/notes',{credentials:'same-origin',headers:{Accept:'application/json'}}),
-   fetch('/api/relationships/'+rel.id+'/insights',{credentials:'same-origin',headers:{Accept:'application/json'}})
+ useEffect(()=>{let live=true;
+  void (async()=>{try{
+   let snapshot=data;
+   if(!snapshot){const response=await fetch('/api/dashboard',{credentials:'same-origin',headers:{Accept:'application/json'}});if(!response.ok)return;snapshot=await response.json() as Dashboard;}
+   if(!live)return;
+   setRole(snapshot.profile.relationship_role??'tracker');setMyName(snapshot.profile.display_name?.trim()||snapshot.user.name?.trim()||'You');setCheckin(snapshot.today_checkin??null);
+   const rel=(snapshot.relationships??[]).find(item=>item.status==='accepted'&&(item.relationship_type==='observer'||item.relationship_type==='co_tracker'));
+   if(!rel){setRelationship(null);setNotes(null);setInsight(null);return;}
+   setRelationship(rel);
+   const [noteResponse,insightResponse]=await Promise.all([
+    fetch('/api/relationships/'+rel.id+'/notes',{credentials:'same-origin',headers:{Accept:'application/json'}}),
+    fetch('/api/relationships/'+rel.id+'/insights',{credentials:'same-origin',headers:{Accept:'application/json'}})
+   ]);
+   if(!live)return;
+   if(noteResponse.ok)setNotes(await noteResponse.json() as NotesPayload);
+   if(insightResponse.ok)setInsight(await insightResponse.json() as Insight);
+  }catch{/* Keep the last known shared content if a refresh fails. */}})();
+  return()=>{live=false;};
+ },[data]);
+ useEffect(()=>{if(!relationshipId)return;const timer=window.setInterval(async()=>{if(document.hidden)return;try{
+  const [dashboardResponse,notesResponse]=await Promise.all([
+   fetch('/api/dashboard',{credentials:'same-origin',headers:{Accept:'application/json'}}),
+   fetch('/api/relationships/'+relationshipId+'/notes',{credentials:'same-origin',headers:{Accept:'application/json'}})
   ]);
-  if(!live)return;
-  if(noteResponse.ok){const payload=await noteResponse.json() as NotesPayload;setNotes(payload);}
-  if(insightResponse.ok)setInsight(await insightResponse.json() as Insight);
- }catch{/* The dashboard remains usable if shared data is temporarily unavailable. */}})();return()=>{live=false;}},[]);
- useEffect(()=>{if(!relationshipId)return;const timer=window.setInterval(async()=>{if(document.hidden)return;try{const r=await fetch('/api/relationships/'+relationshipId+'/notes',{credentials:'same-origin',headers:{Accept:'application/json'}});if(r.ok)setNotes(await r.json() as NotesPayload);}catch{/* keep the last known thread */}},20000);return()=>window.clearInterval(timer);},[relationshipId]);
+  if(dashboardResponse.ok){const latest=await dashboardResponse.json() as Dashboard;setRole(latest.profile.relationship_role??'tracker');setMyName(latest.profile.display_name?.trim()||latest.user.name?.trim()||'You');setCheckin(latest.today_checkin??null);const latestRelationship=(latest.relationships??[]).find(item=>item.id===relationshipId&&item.status==='accepted');if(latestRelationship)setRelationship(latestRelationship);}
+  if(notesResponse.ok)setNotes(await notesResponse.json() as NotesPayload);
+ }catch{/* keep the last known shared content */}},20000);return()=>window.clearInterval(timer);},[relationshipId]);
  const noteCount=notes?.notes.length??0;
  useEffect(()=>{const el=threadRef.current;if(el)el.scrollTop=el.scrollHeight;},[noteCount]);
  async function saveNote(event:FormEvent){event.preventDefault();if(!relationship||!draft.trim())return;setBusy(true);setMessage('');
@@ -71,9 +84,16 @@ export default function SharedPartnerSpace(){
  const primaryName=role==='support'?(relationship.companion_name?.trim()||'your partner'):myName;
  const supportName=role==='support'?myName:(relationship.companion_name?.trim()||'your partner');
  const partnerName=role==='support'?primaryName:supportName;
- const sharedSymptoms=relationship.relationship_type==='co_tracker'?(relationship.companion_wellbeing?.symptoms??[]):role==='support'?(relationship.companion_wellbeing?.symptoms??[]):(checkin?.symptoms??[]);
- const sharedDate=role==='support'||relationship.relationship_type==='co_tracker'?relationship.companion_wellbeing?.log_date:null;
- const sharedMood=relationship.relationship_type==='co_tracker'?(relationship.companion_wellbeing?.mood??[]):role==='support'?(relationship.companion_wellbeing?.mood??[]):(Array.isArray(checkin?.mood)?checkin?.mood??[]:typeof checkin?.mood==='string'?checkin.mood.split(','):[]);
+ const sharedSymptoms=role==='support'?(relationship.companion_wellbeing?.symptoms??[]):(checkin?.symptoms??[]);
+ const sharedDate=role==='support'?relationship.companion_wellbeing?.log_date:checkin?.log_date??null;
+ const sharedMood=role==='support'?(relationship.companion_wellbeing?.mood??[]):(Array.isArray(checkin?.mood)?checkin?.mood??[]:typeof checkin?.mood==='string'?checkin.mood.split(','):[]);
+ const partnerSymptoms=relationship.companion_wellbeing?.symptoms??[];
+ const partnerMood=relationship.companion_wellbeing?.mood??[];
+ const partnerEnergy=relationship.companion_wellbeing?.energy_level;
+ const partnerDate=relationship.companion_wellbeing?.log_date;
+ const sharedEnergy=role==='support'?relationship.companion_wellbeing?.energy_level:checkin?.energy_level;
+ const currentCycleDay=data?.cycle_day??null;
+ const ownLatestPeriod=data?.latest_period??null;
  return <section id="shared-partner-space" className={'cosmic-week-card cosmic-shared-partner-space '+(role==='support'?'is-support-view':'is-primary-view')} aria-labelledby="shared-partner-space-title">
   <span className="cosmic-shared-orbit cosmic-shared-orbit--one" aria-hidden="true">✦</span><span className="cosmic-shared-orbit cosmic-shared-orbit--two" aria-hidden="true">☾</span><span className="cosmic-shared-orbit cosmic-shared-orbit--three" aria-hidden="true">♡</span>
   <div className="cosmic-shared-hero">
@@ -81,7 +101,10 @@ export default function SharedPartnerSpace(){
    <div className="cosmic-shared-hero__art" aria-hidden="true"><span className="cosmic-shared-hero__moon">☾</span><span className="cosmic-shared-hero__heart">♡</span><span className="cosmic-shared-hero__flower">✿</span><span className="cosmic-shared-hero__spark">✧</span><span className="cosmic-shared-hero__star">✦</span></div>
   </div>
   <div className="cosmic-shared-space-grid">
-   {role!=='support'&&<article className="cosmic-shared-space-card cosmic-shared-space-card--checkin"><span className="cosmic-shared-card-icon" aria-hidden="true">♡</span><p className="cosmic-eyebrow">TODAY'S CHECK-IN</p><h3>{(role as string)==='support'?primaryName+"'s day, as shared":'Your day'}</h3>{sharedSymptoms.length||sharedMood.length?<><div className="cosmic-support-tags cosmic-shared-checkin-tags">{[...sharedSymptoms,...sharedMood].filter((tag,index,all)=>Boolean(tag)&&all.indexOf(tag)===index).map(wellbeingPill)}</div><small>{(role as string)==='support'?'From the check-in your partner chose to share.':'Your logged symptoms and mood for today.'}</small></>:<p className="cosmic-muted">No symptoms or mood updates to show today. A check-in is always optional.</p>}{sharedDate&&<small className="cosmic-shared-date">✧ Shared update · {sharedDate}</small>}</article>}
+   {role!=='support'&&<article className="cosmic-shared-space-card cosmic-shared-space-card--checkin"><span className="cosmic-shared-card-icon" aria-hidden="true">♡</span><p className="cosmic-eyebrow">TODAY'S CHECK-IN</p><h3>Your day</h3>{sharedSymptoms.length||sharedMood.length?<><div className="cosmic-support-tags cosmic-shared-checkin-tags">{[...sharedSymptoms,...sharedMood].filter((tag,index,all)=>Boolean(tag)&&all.indexOf(tag)===index).map(wellbeingPill)}</div><small>Your logged symptoms and mood for today.</small></>:<p className="cosmic-muted">No symptoms or mood updates to show today. A check-in is always optional.</p>}{sharedEnergy&&<small className="cosmic-shared-date">Energy · {({low:'Running low',balanced:'Balanced',high:'High',peak:'Glowing'} as Record<string,string>)[sharedEnergy]??sharedEnergy}</small>}{sharedDate&&<small className="cosmic-shared-date">✧ Your update · {sharedDate}</small>}</article>}
+   {role!=='support'&&relationship.relationship_type==='co_tracker'&&relationship.companion_sharing_preferences?.wellbeing_updates&&<article className="cosmic-shared-space-card cosmic-shared-space-card--checkin"><span className="cosmic-shared-card-icon" aria-hidden="true">✿</span><p className="cosmic-eyebrow">YOUR PARTNER'S CHECK-IN</p><h3>{partnerName}'s day, as shared</h3>{partnerSymptoms.length||partnerMood.length?<div className="cosmic-support-tags cosmic-shared-checkin-tags">{[...partnerSymptoms,...partnerMood].filter((tag,index,all)=>Boolean(tag)&&all.indexOf(tag)===index).map(wellbeingPill)}</div>:<p className="cosmic-muted">No wellbeing update has been shared for today.</p>}{partnerEnergy&&<small className="cosmic-shared-date">Energy · {({low:'Running low',balanced:'Balanced',high:'High',peak:'Glowing'} as Record<string,string>)[partnerEnergy]??partnerEnergy}</small>}{partnerDate&&<small className="cosmic-shared-date">✧ Shared update · {partnerDate}</small>}</article>}
+   {role!=='support'&&currentCycleDay!==null&&<article className="cosmic-shared-space-card cosmic-shared-space-card--checkin"><span className="cosmic-shared-card-icon" aria-hidden="true">☾</span><p className="cosmic-eyebrow">YOUR CYCLE UPDATE</p><h3>Your cycle · Day {currentCycleDay}</h3>{ownLatestPeriod?.start_date&&<small>Last period began {ownLatestPeriod.start_date}</small>}</article>}
+   {relationship.companion_cycle_summary&&<article className="cosmic-shared-space-card cosmic-shared-space-card--checkin"><span className="cosmic-shared-card-icon" aria-hidden="true">☾</span><p className="cosmic-eyebrow">A CYCLE UPDATE, AS SHARED</p><h3>{partnerName}'s cycle · Day {relationship.companion_cycle_summary.cycle_day}</h3><small>Last period began {relationship.companion_cycle_summary.last_period_start}</small>{relationship.companion_cycle_summary.estimated_next_period&&<small className="cosmic-shared-date">Next period estimate · {relationship.companion_cycle_summary.estimated_next_period}</small>}</article>}
    {role==='support'&&<article className="cosmic-shared-space-card cosmic-shared-space-card--daily"><span className="cosmic-shared-card-icon" aria-hidden="true">✿</span><p className="cosmic-eyebrow">CYCLE-AWARE RELATIONSHIP REFLECTION</p><h3>{insight?.daily.title??'Ask, do not assume'}</h3><p>{insight?.daily.tip??'Ask what kind of support would feel good today: listening, practical help, company or space.'}</p>{insight?.daily.cycle_context&&insight.daily.cycle_context.available!==false&&<small>Cycle-aware reflection · {insight.daily.cycle_context.phase.replace(/-/g,' ')}{insight.daily.cycle_context.cycle_day?' · estimated day '+insight.daily.cycle_context.cycle_day:''}</small>}</article>}
    <article className="cosmic-shared-space-card cosmic-shared-space-card--note cosmic-chat-card">
     <div className="cosmic-chat-head"><span className="cosmic-chat-avatar" aria-hidden="true">{partnerName.charAt(0).toUpperCase()||'♡'}</span><div><p className="cosmic-eyebrow">A NOTE FROM THE HEART</p><h3>{partnerName}</h3><small><i aria-hidden="true"/> {primaryName} ↔ {supportName} · private message board</small></div><span className="cosmic-chat-flower" aria-hidden="true">✿</span></div>

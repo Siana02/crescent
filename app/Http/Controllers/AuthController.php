@@ -50,6 +50,7 @@ class AuthController extends Controller
             'birth_date' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
             'birth_time' => ['nullable', 'date_format:H:i'],
             'birth_place' => ['nullable', 'string', 'max:160'],
+            'remember' => ['sometimes', 'boolean'],
         ]);
 
         $intent = $validated['registration_intent'] ?? ($validated['relationship_role'] ?? 'tracker');
@@ -173,7 +174,7 @@ class AuthController extends Controller
             return $user;
         });
 
-        Auth::login($user);
+        Auth::login($user, (bool) ($validated['remember'] ?? true));
         $request->session()->regenerate();
 
         return response()->json([
@@ -210,9 +211,13 @@ class AuthController extends Controller
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
+            'remember' => ['sometimes', 'boolean'],
         ]);
 
-        if (! Auth::attempt([...$credentials, 'is_active' => true])) {
+        $remember = (bool) ($credentials['remember'] ?? false);
+        unset($credentials['remember']);
+
+        if (! Auth::attempt([...$credentials, 'is_active' => true], $remember)) {
             return response()->json([
                 'message' => 'Those details did not match our records. Please try again.',
             ], 422);
