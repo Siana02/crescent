@@ -186,6 +186,8 @@ class DashboardController extends Controller
                             'last_period_start' => $lastSharedPeriod->start_date->format('Y-m-d'),
                             'cycle_day' => (int) $periodStart->diffInDays($todayForCompanion) + 1,
                             'estimated_next_period' => $estimatedNextDate?->toDateString(),
+                            'period_is_active' => (bool) ($lastSharedPeriod->end_date === null || $lastSharedPeriod->end_date->format('Y-m-d') >= $todayForCompanion->toDateString()),
+                            'current_period_day' => ($lastSharedPeriod->end_date === null || $lastSharedPeriod->end_date->format('Y-m-d') >= $todayForCompanion->toDateString()) ? ((int) $periodStart->diffInDays($todayForCompanion) + 1) : null,
                             'average_cycle_length' => $companionProfile?->average_cycle_length,
                             'estimated_cycle_length' => $sharedCycleLength,
                             'average_period_length' => $companionProfile?->average_period_length,
