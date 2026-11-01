@@ -25,6 +25,10 @@ export default function AuthPage({ mode }: AuthPageProps) {
     const isRegister = mode === 'register';
     const [name, setName] = useState('');
     const [agreedToTerms, setAgreedToTerms] = useState(false);
+    const [rememberMe, setRememberMe] = useState(true);
+    const params = new URLSearchParams(window.location.search);
+    const journalArticle = params.get('source') === 'journal' && /^[a-z0-9-]+$/.test(params.get('article') ?? '') ? params.get('article') : null;
+    const journalQuery = journalArticle ? `?source=journal&article=${encodeURIComponent(journalArticle)}` : '';
     const [relationshipRole, setRelationshipRole] = useState<'tracker' | 'support' | 'co_tracker'>(() => {
         const params = new URLSearchParams(window.location.search);
         if (params.get('role') === 'support') return 'support';
@@ -72,7 +76,7 @@ export default function AuthPage({ mode }: AuthPageProps) {
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        if (!agreedToTerms) { setError('Please tick the box to agree to the Terms and Privacy Policy.'); return; }
+        if (isRegister && !agreedToTerms) { setError('Please tick the box to agree to the Terms and Privacy Policy.'); return; }
         setError('');
         setExistingAccountEmail(false);
         setInviteNeedsLogin(false);
@@ -112,6 +116,7 @@ export default function AuthPage({ mode }: AuthPageProps) {
                     } : {}),
                     email,
                     password,
+                    remember: rememberMe,
                 }),
             });
             const data = (await response.json()) as AuthResponse;
@@ -132,6 +137,7 @@ export default function AuthPage({ mode }: AuthPageProps) {
             }
 
             const codeQuery = inviteCode ? `?code=${encodeURIComponent(inviteCode.trim().toUpperCase())}` : '';
+            if (journalArticle) { window.location.assign(`/read/${journalArticle}`); return; }
             if (isRegister && relationshipRole === 'support') window.location.assign('/dashboard');
             else if (isRegister && relationshipRole === 'co_tracker') window.location.assign(`/onboarding${codeQuery}`);
             else if (isRegister) window.location.assign('/onboarding');
@@ -160,9 +166,9 @@ export default function AuthPage({ mode }: AuthPageProps) {
                     <p className="auth-eyebrow">{isRegister ? 'YOUR SPACE, YOUR PACE' : 'WELCOME BACK'}</p>
                     <h1 id="auth-title">{isRegister ? 'Begin with you.' : 'Good to see you.'}</h1>
                     <p className="auth-description">
-                        {isRegister
-                            ? 'Create your private little universe. We’ll personalise it together in just a few steps.'
-                            : 'Come back to your own little corner of the cosmos.'}
+                        {journalArticle
+                            ? (isRegister ? 'Create an account and sign in to continue reading Crescent’s Journal. Your reading space is part of your private Crescent account.' : 'Sign in to continue reading Crescent’s Journal and return to the article you selected.')
+                            : isRegister ? 'Create your private little universe. We’ll personalise it together in just a few steps.' : 'Come back to your own little corner of the cosmos.'}
                     </p>
 
                     <form className="auth-form" onSubmit={handleSubmit}>
@@ -202,8 +208,10 @@ export default function AuthPage({ mode }: AuthPageProps) {
                                 <label>Birth place <small>Optional, but improves location-sensitive chart calculations.</small><input value={birthPlace} onChange={event => setBirthPlace(event.target.value)} maxLength={160} placeholder="City, country" /></label>
                             </fieldset>}
                         </div>}
-                        <label className="auth-consent"><input type="checkbox" checked={agreedToTerms} onChange={event => setAgreedToTerms(event.target.checked)} required /><span><strong>Important:</strong> by {isRegister ? 'creating an account' : 'signing in'} you agree to Crescent’s <a href="/terms" target="_blank" rel="noreferrer">Terms</a> and <a href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>. Need help? <a href="/support" target="_blank" rel="noreferrer">Help &amp; support</a>.</span></label>
-                        {error && <div className="auth-error" role="alert"><p>{error}</p>{existingAccountEmail && <p><a href="/login">Sign in to your existing account →</a></p>}{inviteNeedsLogin && <p><a href="/login">Already registered? Sign in →</a></p>}</div>}
+                        {isRegister && <label className="auth-consent"><input type="checkbox" checked={agreedToTerms} onChange={event => setAgreedToTerms(event.target.checked)} required /><span><strong>Important:</strong> by creating an account you agree to Crescent’s <a href="/terms" target="_blank" rel="noreferrer">Terms</a> and <a href="/privacy" target="_blank" rel="noreferrer">Privacy Policy</a>.</span></label>}
+                        <label className="auth-remember"><input type="checkbox" checked={rememberMe} onChange={event => setRememberMe(event.target.checked)} /><span>Keep me signed in on this device</span></label>
+                        {isRegister && <p className="auth-help-link"><a href="/support" target="_blank" rel="noreferrer">Help &amp; support</a></p>}
+                        {error && <div className="auth-error" role="alert"><p>{error}</p>{existingAccountEmail && <p><a href={'/login' + journalQuery}>Sign in to your existing account →</a></p>}{inviteNeedsLogin && <p><a href={'/login' + journalQuery}>Already registered? Sign in →</a></p>}</div>}
                         <Button type="submit" className="auth-submit" disabled={isSubmitting}>
                             {isSubmitting ? 'One moment…' : isRegister ? 'Create your account' : 'Sign in'}
                             <span className="button__icon" aria-hidden="true">→</span>
@@ -211,7 +219,7 @@ export default function AuthPage({ mode }: AuthPageProps) {
                     </form>
                     <p className="auth-switch">
                         {isRegister ? 'Already have a space here?' : 'New to Crescent?'}{' '}
-                        <a href={isRegister ? '/login' : '/register'}>{isRegister ? 'Sign in' : 'Create an account'}</a>
+                        <a href={(isRegister ? '/login' : '/register') + journalQuery}>{isRegister ? 'Sign in' : 'Create an account'}</a>
                     </p>
                     <p className="auth-privacy">Your cycle details belong to you. Keep your password private, and sign out on shared devices.</p>
                 </div>

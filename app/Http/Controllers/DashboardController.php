@@ -29,7 +29,10 @@ class DashboardController extends Controller
         if ($profile->cycle_tracking_started_at) {
             $periodQuery->whereDate('start_date', '>=', $profile->cycle_tracking_started_at->format('Y-m-d'));
         }
-        $latestPeriod = $isPregnancyJourney ? null : $periodQuery->orderByDesc('start_date')->first();
+        // Do not let first() add a limit to the shared query builder: the same
+        // base query is cloned below to build the full period history for the
+        // dashboard calendar and cycle-history summary.
+        $latestPeriod = $isPregnancyJourney ? null : (clone $periodQuery)->orderByDesc('start_date')->first();
         $today = CarbonImmutable::today($profile->timezone);
         $lastStart = $latestPeriod
             ? CarbonImmutable::parse($latestPeriod->start_date->format('Y-m-d'), $profile->timezone)->startOfDay()
@@ -68,6 +71,7 @@ class DashboardController extends Controller
         }
 
         $todayCheckin = $isPregnancyJourney ? null : $user->dailyCheckins()->whereDate('log_date', $today->toDateString())->first();
+        $todaySexLogs = $isPregnancyJourney ? collect() : $user->sexLogs()->whereDate('log_date', $today->toDateString())->orderBy('id')->get();
         $pregnancy = $isPregnancyJourney ? $user->pregnancies()->where('status', $isPostpartumJourney ? 'postpartum' : 'active')->latest()->first() : null;
         $pregnancySummary = null;
 
@@ -229,11 +233,12 @@ class DashboardController extends Controller
                     } else {
                         $companionToday = CarbonImmutable::today($companionProfile?->timezone ?: config('app.timezone', 'UTC'))->toDateString();
                         $latestSharedCheckin = $companion->dailyCheckins()->whereDate('log_date', $companionToday)->first();
-                        if ($latestSharedCheckin && (! empty($latestSharedCheckin->symptoms) || $latestSharedCheckin->mood)) {
+                        if ($latestSharedCheckin && (! empty($latestSharedCheckin->symptoms) || $latestSharedCheckin->mood || $latestSharedCheckin->energy_level)) {
                             $sharedWellbeing = [
                                 'log_date' => $latestSharedCheckin->log_date->format('Y-m-d'),
                                 'mood' => $latestSharedCheckin->mood ? explode(',', $latestSharedCheckin->mood) : [],
                                 'symptoms' => $latestSharedCheckin->symptoms ?? [],
+                                'energy_level' => $latestSharedCheckin->energy_level,
                             ];
                         }
                     }
@@ -310,6 +315,16 @@ class DashboardController extends Controller
                 'symptoms' => $todayCheckin->symptoms ?? [],
                 'notes' => $todayCheckin->notes,
             ] : null,
+            // Sexual-wellbeing records remain private to their owner.
+            'today_sex_logs' => $todaySexLogs->map(fn ($log) => [
+                'id' => $log->id,
+                'log_date' => $log->log_date->format('Y-m-d'),
+                'sex_drive' => $log->sex_drive,
+                'activities' => $log->activities ?? [],
+                'protection_methods' => $log->protection_methods ?? [],
+                'orgasm' => $log->orgasm,
+                'notes' => $log->notes,
+            ])->values(),
         ]);
     }
 }

@@ -19,6 +19,32 @@ class SexLogController extends Controller
         'patch_ring', 'withdrawal', 'fertility_awareness', 'none', 'other',
     ];
 
+    public function index(Request $request): JsonResponse
+    {
+        $profile = $request->user()->cycleProfile;
+        $timezone = $profile?->timezone ?: config('app.timezone', 'UTC');
+        $validated = $request->validate([
+            'date' => ['required', 'date_format:Y-m-d', 'before_or_equal:'.CarbonImmutable::today($timezone)->toDateString()],
+        ]);
+
+        $logs = $request->user()->sexLogs()
+            ->whereDate('log_date', $validated['date'])
+            ->orderBy('id')
+            ->get();
+
+        return response()->json([
+            'logs' => $logs->map(fn ($log) => [
+                'id' => $log->id,
+                'log_date' => $log->log_date->format('Y-m-d'),
+                'activities' => $log->activities ?? [],
+                'protection_methods' => $log->protection_methods ?? [],
+                'sex_drive' => $log->sex_drive,
+                'orgasm' => $log->orgasm,
+                'notes' => $log->notes,
+            ])->values(),
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $profile = $request->user()->cycleProfile()->firstOrCreate([]);
