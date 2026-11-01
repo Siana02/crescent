@@ -14,8 +14,8 @@ class CycleTimelineSyncTest extends TestCase
     public function test_a_new_period_start_closes_the_previous_cycle_and_starts_cycle_day_one(): void
     {
         $user = User::factory()->create();
-        $previousStart = today()->subDays(28)->toDateString();
-        $previousEnd = today()->subDays(25)->toDateString();
+        $previousStart = today()->subDays(26)->toDateString();
+        $previousEnd = today()->subDays(23)->toDateString();
         $currentStart = today()->toDateString();
         $user->cycleProfile()->create([
             'timezone' => config('app.timezone', 'UTC'),
@@ -37,6 +37,8 @@ class CycleTimelineSyncTest extends TestCase
         $this->getJson('/api/dashboard')
             ->assertOk()
             ->assertJsonPath('cycle_day', 1)
+            ->assertJsonPath('estimated_cycle_length', 26)
+            ->assertJsonPath('estimated_next_period', today()->addDays(26)->toDateString())
             ->assertJsonPath('period_is_active', true)
             ->assertJsonPath('current_period_day', 1)
             ->assertJsonPath('latest_period.start_date', $currentStart)
