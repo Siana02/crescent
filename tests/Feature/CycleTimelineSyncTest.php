@@ -145,6 +145,7 @@ class CycleTimelineSyncTest extends TestCase
             'user_two_id' => $support->id,
             'relationship_type' => 'observer',
             'status' => 'accepted',
+            'invite_code' => 'SHARE001',
             'sharing_preferences' => [(string) $primary->id => [
                 'cycle_details' => true,
                 'pregnancy_details' => true,
