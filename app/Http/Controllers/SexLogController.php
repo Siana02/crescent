@@ -71,7 +71,7 @@ class SexLogController extends Controller
         ]);
 
         try {
-            app(\App\Services\\CrescentPushService::class)->notifyPartners(
+            app(\App\Services\CrescentPushService::class)->notifyPartners(
                 $request->user(),
                 'partner_intimacy',
                 'intimate_updates',
