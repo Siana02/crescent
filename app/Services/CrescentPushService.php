@@ -164,7 +164,7 @@ class CrescentPushService
                 continue;
             }
             $all = $relationship->sharing_preferences ?? [];
-            $theirs = $all[(string) $otherId] ?? $all;
+            $theirs = array_merge(['cycle_details' => true, 'wellbeing_updates' => true, 'intimate_updates' => true], $all[(string) $otherId] ?? (array_key_exists('cycle_details', $all) ? $all : []));
             if (! empty($theirs[$permission]) && ($other = User::with('cycleProfile')->find($otherId))) {
                 $primaries[] = $other;
             }
@@ -268,7 +268,7 @@ class CrescentPushService
                 continue;
             }
             $all = $relationship->sharing_preferences ?? [];
-            $mine = $all[(string) $primary->id] ?? $all;
+            $mine = array_merge(['cycle_details' => true, 'wellbeing_updates' => true, 'intimate_updates' => true], $all[(string) $primary->id] ?? (array_key_exists('cycle_details', $all) ? $all : []));
             if (! empty($mine[$permission])) {
                 $ids[] = $partnerId;
             }
