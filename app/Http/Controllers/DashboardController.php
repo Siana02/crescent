@@ -360,7 +360,7 @@ class DashboardController extends Controller
                 'symptoms' => $todayCheckin->symptoms ?? [],
                 'notes' => $todayCheckin->notes,
             ] : null,
-            // Sexual-wellbeing records remain private to their owner.
+            // The owner's personal logs stay in their dashboard; partner copies are permission-gated above.
             'today_sex_logs' => $todaySexLogs->map(fn ($log) => [
                 'id' => $log->id,
                 'log_date' => $log->log_date->format('Y-m-d'),
