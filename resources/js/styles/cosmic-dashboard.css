@@ -848,6 +848,7 @@
 .cosmic-floral-marker{display:inline-grid;place-items:center;flex:0 0 auto;width:23px;height:23px;border:1.5px solid currentColor;border-radius:50%;font-size:14px;line-height:1;background:rgba(255,255,255,.72);font-style:normal}
 .cosmic-floral-marker--period{color:#cf536b;background:#fff0f2;border-color:#df8290}
 .cosmic-floral-marker--estimated-period{color:#dca8bc;background:#fff8fb;border-color:#efcfdd;opacity:.9}
+.cosmic-floral-calendar__history-period--estimate{color:#c99aaf;background:#fff8fb;border-color:#efd5e0}
 .cosmic-floral-marker--fertile{color:#398c65;background:#e9f8ef;border-color:#72bd94}
 .cosmic-floral-marker--ovulation{color:#a05da9;background:#f7e9ff;border-color:#c18ed0}
 .cosmic-floral-marker--lower{color:#3f86b9;background:#e9f5ff;border-color:#8fc7ed}
