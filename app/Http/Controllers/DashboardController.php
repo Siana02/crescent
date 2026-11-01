@@ -278,6 +278,7 @@ class DashboardController extends Controller
                         ->limit(180)
                         ->get()
                         ->map(fn ($log) => [
+                            'id' => $log->id,
                             'log_date' => $log->log_date->format('Y-m-d'),
                             'sex_drive' => $log->sex_drive,
                             'activities' => $log->activities ?? [],
