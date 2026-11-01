@@ -119,7 +119,7 @@ class DailyCheckinController extends Controller
                 'symptoms' => $checkin->symptoms ?? [],
                 'notes' => $checkin->notes,
             ],
-            'message' => 'Your check-in is saved in your private space.',
+            'message' => 'Your check-in is saved to your cycle record. Sharing follows your connection preferences.',
         ], 201);
     }
 }
