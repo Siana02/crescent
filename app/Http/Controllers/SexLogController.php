@@ -70,8 +70,20 @@ class SexLogController extends Controller
             'notes' => $validated['notes'] ?? null,
         ]);
 
+        try {
+            app(\\App\\Services\\CrescentPushService::class)->notifyPartners(
+                $request->user(),
+                'partner_intimacy',
+                'intimate_updates',
+                'crescent:partner-intimacy:'.$request->user()->id.':'.$log->id,
+                60 * 24 * 30
+            );
+        } catch (\\Throwable $exception) {
+            report($exception);
+        }
+
         return response()->json([
-            'message' => 'Your private sexual-wellbeing log has been saved.',
+            'message' => 'Your personal wellbeing log has been saved. Sharing follows your connection preferences.',
             'log' => [
                 'id' => $log->id,
                 'log_date' => $log->log_date->format('Y-m-d'),
