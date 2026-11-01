@@ -135,7 +135,7 @@ class DashboardController extends Controller
                 $isInitiator = $relationship->user_one_id === $user->id;
                 $companion = $isInitiator ? $relationship->companion : $relationship->initiator;
                 $allPreferences = $relationship->sharing_preferences ?? [];
-                $defaults = ['cycle_details' => true, 'pregnancy_details' => true, 'wellbeing_updates' => true, 'intimate_updates' => true, 'astrology' => false];
+                $defaults = ['cycle_details' => true, 'pregnancy_details' => false, 'wellbeing_updates' => true, 'intimate_updates' => true, 'astrology' => false];
                 $myPreferences = array_merge($defaults, $allPreferences[(string) $user->id] ?? []);
                 $companionPreferences = array_merge($defaults, $allPreferences[(string) ($companion?->id ?? 0)] ?? []);
                 // Older connections used one shared flat preference object; preserve it as a conservative fallback.
