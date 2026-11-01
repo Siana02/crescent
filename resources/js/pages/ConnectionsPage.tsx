@@ -5,7 +5,7 @@ import '../styles/cosmic-dashboard.css';
 import MobileNavigationMenu from '../components/MobileNavigationMenu';
 
 type RelationshipType = 'observer' | 'co_tracker';
-type SharingKey = 'cycle_details' | 'pregnancy_details' | 'wellbeing_updates' | 'astrology';
+type SharingKey = 'cycle_details' | 'pregnancy_details' | 'wellbeing_updates' | 'intimate_updates' | 'astrology';
 type SharingPreferences = Record<SharingKey, boolean>;
 type Relationship = {
     id: number;
@@ -32,11 +32,12 @@ type Relationship = {
 };
 type Note = { id: number; author_id: number; author_name: string; note_date: string; body: string; is_mine: boolean; read_at: string | null; created_at: string | null };
 type NotesPayload = { notes: Note[]; can_write: boolean; today_note: { id: number; body: string; read_at: string | null } | null };
-const emptySharing: SharingPreferences = { cycle_details: false, pregnancy_details: false, wellbeing_updates: false, astrology: false };
+const emptySharing: SharingPreferences = { cycle_details: true, pregnancy_details: true, wellbeing_updates: true, intimate_updates: true, astrology: false };
 const sharingOptions: { key: SharingKey; title: string; detail: string; icon: string }[] = [
     { key: 'cycle_details', title: 'Cycle updates', detail: 'Cycle journey and cycle-related updates', icon: 'water_drop' },
     { key: 'pregnancy_details', title: 'Pregnancy updates', detail: 'Pregnancy or postpartum journey', icon: 'child_care' },
-    { key: 'wellbeing_updates', title: 'Wellbeing check-ins', detail: 'Mood and wellbeing updates chosen to share', icon: 'favorite' },
+    { key: 'wellbeing_updates', title: 'Wellbeing check-ins', detail: 'Symptoms, mood, energy and body updates', icon: 'favorite' },
+    { key: 'intimate_updates', title: 'Intimate wellbeing', detail: 'Sex drive and intimate logs you choose to share', icon: 'lock_open' },
     { key: 'astrology', title: 'Astrology', detail: 'Natal signs for compatibility reflections', icon: 'auto_awesome' },
 ];
 const connectionWellbeingLabels: Record<string, { label: string; icon: string }> = {
@@ -232,7 +233,7 @@ export default function ConnectionsPage() {
                     <form className="cosmic-connection-form" onSubmit={invite}>
                         <button type="button" aria-pressed={kind === 'observer'} className={kind === 'observer' ? 'cosmic-connection-type is-selected' : 'cosmic-connection-type'} onClick={() => setKind('observer')}><span className="material-symbols-rounded">favorite</span><span><strong>Partner / support partner</strong><small>One-way daily notes from the person tracking their journey.</small></span><span className="cosmic-connection-check">{kind === 'observer' ? '✦' : '○'}</span></button>
                         <button type="button" aria-pressed={kind === 'co_tracker'} className={kind === 'co_tracker' ? 'cosmic-connection-type is-selected' : 'cosmic-connection-type'} onClick={() => setKind('co_tracker')}><span className="material-symbols-rounded">diversity_3</span><span><strong>Co-cycling / co-tracking partners</strong><small>Both people keep their own cycle, fertility or pregnancy profile.</small></span><span className="cosmic-connection-check">{kind === 'co_tracker' ? '✦' : '○'}</span></button>
-                        <div className="cosmic-invite-sharing"><p className="cosmic-eyebrow">SET YOUR BOUNDARIES FIRST</p><h3>What would you like to share?</h3><p className="cosmic-muted">Your choices will be saved with the invitation. Your companion cannot switch these on for you.</p>{sharingOptions.map(option => <button key={option.key} type="button" aria-pressed={sharingPreferences[option.key]} className={sharingPreferences[option.key] ? 'is-enabled' : ''} onClick={() => setSharingPreferences(current => ({ ...current, [option.key]: !current[option.key] }))}><span className="material-symbols-rounded">{option.icon}</span><span><strong>{option.title}</strong><small>{option.detail}</small></span><b>{sharingPreferences[option.key] ? 'On' : 'Off'}</b></button>)}</div>
+                        <div className="cosmic-invite-sharing"><p className="cosmic-eyebrow">SET YOUR BOUNDARIES FIRST</p><h3>What would you like to share?</h3><p className="cosmic-muted">Cycle, wellbeing and intimate updates start on by default. Turn off anything you would rather keep private; only you can change these choices later.</p>{sharingOptions.map(option => <button key={option.key} type="button" aria-pressed={sharingPreferences[option.key]} className={sharingPreferences[option.key] ? 'is-enabled' : ''} onClick={() => setSharingPreferences(current => ({ ...current, [option.key]: !current[option.key] }))}><span className="material-symbols-rounded">{option.icon}</span><span><strong>{option.title}</strong><small>{option.detail}</small></span><b>{sharingPreferences[option.key] ? 'On' : 'Off'}</b></button>)}</div>
                         <Button type="submit" disabled={busy}>{busy ? 'Preparing your code…' : 'Create invitation ✧'}</Button>
                     </form>
                     {newCode && <div className="cosmic-new-code"><span>Your Cosmic Sync Code</span><strong>{newCode}</strong><button type="button" onClick={() => { void navigator.clipboard?.writeText(newCode); setNotice('Code copied. Share it privately.'); }}>Copy code</button><small>Expires in seven days and can be accepted once.</small></div>}
@@ -254,7 +255,7 @@ export default function ConnectionsPage() {
                         </div>}
                         {profileRole === 'support' && relationship.relationship_type === 'observer' ? <div className="cosmic-sharing-panel">
                             <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">YOUR PERMISSIONS</p><h4>What your partner chose to share</h4></div><span aria-hidden="true">♡</span></div>
-                            <p className="cosmic-muted">Your partner selected these settings before creating your invitation. You can see their shared updates here, but only they can change these permissions.</p>
+                            <p className="cosmic-muted">Your partner controls what is shared. These settings are the primary account holder’s choices and may change at any time.</p>
                             <div className="cosmic-sharing-options">{sharingOptions.map(option => <div key={option.key} className={relationship.companion_sharing_preferences[option.key] ? 'cosmic-sharing-option is-enabled' : 'cosmic-sharing-option'}><span className="material-symbols-rounded">{option.icon}</span><span><strong>{option.title}</strong><small>{option.detail}</small></span><span className="cosmic-sharing-toggle">{relationship.companion_sharing_preferences[option.key] ? 'On' : 'Off'}</span></div>)}</div>
                         </div> : <div className="cosmic-sharing-panel">
                             <div className="cosmic-section-heading"><div><p className="cosmic-eyebrow">SUPPORT CONNECTION</p><h4>What you’re sharing</h4></div><span aria-hidden="true">♡</span></div>
