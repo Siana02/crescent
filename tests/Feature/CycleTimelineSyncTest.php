@@ -250,7 +250,7 @@ class CycleTimelineSyncTest extends TestCase
         $relationship = Relationship::where('user_one_id', $primary->id)->latest()->first();
         $preferences = $relationship->sharing_preferences[(string) $primary->id];
         $this->assertTrue($preferences['cycle_details']);
-        $this->assertTrue($preferences['pregnancy_details']);
+        $this->assertFalse($preferences['pregnancy_details']);
         $this->assertTrue($preferences['wellbeing_updates']);
         $this->assertTrue($preferences['intimate_updates']);
         $this->assertFalse($preferences['astrology']);
