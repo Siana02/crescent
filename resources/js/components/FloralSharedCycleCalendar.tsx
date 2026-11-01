@@ -5,7 +5,7 @@ type DailyCheckinSummary = {log_date:string;energy_level:string|null;mood:string
 type SexLogSummary = {id:number;log_date:string;sex_drive:number|null;activities:string[];protection_methods:string[];orgasm:boolean|null;notes:string|null};
 type CycleCalendarSummary = {
   last_period_start:string; cycle_day:number; estimated_next_period:string|null;
-  average_cycle_length:number|null; average_period_length:number|null;
+  average_cycle_length:number|null; estimated_cycle_length?:number|null; average_period_length:number|null;
   cycle_regularity:'regular'|'irregular'|'unknown'|string;
   fertility_estimate_available:boolean; estimated_ovulation_date:string|null;
   estimated_fertile_start:string|null; estimated_fertile_end:string|null;
@@ -39,11 +39,11 @@ export default function FloralSharedCycleCalendar({cycle,ownerName='your partner
   }
   if(cycle.estimated_next_period){for(let d=cycle.estimated_next_period;d<=addDays(cycle.estimated_next_period,expectedDays-1);d=addDays(d,1))if(!confirmed.has(d))estimated.add(d);}
   return {confirmedPeriodDates:confirmed,estimatedPeriodDates:estimated};
- },[cycle.period_history,cycle.last_period_start,cycle.average_period_length,cycle.estimated_next_period,todayDate]);
+ },[cycle.period_history,cycle.last_period_start,cycle.average_period_length,cycle.estimated_cycle_length,cycle.average_period_length,cycle.estimated_next_period,todayDate]);
  const ovulation=cycle.estimated_ovulation_date;
  const fertileStart=cycle.estimated_fertile_start;
  const fertileEnd=cycle.estimated_fertile_end;
- function kind(date:string):'period'|'estimated-period'|'ovulation'|'fertile'|'lower'|'none'{if(confirmedPeriodDates.has(date))return 'period';if(estimatedPeriodDates.has(date))return 'estimated-period';if(cycle.fertility_estimate_available&&cycle.average_cycle_length&&cycle.last_period_start){const delta=Math.round((dateFromKey(date).getTime()-dateFromKey(cycle.last_period_start).getTime())/86400000);const length=cycle.average_cycle_length;const cycleOffset=Math.floor(delta/length);const projectedStart=addDays(cycle.last_period_start,cycleOffset*length);const projectedOvulation=addDays(projectedStart,length-15);const start=addDays(projectedOvulation,-5);const end=addDays(projectedOvulation,1);if(date===projectedOvulation)return 'ovulation';if(date>=start&&date<=end)return 'fertile';return 'lower';}if(cycle.fertility_estimate_available&&ovulation&&date===ovulation)return 'ovulation';if(cycle.fertility_estimate_available&&fertileStart&&fertileEnd&&date>=fertileStart&&date<=fertileEnd)return 'fertile';return cycle.fertility_estimate_available?'lower':'none';}
+ function kind(date:string):'period'|'estimated-period'|'ovulation'|'fertile'|'lower'|'none'{if(confirmedPeriodDates.has(date))return 'period';if(estimatedPeriodDates.has(date))return 'estimated-period';if(cycle.fertility_estimate_available&&cycle.average_cycle_length&&cycle.last_period_start){const delta=Math.round((dateFromKey(date).getTime()-dateFromKey(cycle.last_period_start).getTime())/86400000);const length=cycle.estimated_cycle_length??cycle.average_cycle_length;const cycleOffset=Math.floor(delta/length);const projectedStart=addDays(cycle.last_period_start,cycleOffset*length);const projectedOvulation=addDays(projectedStart,length-15);const start=addDays(projectedOvulation,-5);const end=addDays(projectedOvulation,1);if(date===projectedOvulation)return 'ovulation';if(date>=start&&date<=end)return 'fertile';return 'lower';}if(cycle.fertility_estimate_available&&ovulation&&date===ovulation)return 'ovulation';if(cycle.fertility_estimate_available&&fertileStart&&fertileEnd&&date>=fertileStart&&date<=fertileEnd)return 'fertile';return cycle.fertility_estimate_available?'lower':'none';}
  const selectedKind=kind(selected);
  const detail=selectedKind==='period'?'Confirmed period day · part of your logged cycle':selectedKind==='estimated-period'?'Estimated period day · not yet confirmed by a period log':selectedKind==='ovulation'?'Estimated ovulation day · often around day 14 in a typical 28-day cycle, but timing varies':selectedKind==='fertile'?'Estimated fertile window · pregnancy is more likely':selectedKind==='lower'?'Lower estimated fertility · not a guaranteed safe day':'Cycle estimate unavailable for this date';
  return <section id="floral-calendar" className="cosmic-floral-calendar" aria-labelledby="floral-calendar-title">
