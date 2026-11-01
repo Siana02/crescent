@@ -184,6 +184,8 @@ class DashboardController extends Controller
                         $estimatedOvulation = $canEstimateFertility ? $estimatedNextDate?->subDays(15) : null;
                         $sharedCycleSummary = [
                             'last_period_start' => $lastSharedPeriod->start_date->format('Y-m-d'),
+                            'last_period_end' => $lastSharedPeriod->end_date?->format('Y-m-d'),
+                            'flow_intensity' => $lastSharedPeriod->flow_intensity,
                             'cycle_day' => (int) $periodStart->diffInDays($todayForCompanion) + 1,
                             'estimated_next_period' => $estimatedNextDate?->toDateString(),
                             'period_is_active' => (bool) ($lastSharedPeriod->end_date === null || $lastSharedPeriod->end_date->format('Y-m-d') >= $todayForCompanion->toDateString()),
@@ -256,12 +258,13 @@ class DashboardController extends Controller
                     } else {
                         $companionToday = CarbonImmutable::today($companionProfile?->timezone ?: config('app.timezone', 'UTC'))->toDateString();
                         $latestSharedCheckin = $companion->dailyCheckins()->whereDate('log_date', $companionToday)->first();
-                        if ($latestSharedCheckin && (! empty($latestSharedCheckin->symptoms) || $latestSharedCheckin->mood || $latestSharedCheckin->energy_level)) {
+                        if ($latestSharedCheckin && (! empty($latestSharedCheckin->symptoms) || $latestSharedCheckin->mood || $latestSharedCheckin->energy_level || $latestSharedCheckin->notes)) {
                             $sharedWellbeing = [
                                 'log_date' => $latestSharedCheckin->log_date->format('Y-m-d'),
                                 'mood' => $latestSharedCheckin->mood ? explode(',', $latestSharedCheckin->mood) : [],
                                 'symptoms' => $latestSharedCheckin->symptoms ?? [],
                                 'energy_level' => $latestSharedCheckin->energy_level,
+                                'notes' => $latestSharedCheckin->notes,
                             ];
                         }
                     }
