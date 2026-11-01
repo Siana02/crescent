@@ -49,6 +49,13 @@ export default function DashboardPage(){
   setData(await response.json() as DashboardData);
  },[]);
  useEffect(()=>{loadDashboard().catch(e=>setError(e instanceof Error?e.message:'Something went wrong.')).finally(()=>setIsLoading(false));},[loadDashboard]);
+ useEffect(()=>{
+  if(data?.profile.relationship_role!=='support')return;
+  const refreshSharedData=()=>{if(document.visibilityState==='visible')void loadDashboard().catch(()=>undefined);};
+  const interval=window.setInterval(refreshSharedData,20000);
+  window.addEventListener('focus',refreshSharedData);
+  return()=>{window.clearInterval(interval);window.removeEventListener('focus',refreshSharedData);};
+ },[data?.profile.relationship_role,loadDashboard]);
  async function logout(){try{await fetch('/auth/logout',{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','X-CSRF-TOKEN':csrfToken()}});}finally{window.location.assign('/');}}
  if(isLoading)return <main className="dashboard-loading" aria-live="polite" role="status"><div className="crescent-loader" aria-hidden="true"><span className="crescent-loader__moon">☾</span>{['✿','✧','♡','✦','✿','✧','♡','✦'].map((s,i)=><span key={i} className={'crescent-loader__bloom crescent-loader__bloom--'+(i+1)}>{s}</span>)}</div><p className="crescent-loader__title">Opening your little universe…</p><p className="crescent-loader__hint">Gathering petals, stars &amp; a little calm</p></main>;
  if(!data)return <main className="dashboard-loading" role="alert">{error||'We could not open your dashboard. Please refresh and try again.'}</main>;
