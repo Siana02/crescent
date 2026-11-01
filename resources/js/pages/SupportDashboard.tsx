@@ -8,7 +8,7 @@ import FloralSharedCycleCalendar from '../components/FloralSharedCycleCalendar';
 import JourneySectionNav from '../components/JourneySectionNav';
 import MobileNavigationMenu from '../components/MobileNavigationMenu';
 
-type SharingKey = 'cycle_details' | 'pregnancy_details' | 'wellbeing_updates' | 'astrology';
+type SharingKey = 'cycle_details' | 'pregnancy_details' | 'wellbeing_updates' | 'intimate_updates' | 'astrology';
 type SharingPreferences = Record<SharingKey, boolean>;
 type SharedRelationship = {
     id: number;
@@ -17,7 +17,7 @@ type SharedRelationship = {
     status: 'pending' | 'accepted' | 'revoked';
     companion_name: string | null;
     companion_journey: 'cycle' | 'fertility' | 'pregnancy' | 'postpartum' | null;
-    companion_cycle_summary: { last_period_start:string; cycle_day:number; estimated_next_period:string|null; average_cycle_length:number|null; average_period_length:number|null; cycle_regularity:string; fertility_estimate_available:boolean; estimated_ovulation_date:string|null; estimated_fertile_start:string|null; estimated_fertile_end:string|null; period_history:{start_date:string;end_date:string|null}[] } | null;
+    companion_cycle_summary: { last_period_start:string; last_period_end?:string|null; flow_intensity?:string|null; cycle_day:number; estimated_next_period:string|null; estimated_cycle_length?:number|null; period_is_active?:boolean; current_period_day?:number|null; average_cycle_length:number|null; average_period_length:number|null; cycle_regularity:string; fertility_estimate_available:boolean; estimated_ovulation_date:string|null; estimated_fertile_start:string|null; estimated_fertile_end:string|null; period_history:{start_date:string;end_date:string|null}[] } | null;
     companion_pregnancy_summary: { status: string; due_date: string; gestational_week: number | null; trimester: number | null; days_until_due: number | null } | null;
     companion_wellbeing: { log_date: string; mood?: string[]; symptoms?: string[]; energy_level?: number | null; category?: string; notes?: string | null } | null;
     companion_sun_sign: string | null;
@@ -35,6 +35,7 @@ const labels: { key: SharingKey; title: string; icon: string }[] = [
     { key: 'cycle_details', title: 'Cycle updates', icon: 'water_drop' },
     { key: 'pregnancy_details', title: 'Pregnancy updates', icon: 'child_care' },
     { key: 'wellbeing_updates', title: 'Wellbeing check-ins', icon: 'favorite' },
+    { key: 'intimate_updates', title: 'Intimate wellbeing', icon: 'lock_open' },
     { key: 'astrology', title: 'Astrology', icon: 'auto_awesome' },
 ];
 const wellbeingLabels: Record<string, { label: string; icon: string }> = {
@@ -81,7 +82,7 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
                 const phase = cyclePhase(summary.cycle_day);
                 return <section id="support-cycle" className={'cosmic-week-card cosmic-support-cycle-hero cosmic-support-cycle-hero--' + phase.key} aria-labelledby="support-cycle-title">
                     <span className="cosmic-support-cycle-spark cosmic-support-cycle-spark--one" aria-hidden="true">✧</span><span className="cosmic-support-cycle-spark cosmic-support-cycle-spark--two" aria-hidden="true">✿</span>
-                    <div className="cosmic-support-cycle-copy"><p className="cosmic-eyebrow">{primaryName.toUpperCase()}'S CYCLE JOURNEY · SHARED WITH YOU</p><span className="cosmic-support-phase-pill">☾ {phase.label}</span><h2 id="support-cycle-title">Day {summary.cycle_day}<span> of {primaryName}'s cycle</span></h2><p className="cosmic-support-cycle-lead">{phase.title}</p><p>{phase.summary}</p><p className="cosmic-support-daily-tip"><span aria-hidden="true">✧</span> Today's idea: {phase.tip}</p><div className="cosmic-support-cycle-dates"><div><span>♡</span><small>Last period began</small><strong>{dateLabel(summary.last_period_start)}</strong></div><div><span>✧</span><small>Next period estimate</small><strong>{summary.estimated_next_period ? dateLabel(summary.estimated_next_period) : 'Not available yet'}</strong></div></div><p className="cosmic-fineprint">Cycle day is based on shared dates; the phase is a rough guide using a typical cycle pattern. Neither predicts anyone's mood, energy, fertility or needs.</p></div>
+                    <div className="cosmic-support-cycle-copy"><p className="cosmic-eyebrow">{primaryName.toUpperCase()}'S CYCLE JOURNEY · SHARED WITH YOU</p><span className="cosmic-support-phase-pill">☾ {phase.label}</span><h2 id="support-cycle-title">Day {summary.cycle_day}<span> of {primaryName}'s cycle</span></h2><p className="cosmic-support-cycle-lead">{phase.title}</p><p>{phase.summary}</p><p className="cosmic-support-daily-tip"><span aria-hidden="true">✧</span> Today's idea: {phase.tip}</p><div className="cosmic-support-cycle-dates"><div><span>♡</span><small>Last period began</small><strong>{dateLabel(summary.last_period_start)}</strong></div><div><span>✿</span><small>{summary.period_is_active?'Period · confirmed':'Period ended'}</small><strong>{summary.period_is_active?'Day '+(summary.current_period_day??1):summary.last_period_end?dateLabel(summary.last_period_end):'End date not logged'}</strong></div><div><span>✧</span><small>Next period estimate</small><strong>{summary.estimated_next_period ? dateLabel(summary.estimated_next_period) : 'Not available yet'}</strong></div>{summary.estimated_ovulation_date&&<div><span>☾</span><small>Estimated ovulation</small><strong>{dateLabel(summary.estimated_ovulation_date)}</strong></div>}</div><p className="cosmic-fineprint">Cycle day is based on shared dates; the phase is a rough guide using a typical cycle pattern. Neither predicts anyone's mood, energy, fertility or needs.</p></div>
                     <div className="cosmic-support-cycle-orb" aria-hidden="true"><span>☾</span><strong>{summary.cycle_day}</strong><small>CYCLE DAY</small><i>✦</i></div>
                 </section>;
             })()}
