@@ -21,7 +21,7 @@ type SharedRelationship = {
     companion_pregnancy_summary: { status: string; due_date: string; gestational_week: number | null; trimester: number | null; days_until_due: number | null } | null;
     companion_wellbeing: { log_date: string; mood?: string[]; symptoms?: string[]; energy_level?: number | null; category?: string; notes?: string | null } | null;
     companion_wellbeing_history?: { log_date:string; mood:string[]; symptoms:string[]; energy_level:string|null; notes:string|null }[] | null;
-    companion_intimacy?: { log_date:string; sex_drive:number|null; activities:string[]; protection_methods:string[]; orgasm:boolean|null; notes:string|null }[] | null;
+    companion_intimacy?: { id:number; log_date:string; sex_drive:number|null; activities:string[]; protection_methods:string[]; orgasm:boolean|null; notes:string|null }[] | null;
     companion_sun_sign: string | null;
     companion_moon_sign: string | null;
     companion_rising_sign: string | null;
