@@ -20,6 +20,8 @@ type SharedRelationship = {
     companion_cycle_summary: { last_period_start:string; last_period_end?:string|null; flow_intensity?:string|null; cycle_day:number; estimated_next_period:string|null; estimated_cycle_length?:number|null; period_is_active?:boolean; current_period_day?:number|null; average_cycle_length:number|null; average_period_length:number|null; cycle_regularity:string; fertility_estimate_available:boolean; estimated_ovulation_date:string|null; estimated_fertile_start:string|null; estimated_fertile_end:string|null; period_history:{start_date:string;end_date:string|null}[] } | null;
     companion_pregnancy_summary: { status: string; due_date: string; gestational_week: number | null; trimester: number | null; days_until_due: number | null } | null;
     companion_wellbeing: { log_date: string; mood?: string[]; symptoms?: string[]; energy_level?: number | null; category?: string; notes?: string | null } | null;
+    companion_wellbeing_history?: { log_date:string; mood:string[]; symptoms:string[]; energy_level:string|null; notes:string|null }[] | null;
+    companion_intimacy?: { log_date:string; sex_drive:number|null; activities:string[]; protection_methods:string[]; orgasm:boolean|null; notes:string|null }[] | null;
     companion_sun_sign: string | null;
     companion_moon_sign: string | null;
     companion_rising_sign: string | null;
@@ -86,7 +88,7 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
                     <div className="cosmic-support-cycle-orb" aria-hidden="true"><span>☾</span><strong>{summary.cycle_day}</strong><small>CYCLE DAY</small><i>✦</i></div>
                 </section>;
             })()}
-            {connection?.companion_cycle_summary && permissions?.cycle_details && <FloralSharedCycleCalendar cycle={connection.companion_cycle_summary} ownerName={primaryName} viewerName={supportName} />}
+            {connection?.companion_cycle_summary && permissions?.cycle_details && <FloralSharedCycleCalendar cycle={connection.companion_cycle_summary} ownerName={primaryName} viewerName={supportName} wellbeingHistory={permissions?.wellbeing_updates ? connection.companion_wellbeing_history ?? [] : undefined} sexLogHistory={permissions?.intimate_updates ? connection.companion_intimacy ?? [] : undefined} checkinDates={permissions?.wellbeing_updates ? (connection.companion_wellbeing_history ?? []).map(item=>item.log_date) : []} />}
             {!connection ? <section className="cosmic-week-card cosmic-support-empty"><p className="cosmic-eyebrow">YOUR SHARED SPACE</p><h2>No connected space yet</h2><p>Ask your partner for their Cosmic Sync Code. You can connect from the Connections page.</p><a className="cosmic-support-link" href="/connections">Open Connections →</a></section> : <>
                 {!connection.companion_wellbeing && permissions?.wellbeing_updates && <section id="support-wellbeing" className="cosmic-week-card cosmic-support-shared-card cosmic-support-wellbeing-card">
                     <p className="cosmic-eyebrow">A LITTLE WELLBEING CHECK-IN</p><h2>How {primaryName} is feeling</h2><p className="cosmic-muted">{primaryName} hasn't logged today's symptoms yet.</p>
