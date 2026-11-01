@@ -153,7 +153,7 @@ export default function CycleDashboardHome({data,onLogout,onRefresh}:Props){
  const fertile=Boolean(data.fertility_window&&today>=data.fertility_window.start_date&&today<=data.fertility_window.end_date);
  const ovulationDate=data.fertility_window?.ovulation_date??null;
  const daysToOvulation=ovulationDate?Math.round((new Date(ovulationDate+'T12:00:00').getTime()-new Date(today+'T12:00:00').getTime())/86400000):null;
- const confirmedPeriodToday=!hormonal&&Boolean(data.period_is_active);
+ const confirmedPeriodToday=Boolean(data.period_is_active);
  const currentPeriodDay=data.current_period_day??null;
  const periodDueToday=!hormonal&&!confirmedPeriodToday&&data.days_until_estimate===0;
  const periodPastEstimate=!hormonal&&data.days_until_estimate!==null&&data.days_until_estimate<0;
