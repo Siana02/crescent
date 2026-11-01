@@ -135,7 +135,7 @@ class DashboardController extends Controller
                 $isInitiator = $relationship->user_one_id === $user->id;
                 $companion = $isInitiator ? $relationship->companion : $relationship->initiator;
                 $allPreferences = $relationship->sharing_preferences ?? [];
-                $defaults = ['cycle_details' => false, 'pregnancy_details' => false, 'wellbeing_updates' => false, 'astrology' => false];
+                $defaults = ['cycle_details' => true, 'pregnancy_details' => true, 'wellbeing_updates' => true, 'intimate_updates' => true, 'astrology' => false];
                 $myPreferences = array_merge($defaults, $allPreferences[(string) $user->id] ?? []);
                 $companionPreferences = array_merge($defaults, $allPreferences[(string) ($companion?->id ?? 0)] ?? []);
                 // Older connections used one shared flat preference object; preserve it as a conservative fallback.
@@ -158,6 +158,7 @@ class DashboardController extends Controller
                 $sharedCycleSummary = null;
                 $sharedPregnancySummary = null;
                 $sharedWellbeing = null;
+                $sharedIntimacy = null;
 
                 if ($companion && $companionJourney && in_array($companionJourney, ['cycle', 'fertility'], true) && $companionPreferences['cycle_details']) {
                     $sharedPeriods = $companion->periodLogs()->orderByDesc('start_date')->limit(12)->get();
@@ -167,13 +168,18 @@ class DashboardController extends Controller
                         $todayForCompanion = CarbonImmutable::today($companionTimezone);
                         $periodStart = CarbonImmutable::parse($lastSharedPeriod->start_date->format('Y-m-d'), $companionTimezone)->startOfDay();
                         $hormonalMethods = ['pill', 'hormonal_iud', 'implant', 'injection', 'patch', 'ring'];
-                        $canEstimateCycle = $companionProfile?->average_cycle_length
-                            && ! in_array($companionProfile->contraception_type, $hormonalMethods, true);
+                        $previousSharedPeriod = $sharedPeriods->get(1);
+                        $observedSharedCycleLength = $previousSharedPeriod
+                            ? (int) CarbonImmutable::parse($previousSharedPeriod->start_date->format('Y-m-d'), $companionTimezone)->diffInDays($periodStart)
+                            : null;
+                        $sharedCycleLength = $observedSharedCycleLength ?: $companionProfile?->average_cycle_length;
+                        $canEstimateCycle = $sharedCycleLength
+                            && ! in_array($companionProfile?->contraception_type, $hormonalMethods, true);
                         $canEstimateFertility = $canEstimateCycle
                             && $companionProfile?->contraception_type === 'none'
                             && $companionProfile?->cycle_regularity !== 'irregular';
                         $estimatedNextDate = $canEstimateCycle
-                            ? $periodStart->addDays((int) $companionProfile->average_cycle_length)
+                            ? $periodStart->addDays((int) $sharedCycleLength)
                             : null;
                         $estimatedOvulation = $canEstimateFertility ? $estimatedNextDate?->subDays(15) : null;
                         $sharedCycleSummary = [
@@ -181,6 +187,7 @@ class DashboardController extends Controller
                             'cycle_day' => (int) $periodStart->diffInDays($todayForCompanion) + 1,
                             'estimated_next_period' => $estimatedNextDate?->toDateString(),
                             'average_cycle_length' => $companionProfile?->average_cycle_length,
+                            'estimated_cycle_length' => $sharedCycleLength,
                             'average_period_length' => $companionProfile?->average_period_length,
                             'cycle_regularity' => $companionProfile?->cycle_regularity ?? 'unknown',
                             'fertility_estimate_available' => (bool) $canEstimateFertility,
@@ -258,6 +265,21 @@ class DashboardController extends Controller
                     }
                 }
 
+                if ($companion && $companionPreferences['intimate_updates'] && in_array($companionJourney, ['cycle', 'fertility'], true)) {
+                    $sharedIntimacy = $companion->sexLogs()
+                        ->orderByDesc('log_date')
+                        ->limit(7)
+                        ->get()
+                        ->map(fn ($log) => [
+                            'log_date' => $log->log_date->format('Y-m-d'),
+                            'sex_drive' => $log->sex_drive,
+                            'activities' => $log->activities ?? [],
+                            'protection_methods' => $log->protection_methods ?? [],
+                            'orgasm' => $log->orgasm,
+                            'notes' => $log->notes,
+                        ])->values();
+                }
+
                 return [
                     'id' => $relationship->id,
                     'relationship_type' => $relationship->relationship_type,
@@ -273,6 +295,7 @@ class DashboardController extends Controller
                     'companion_cycle_summary' => $sharedCycleSummary,
                     'companion_pregnancy_summary' => $sharedPregnancySummary,
                     'companion_wellbeing' => $sharedWellbeing,
+                    'companion_intimacy' => $sharedIntimacy,
                     'checkin_reminder_sent' => $relationship->status === 'accepted' && Cache::has('crescent:checkin-reminder:'.$relationship->id.':'.$user->id.':'.now()->toDateString()),
                     'companion_sun_sign' => $astrologyShared ? $companionProfile?->sun_sign : null,
                     'companion_moon_sign' => $astrologyShared ? $companionProfile?->moon_sign : null,
@@ -282,7 +305,7 @@ class DashboardController extends Controller
                     'companion_birth_place' => $astrologyShared ? $companionProfile?->birth_place : null,
                     'sharing_preferences' => $myPreferences,
                     'companion_sharing_preferences' => $companionPreferences,
-                    'sharing_enabled' => (bool) ($companionPreferences['cycle_details'] || $companionPreferences['pregnancy_details']),
+                    'sharing_enabled' => (bool) ($companionPreferences['cycle_details'] || $companionPreferences['pregnancy_details'] || $companionPreferences['wellbeing_updates'] || $companionPreferences['intimate_updates']),
                 ];
             })
             ->values();
