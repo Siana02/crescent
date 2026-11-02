@@ -18,8 +18,8 @@ type DashboardData = {
  today_sex_logs?:{id:number;log_date:string;sex_drive:number|null;activities:string[];protection_methods:string[];orgasm:boolean|null;notes:string|null}[];
  relationships?:any[];
  fertility_window:{ovulation_date:string;start_date:string;end_date:string}|null;
- cycle_phase:{phase:'menstrual'|'follicular'|'ovulatory'|'luteal'|'unknown';cycle_start_date:string;cycle_start_is_confirmed:boolean;cycle_day:number;is_estimated:boolean;phase_start_date:string|null;next_phase:string|null;next_phase_date:string|null;expected_period_date:string|null;next_period_date:string;ovulation_date:string|null}|null;
- phase_presentation:{id:number;phase:CyclePhase;cycle_start_date:string;phase_start_date:string;status:'pending'|'dismissed'|'acknowledged';should_present:boolean}|null;
+ cycle_phase?:{phase:'menstrual'|'follicular'|'ovulatory'|'luteal'|'unknown';cycle_start_date:string;cycle_start_is_confirmed:boolean;cycle_day:number;is_estimated:boolean;phase_start_date:string|null;next_phase:string|null;next_phase_date:string|null;expected_period_date:string|null;next_period_date:string;ovulation_date:string|null}|null;
+ phase_presentation?:{id:number;phase:CyclePhase;cycle_start_date:string;phase_start_date:string;status:'pending'|'dismissed'|'acknowledged';should_present:boolean}|null;
  missed_period_reminder?:boolean;
  today_checkin:{log_date:string;energy_level:string|null;mood:string[]|string|null;symptoms:string[];notes:string|null}|null;
 };
