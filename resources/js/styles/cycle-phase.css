@@ -104,9 +104,12 @@
 .cosmic-floral-calendar--phase-status-acknowledged .cosmic-floral-calendar__heading,
 .cosmic-floral-calendar--phase-status-logged .cosmic-floral-calendar__heading{border-style:solid}
 
+.cosmic-shared-space-card--cycle-update{transition:background-color .45s ease,border-color .45s ease,box-shadow .45s ease}
 .cosmic-shared-space-card--cycle-update.cosmic-shared-space-card--phase-menstrual{background:linear-gradient(135deg,#fff0f4,#fffdfd);border-color:#f0cbd7}
 .cosmic-shared-space-card--cycle-update.cosmic-shared-space-card--phase-follicular{background:linear-gradient(135deg,#fff3e9,#fffdfd);border-color:#efd9bd}
 .cosmic-shared-space-card--cycle-update.cosmic-shared-space-card--phase-ovulatory{background:linear-gradient(135deg,#f5efff,#fffdfd);border-color:#ddd0f3}
 .cosmic-shared-space-card--cycle-update.cosmic-shared-space-card--phase-luteal{background:linear-gradient(135deg,#f1effb,#fffdfd);border-color:#d8d2ec}
 .cosmic-shared-space-card--cycle-update.cosmic-shared-space-card--phase-status-estimated{border-style:dashed;background-image:linear-gradient(135deg,#ffffffa8,#fffdfd)}
 .cosmic-shared-space-card--cycle-update.cosmic-shared-space-card--phase-status-acknowledged,.cosmic-shared-space-card--cycle-update.cosmic-shared-space-card--phase-status-logged{border-style:solid}
+
+@media(prefers-reduced-motion:reduce){.cosmic-shared-space-card--cycle-update{transition:none}}
