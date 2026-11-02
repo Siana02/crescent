@@ -178,6 +178,15 @@ class CyclePhasePresentationTest extends TestCase
             'action' => 'dismiss',
         ])->assertOk()->assertJsonPath('presentation.status', 'dismissed');
 
+        $reminder = $this->getJson('/api/dashboard')
+            ->assertOk()
+            ->assertJsonPath('missed_period_reminder', true);
+        $expectedDate = $reminder->json('missed_period_reminder_date');
+
+        $this->postJson('/api/cycle-timing-reminder/dismiss', [
+            'expected_period_date' => $expectedDate,
+        ])->assertOk()->assertJsonPath('dismissed_for', $expectedDate);
+
         $this->getJson('/api/dashboard')
             ->assertOk()
             ->assertJsonPath('missed_period_reminder', false);
