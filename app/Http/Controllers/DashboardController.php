@@ -121,7 +121,7 @@ class DashboardController extends Controller
 
         // Keep the next-period and ovulation estimates aligned with the same
         // projected cycle used by the phase timeline after a missed period.
-        if ($cyclePhase && $cyclePhase['phase'] !== 'unknown' && ! $usesHormonalContraception) {
+        if ($cyclePhase && $cyclePhase['phase'] !== 'unknown' && $cyclePhase['next_period_date'] && ! $usesHormonalContraception) {
             $estimatedNext = CarbonImmutable::parse($cyclePhase['next_period_date'], $profile->timezone)->startOfDay();
 
             if ($profile->contraception_type === 'none' && $profile->cycle_regularity !== 'irregular' && $cyclePhase['ovulation_date']) {
