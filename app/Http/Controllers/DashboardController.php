@@ -96,6 +96,16 @@ class DashboardController extends Controller
         $missedPeriodReminder = false;
 
         if ($cyclePhase && in_array($cyclePhase['phase'], ['menstrual', 'follicular', 'ovulatory', 'luteal'], true)) {
+            CyclePhasePresentation::query()
+                ->where('user_id', $user->id)
+                ->where('status', 'pending')
+                ->where(function ($query) use ($cyclePhase) {
+                    $query->whereDate('cycle_start_date', '!=', $cyclePhase['cycle_start_date'])
+                        ->orWhere('phase', '!=', $cyclePhase['phase'])
+                        ->orWhereDate('phase_start_date', '!=', $cyclePhase['phase_start_date']);
+                })
+                ->update(['status' => 'superseded', 'responded_at' => now()]);
+
             $presentation = CyclePhasePresentation::firstOrNew([
                 'user_id' => $user->id,
                 'cycle_start_date' => $cyclePhase['cycle_start_date'],
