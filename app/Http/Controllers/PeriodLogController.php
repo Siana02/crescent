@@ -20,6 +20,7 @@ class PeriodLogController extends Controller
 
         return response()->json([
             'periods' => $periods->orderByDesc('start_date')->get()->map(fn ($period) => [
+                'id' => $period->id,
                 'start_date' => $period->start_date->format('Y-m-d'),
                 'end_date' => $period->end_date?->format('Y-m-d'),
                 'flow_intensity' => $period->flow_intensity,
@@ -84,4 +85,53 @@ class PeriodLogController extends Controller
             ],
         ], 201);
     }
+
+    public function update(Request $request, \App\Models\PeriodLog $period): JsonResponse
+    {
+        abort_unless($period->user_id === $request->user()->id, 404);
+
+        $timezone = $request->user()->cycleProfile()->value('timezone') ?? config('app.timezone', 'UTC');
+        $today = CarbonImmutable::today($timezone)->toDateString();
+        $validated = $request->validate([
+            'start_date' => ['required', 'date_format:Y-m-d', "before_or_equal:$today"],
+            'end_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:start_date', "before_or_equal:$today"],
+            'flow_intensity' => ['nullable', Rule::in(['spotting', 'light', 'medium', 'heavy', 'other'])],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $duplicate = $request->user()->periodLogs()
+            ->whereDate('start_date', $validated['start_date'])
+            ->whereKeyNot($period->id)
+            ->exists();
+
+        if ($duplicate) {
+            return response()->json([
+                'message' => 'A period already starts on that date. Edit that record instead of creating a duplicate.',
+            ], 422);
+        }
+
+        $previousStart = $period->start_date->format('Y-m-d');
+        $period->update([
+            'start_date' => $validated['start_date'],
+            'end_date' => $validated['end_date'] ?? null,
+            'flow_intensity' => $validated['flow_intensity'] ?? $period->flow_intensity,
+            'notes' => $validated['notes'] ?? $period->notes,
+        ]);
+
+        $profile = $request->user()->cycleProfile;
+        if ($profile?->cycle_tracking_started_at?->format('Y-m-d') === $previousStart) {
+            $profile->update(['cycle_tracking_started_at' => $validated['start_date']]);
+        }
+
+        return response()->json([
+            'period' => [
+                'id' => $period->id,
+                'start_date' => $period->start_date->format('Y-m-d'),
+                'end_date' => $period->end_date?->format('Y-m-d'),
+                'flow_intensity' => $period->flow_intensity,
+            ],
+            'recalculated' => true,
+        ]);
+    }
+
 }
