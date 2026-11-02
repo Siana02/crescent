@@ -96,19 +96,23 @@ class DashboardController extends Controller
         $missedPeriodReminder = false;
 
         if ($cyclePhase && in_array($cyclePhase['phase'], ['menstrual', 'follicular', 'ovulatory', 'luteal'], true)) {
-            $presentation = CyclePhasePresentation::firstOrCreate(
-                [
-                    'user_id' => $user->id,
-                    'cycle_start_date' => $cyclePhase['cycle_start_date'],
-                    'phase' => $cyclePhase['phase'],
-                    'phase_start_date' => $cyclePhase['phase_start_date'],
-                ],
-                [
-                    'status' => $cyclePhase['phase'] === 'menstrual' && $cyclePhase['cycle_start_is_confirmed'] ? 'acknowledged' : 'pending',
+            $presentation = CyclePhasePresentation::firstOrNew([
+                'user_id' => $user->id,
+                'cycle_start_date' => $cyclePhase['cycle_start_date'],
+                'phase' => $cyclePhase['phase'],
+                'phase_start_date' => $cyclePhase['phase_start_date'],
+            ]);
+
+            // If a corrected date later recreates the same phase window, make
+            // it eligible again. Dismissed and acknowledged welcomes stay final.
+            if (! $presentation->exists || $presentation->status === 'superseded') {
+                $loggedMenstrualPhase = $cyclePhase['phase'] === 'menstrual' && $cyclePhase['cycle_start_is_confirmed'];
+                $presentation->fill([
+                    'status' => $loggedMenstrualPhase ? 'acknowledged' : 'pending',
                     'presented_at' => now(),
-                    'responded_at' => $cyclePhase['phase'] === 'menstrual' && $cyclePhase['cycle_start_is_confirmed'] ? now() : null,
-                ],
-            );
+                    'responded_at' => $loggedMenstrualPhase ? now() : null,
+                ])->save();
+            }
 
             $phasePresentation = [
                 'id' => $presentation->id,
