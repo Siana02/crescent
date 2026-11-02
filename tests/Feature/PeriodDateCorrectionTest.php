@@ -116,6 +116,51 @@ class PeriodDateCorrectionTest extends TestCase
         $this->assertDatabaseCount('period_logs', 0);
     }
 
+    public function test_an_open_period_is_not_reported_as_active_beyond_its_estimated_duration(): void
+    {
+        $user = User::factory()->create();
+        $start = today()->subDays(10)->toDateString();
+        $user->cycleProfile()->create([
+            'timezone' => config('app.timezone', 'UTC'),
+            'active_journey' => 'cycle',
+            'average_cycle_length' => 28,
+            'average_period_length' => 5,
+            'cycle_regularity' => 'regular',
+            'contraception_type' => 'none',
+            'cycle_tracking_started_at' => $start,
+        ]);
+        $user->periodLogs()->create(['start_date' => $start]);
+
+        $this->actingAs($user)->getJson('/api/dashboard')
+            ->assertOk()
+            ->assertJsonPath('period_is_active', false)
+            ->assertJsonPath('current_period_day', null)
+            ->assertJsonPath('cycle_phase.phase', 'follicular');
+    }
+
+    public function test_a_recorded_period_end_sets_the_actual_menstrual_phase_boundary(): void
+    {
+        $user = User::factory()->create();
+        $start = today()->subDays(3)->toDateString();
+        $end = today()->subDay()->toDateString();
+        $user->cycleProfile()->create([
+            'timezone' => config('app.timezone', 'UTC'),
+            'active_journey' => 'cycle',
+            'average_cycle_length' => 28,
+            'average_period_length' => 5,
+            'cycle_regularity' => 'regular',
+            'contraception_type' => 'none',
+            'cycle_tracking_started_at' => $start,
+        ]);
+        $user->periodLogs()->create(['start_date' => $start, 'end_date' => $end]);
+
+        $this->actingAs($user)->getJson('/api/dashboard')
+            ->assertOk()
+            ->assertJsonPath('period_is_active', false)
+            ->assertJsonPath('cycle_phase.phase', 'follicular')
+            ->assertJsonPath('cycle_phase.phase_start_date', today()->toDateString());
+    }
+
     public function test_a_user_cannot_correct_another_users_period_record(): void
     {
         $owner = User::factory()->create();
