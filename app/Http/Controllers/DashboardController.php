@@ -204,7 +204,11 @@ class DashboardController extends Controller
                 $sharedWellbeingHistory = null;
 
                 if ($companion && $companionJourney && in_array($companionJourney, ['cycle', 'fertility'], true) && $companionPreferences['cycle_details']) {
-                    $sharedPeriods = $companion->periodLogs()->orderByDesc('start_date')->limit(12)->get();
+                    $sharedPeriodQuery = $companion->periodLogs();
+                    if ($companionProfile?->cycle_tracking_started_at) {
+                        $sharedPeriodQuery->whereDate('start_date', '>=', $companionProfile->cycle_tracking_started_at->format('Y-m-d'));
+                    }
+                    $sharedPeriods = $sharedPeriodQuery->orderByDesc('start_date')->limit(12)->get();
                     $lastSharedPeriod = $sharedPeriods->first();
                     if ($lastSharedPeriod) {
                         $companionTimezone = $companionProfile?->timezone ?: config('app.timezone', 'UTC');
