@@ -75,6 +75,7 @@ function CycleHistoryContent(){
  const [touchStart,setTouchStart]=useState<number|null>(null);
  const [editingPeriodId,setEditingPeriodId]=useState<number|null>(null);
  const [editStartDate,setEditStartDate]=useState('');
+ const [editEndDate,setEditEndDate]=useState('');
  const [correctionBusy,setCorrectionBusy]=useState(false);
  const [correctionError,setCorrectionError]=useState('');
  useEffect(()=>{Promise.all([
@@ -99,8 +100,8 @@ function CycleHistoryContent(){
  const selectedYear=years[yearIndex]??new Date(today+'T12:00:00').getFullYear();
  const yearCycles=cycles.filter(c=>fromKey(c.start).getFullYear()===selectedYear);
  const visibleCycles=expandedYears.includes(selectedYear)?yearCycles:yearCycles.slice(0,4);
- const beginCorrection=(cycle:CycleRecord)=>{setEditingPeriodId(cycle.periodId);setEditStartDate(cycle.start);setCorrectionError('');};
- const saveCorrection=async(event:FormEvent<HTMLFormElement>)=>{event.preventDefault();if(!editingPeriodId)return;setCorrectionBusy(true);setCorrectionError('');try{const token=document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')??'';const cycle=cycles.find(item=>item.periodId===editingPeriodId);if(!cycle)throw new Error('That period record is no longer available.');const response=await fetch('/api/periods/'+editingPeriodId,{method:'PUT',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-CSRF-TOKEN':token},body:JSON.stringify({start_date:editStartDate,end_date:cycle.periodEnd})});const result=await response.json();if(!response.ok)throw new Error(result.message??'The period date could not be corrected.');setEditingPeriodId(null);window.location.reload();}catch(error){setCorrectionError(error instanceof Error?error.message:'The period date could not be corrected.');}finally{setCorrectionBusy(false);}};
+ const beginCorrection=(cycle:CycleRecord)=>{setEditingPeriodId(cycle.periodId);setEditStartDate(cycle.start);setEditEndDate(cycle.periodEnd??'');setCorrectionError('');};
+ const saveCorrection=async(event:FormEvent<HTMLFormElement>)=>{event.preventDefault();if(!editingPeriodId)return;setCorrectionBusy(true);setCorrectionError('');try{const token=document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')??'';const cycle=cycles.find(item=>item.periodId===editingPeriodId);if(!cycle)throw new Error('That period record is no longer available.');const response=await fetch('/api/periods/'+editingPeriodId,{method:'PUT',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-CSRF-TOKEN':token},body:JSON.stringify({start_date:editStartDate,end_date:editEndDate||null})});const result=await response.json();if(!response.ok)throw new Error(result.message??'The period date could not be corrected.');setEditingPeriodId(null);window.location.reload();}catch(error){setCorrectionError(error instanceof Error?error.message:'The period date could not be corrected.');}finally{setCorrectionBusy(false);}};
  const previousYear=()=>{setYearIndex(i=>Math.min(years.length-1,i+1));};
  const nextYear=()=>{setYearIndex(i=>Math.max(0,i-1));};
  if(loading)return <main className="ch-page ch-loading">Gathering your cycle petals… ✿</main>;
@@ -120,6 +121,7 @@ function CycleHistoryContent(){
     <div className="ch-cycle-correction"><button type="button" onClick={()=>beginCorrection(cycle)}>Correct period dates</button></div>
     {editingPeriodId===cycle.periodId&&<form className="ch-correction-form" onSubmit={saveCorrection}>
      <label>Correct period start date<input type="date" value={editStartDate} max={today} onChange={event=>setEditStartDate(event.target.value)} required/></label>
+     <label>Period end date (optional)<input type="date" value={editEndDate} min={editStartDate} max={today} onChange={event=>setEditEndDate(event.target.value)}/></label>
      <p>Changing this date recalculates cycle day, phase timing, future estimates and shared cycle information. Your symptom and wellbeing entries keep their original dates.</p>
      {correctionError&&<p className="ch-correction-error" role="alert">{correctionError}</p>}
      <div><button type="submit" disabled={correctionBusy||!editStartDate}>{correctionBusy?'Saving…':'Save corrected date'}</button><button type="button" onClick={()=>setEditingPeriodId(null)}>Cancel</button></div>
