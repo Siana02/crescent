@@ -80,13 +80,18 @@ class DashboardController extends Controller
         $currentPeriodDay = $periodIsActive ? ((int) $lastStart->diffInDays($today) + 1) : null;
 
         $ovulationEstimateAvailable = ! $usesHormonalContraception;
+        $periodLengthForEstimate = $latestPeriod?->end_date
+            ? (int) CarbonImmutable::parse($latestPeriod->start_date->format('Y-m-d'), $profile->timezone)
+                ->diffInDays(CarbonImmutable::parse($latestPeriod->end_date->format('Y-m-d'), $profile->timezone)) + 1
+            : $profile->average_period_length;
         $cyclePhase = $isPregnancyJourney ? null : app(\App\Services\CyclePhaseCalculator::class)->calculate(
             $lastStart,
             $today,
             $cycleLengthForEstimate,
-            $profile->average_period_length,
+            $periodLengthForEstimate,
             $ovulationEstimateAvailable,
         );
+        $cycleDay = $cyclePhase['cycle_day'] ?? $cycleDay;
         $phasePresentation = null;
         $missedPeriodReminder = false;
 
@@ -242,11 +247,14 @@ class DashboardController extends Controller
                             && $companionProfile?->contraception_type === 'none'
                             && $companionProfile?->cycle_regularity !== 'irregular';
 
+                        $sharedPeriodLength = $lastSharedPeriod->end_date
+                            ? (int) $periodStart->diffInDays(CarbonImmutable::parse($lastSharedPeriod->end_date->format('Y-m-d'), $companionTimezone)) + 1
+                            : $companionProfile?->average_period_length;
                         $sharedCyclePhase = app(\App\Services\CyclePhaseCalculator::class)->calculate(
                             $periodStart,
                             $todayForCompanion,
                             $sharedCycleLength,
-                            $companionProfile?->average_period_length,
+                            $sharedPeriodLength,
                             (bool) $canEstimateCycle,
                         );
 
@@ -274,7 +282,7 @@ class DashboardController extends Controller
                             'last_period_start' => $lastSharedPeriod->start_date->format('Y-m-d'),
                             'last_period_end' => $lastSharedPeriod->end_date?->format('Y-m-d'),
                             'flow_intensity' => $lastSharedPeriod->flow_intensity,
-                            'cycle_day' => (int) $periodStart->diffInDays($todayForCompanion) + 1,
+                            'cycle_day' => $sharedCyclePhase['cycle_day'] ?? ((int) $periodStart->diffInDays($todayForCompanion) + 1),
                             'cycle_phase' => $sharedCyclePhase,
                             'estimated_next_period' => $estimatedNextDate?->toDateString(),
                             'period_is_active' => (bool) ($lastSharedPeriod->end_date === null || $lastSharedPeriod->end_date->format('Y-m-d') >= $todayForCompanion->toDateString()),
