@@ -48,6 +48,12 @@ class CyclePhasePresentationController extends Controller
                     report($exception);
                 }
             }
+
+            CyclePhasePresentation::query()
+                ->where('user_id', $request->user()->id)
+                ->where('status', 'pending')
+                ->where('id', '!=', $presentation->id)
+                ->update(['status' => 'superseded', 'responded_at' => now()]);
         }
 
         $presentation->update([
