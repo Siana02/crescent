@@ -52,6 +52,7 @@ class DashboardController extends Controller
             ->whereDate('start_date', '>=', $today->subMonths(6)->toDateString())
             ->get()
             ->map(fn ($period) => [
+                'id' => $period->id,
                 'start_date' => $period->start_date->format('Y-m-d'),
                 'end_date' => $period->end_date?->format('Y-m-d'),
                 'flow_intensity' => $period->flow_intensity,
