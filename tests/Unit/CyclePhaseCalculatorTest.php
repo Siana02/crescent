@@ -15,15 +15,15 @@ class CyclePhaseCalculatorTest extends TestCase
 
         $menstrual = $calculator->calculate($start, CarbonImmutable::parse('2026-10-03', 'Africa/Nairobi'), 28, 5);
         $follicular = $calculator->calculate($start, CarbonImmutable::parse('2026-10-08', 'Africa/Nairobi'), 28, 5);
-        $ovulatory = $calculator->calculate($start, CarbonImmutable::parse('2026-10-15', 'Africa/Nairobi'), 28, 5);
-        $luteal = $calculator->calculate($start, CarbonImmutable::parse('2026-10-16', 'Africa/Nairobi'), 28, 5);
+        $ovulatory = $calculator->calculate($start, CarbonImmutable::parse('2026-10-14', 'Africa/Nairobi'), 28, 5);
+        $luteal = $calculator->calculate($start, CarbonImmutable::parse('2026-10-15', 'Africa/Nairobi'), 28, 5);
 
         $this->assertSame('menstrual', $menstrual['phase']);
         $this->assertSame('follicular', $follicular['phase']);
         $this->assertSame('ovulatory', $ovulatory['phase']);
         $this->assertSame('luteal', $luteal['phase']);
-        $this->assertSame('2026-10-15', $ovulatory['phase_start_date']);
-        $this->assertSame('2026-10-16', $luteal['phase_start_date']);
+        $this->assertSame('2026-10-14', $ovulatory['phase_start_date']);
+        $this->assertSame('2026-10-15', $luteal['phase_start_date']);
     }
 
     public function test_it_projects_a_new_cycle_after_a_missed_expected_period_without_claiming_it_was_logged(): void
@@ -74,5 +74,4 @@ class CyclePhaseCalculatorTest extends TestCase
         $this->assertNull($result['next_period_date']);
         $this->assertNull($result['next_phase']);
     }
-
 }
