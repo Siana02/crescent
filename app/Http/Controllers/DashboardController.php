@@ -125,6 +125,7 @@ class DashboardController extends Controller
 
             $projectedStart = CarbonImmutable::parse($cyclePhase['cycle_start_date'], $profile->timezone);
             $missedPeriodReminder = ! $cyclePhase['cycle_start_is_confirmed']
+                && $presentation->status !== 'dismissed'
                 && $today->greaterThan($projectedStart->addDays(max(2, min(($profile->average_period_length ?: 5), 10)) - 1));
         }
 
