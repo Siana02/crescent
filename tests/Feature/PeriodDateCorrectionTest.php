@@ -90,6 +90,32 @@ class PeriodDateCorrectionTest extends TestCase
         ]);
     }
 
+    public function test_a_superseded_phase_welcome_cannot_record_a_stale_period_start(): void
+    {
+        $user = User::factory()->create();
+        $user->cycleProfile()->create([
+            'timezone' => config('app.timezone', 'UTC'),
+            'active_journey' => 'cycle',
+            'average_cycle_length' => 28,
+            'average_period_length' => 5,
+            'cycle_regularity' => 'regular',
+            'contraception_type' => 'none',
+        ]);
+        $presentation = CyclePhasePresentation::create([
+            'user_id' => $user->id,
+            'cycle_start_date' => today()->toDateString(),
+            'phase' => 'menstrual',
+            'phase_start_date' => today()->toDateString(),
+            'status' => 'superseded',
+        ]);
+
+        $this->actingAs($user)->patchJson('/api/cycle-phase-presentations/'.$presentation->id, [
+            'action' => 'confirm',
+        ])->assertStatus(409);
+
+        $this->assertDatabaseCount('period_logs', 0);
+    }
+
     public function test_a_user_cannot_correct_another_users_period_record(): void
     {
         $owner = User::factory()->create();
