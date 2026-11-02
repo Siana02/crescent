@@ -400,6 +400,7 @@ class DashboardController extends Controller
                 'cycle_tracking_started_at' => $profile->cycle_tracking_started_at?->format('Y-m-d'),
             ],
             'latest_period' => $latestPeriod ? [
+                'id' => $latestPeriod->id,
                 'start_date' => $latestPeriod->start_date->format('Y-m-d'),
                 'end_date' => $latestPeriod->end_date?->format('Y-m-d'),
                 'flow_intensity' => $latestPeriod->flow_intensity,
