@@ -47,8 +47,9 @@ function wellbeingLabel(value:string){return wellbeingLabels[value]??{label:valu
 function dateLabel(value: string) {
     return new Date(value + 'T12:00:00').toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
 }
-function cyclePhase(day: number | null) {
-    const phase = phaseFor(day);
+function cyclePhase(day: number | null, phaseKey?: 'menstrual' | 'follicular' | 'ovulatory' | 'luteal' | 'unknown' | null) {
+    const labels = { menstrual: 'Menstrual', follicular: 'Follicular', ovulatory: 'Ovulatory', luteal: 'Luteal', unknown: 'Cycle timing uncertain' };
+    const phase = phaseKey ? { key: phaseKey, label: labels[phaseKey] } : phaseFor(day);
     const guidance = dailyGuidance(day);
     return { ...phase, ...guidance };
 }
@@ -82,7 +83,7 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
             </section>
             {connection?.companion_cycle_summary && permissions?.cycle_details && (() => {
                 const summary = connection.companion_cycle_summary!;
-                const phase = cyclePhase(summary.cycle_day);
+                const phase = cyclePhase(summary.cycle_day, summary.cycle_phase?.phase);
                 return <section id="support-cycle" className={'cosmic-week-card cosmic-support-cycle-hero cosmic-support-cycle-hero--' + phase.key} aria-labelledby="support-cycle-title">
                     <span className="cosmic-support-cycle-spark cosmic-support-cycle-spark--one" aria-hidden="true">✧</span><span className="cosmic-support-cycle-spark cosmic-support-cycle-spark--two" aria-hidden="true">✿</span>
                     <div className="cosmic-support-cycle-copy"><p className="cosmic-eyebrow">{primaryName.toUpperCase()}'S CYCLE JOURNEY · SHARED WITH YOU</p><span className="cosmic-support-phase-pill">☾ {phase.label}</span><h2 id="support-cycle-title">Day {summary.cycle_day}<span> of {primaryName}'s cycle</span></h2><p className="cosmic-support-cycle-lead">{phase.title}</p><p>{phase.summary}</p><p className="cosmic-support-daily-tip"><span aria-hidden="true">✧</span> Today's idea: {phase.tip}</p><div className="cosmic-support-cycle-dates"><div><span>♡</span><small>Last period began</small><strong>{dateLabel(summary.last_period_start)}</strong></div><div><span>✿</span><small>{summary.period_is_active?'Period · confirmed':'Period ended'}</small><strong>{summary.period_is_active?'Day '+(summary.current_period_day??1):summary.last_period_end?dateLabel(summary.last_period_end):'End date not logged'}</strong></div><div><span>✧</span><small>Next period estimate</small><strong>{summary.estimated_next_period ? dateLabel(summary.estimated_next_period) : 'Not available yet'}</strong></div>{summary.estimated_ovulation_date&&<div><span>☾</span><small>Estimated ovulation</small><strong>{dateLabel(summary.estimated_ovulation_date)}</strong></div>}</div><p className="cosmic-fineprint">Cycle day is based on shared dates; the phase is a rough guide using a typical cycle pattern. Neither predicts anyone's mood, energy, fertility or needs.</p></div>
@@ -108,7 +109,7 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
                 </section>}
                 {connection && permissions?.cycle_details && (() => {
                 const day = connection.companion_cycle_summary?.cycle_day ?? null;
-                const phase = cyclePhase(day);
+                const phase = cyclePhase(day, connection.companion_cycle_summary?.cycle_phase?.phase);
                 const care = careIdeasFor(day, primaryName);
                 return <section id="care-guide" className={'cosmic-week-card cosmic-support-care-guide cosmic-support-care-guide--' + phase.key}>
                     <div className="cosmic-support-care-heading"><div><p className="cosmic-eyebrow">YOUR GENTLE CARE GUIDE</p><h2>Small ways to make today softer</h2><p>Use these as ideas, not instructions. {primaryName}'s own words and preferences always come first.</p></div><span aria-hidden="true">♡</span></div>
