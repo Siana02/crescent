@@ -99,6 +99,7 @@ class DashboardController extends Controller
         $cycleDay = $cyclePhase['cycle_day'] ?? $cycleDay;
         $phasePresentation = null;
         $missedPeriodReminder = false;
+        $missedPeriodReminderDate = null;
 
         if ($cyclePhase && in_array($cyclePhase['phase'], ['menstrual', 'follicular', 'ovulatory', 'luteal'], true)) {
             CyclePhasePresentation::query()
