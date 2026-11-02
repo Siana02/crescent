@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\CyclePhasePresentation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -53,6 +54,40 @@ class PeriodDateCorrectionTest extends TestCase
             ->assertJsonPath('latest_period.start_date', $correctedStart)
             ->assertJsonPath('cycle_day', 18)
             ->assertJsonPath('estimated_next_period', today()->subDays(17)->addDays(28)->toDateString());
+    }
+
+    public function test_correcting_a_period_supersedes_pending_phase_welcomes_based_on_old_dates(): void
+    {
+        $user = User::factory()->create();
+        $originalStart = today()->subDays(27)->toDateString();
+        $correctedStart = today()->subDays(17)->toDateString();
+
+        $user->cycleProfile()->create([
+            'timezone' => config('app.timezone', 'UTC'),
+            'active_journey' => 'cycle',
+            'average_cycle_length' => 28,
+            'average_period_length' => 5,
+            'cycle_regularity' => 'regular',
+            'contraception_type' => 'none',
+            'cycle_tracking_started_at' => $originalStart,
+        ]);
+        $period = $user->periodLogs()->create(['start_date' => $originalStart]);
+        $presentation = CyclePhasePresentation::create([
+            'user_id' => $user->id,
+            'cycle_start_date' => today()->toDateString(),
+            'phase' => 'menstrual',
+            'phase_start_date' => today()->toDateString(),
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($user)->putJson('/api/periods/'.$period->id, [
+            'start_date' => $correctedStart,
+        ])->assertOk();
+
+        $this->assertDatabaseHas('cycle_phase_presentations', [
+            'id' => $presentation->id,
+            'status' => 'superseded',
+        ]);
     }
 
     public function test_a_user_cannot_correct_another_users_period_record(): void
