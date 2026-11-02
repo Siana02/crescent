@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Flower2, Leaf, MoonStar, Sparkles, X } from 'lucide-react';
 
 export type CyclePhase = 'menstrual' | 'follicular' | 'ovulatory' | 'luteal';
@@ -43,14 +44,19 @@ const icons = {
 export default function CyclePhaseWelcome({
     phase,
     estimated,
+    phaseStartDate,
+    today,
     busy = false,
     onRespond,
 }: {
     phase: CyclePhase;
     estimated: boolean;
     busy?: boolean;
-    onRespond: (action: 'confirm' | 'dismiss') => void;
+    phaseStartDate: string;
+    today: string;
+    onRespond: (action: 'confirm' | 'dismiss', startDate?: string) => void;
 }) {
+    const [periodStartDate, setPeriodStartDate] = useState(phaseStartDate || today);
     const content = copy[phase];
     const Icon = icons[phase];
 
@@ -71,8 +77,14 @@ export default function CyclePhaseWelcome({
                 <h2 id="cycle-phase-welcome-title">{content.title}</h2>
                 <h3>{content.subtitle}</h3>
                 <p className="cycle-phase-welcome__note">{content.note}</p>
+                {phase === 'menstrual' && (
+                    <label className="cycle-phase-welcome__date">
+                        When did your period begin?
+                        <input type="date" value={periodStartDate} max={today} onChange={event => setPeriodStartDate(event.target.value)} />
+                    </label>
+                )}
                 <div className="cycle-phase-welcome__actions">
-                    <button type="button" className="cycle-phase-welcome__confirm" onClick={() => onRespond('confirm')} disabled={busy}>
+                    <button type="button" className="cycle-phase-welcome__confirm" onClick={() => onRespond('confirm', phase === 'menstrual' ? periodStartDate : undefined)} disabled={busy}>
                         {busy ? 'Saving…' : content.confirm}
                     </button>
                     <button type="button" className="cycle-phase-welcome__dismiss" onClick={() => onRespond('dismiss')} disabled={busy}>
