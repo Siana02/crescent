@@ -260,6 +260,7 @@ export default function CycleDashboardHome({data,onLogout,onRefresh}:Props){
    estimated_fertile_start:hormonal?null:data.fertility_window?.start_date??null,
    estimated_fertile_end:hormonal?null:data.fertility_window?.end_date??null,
    period_history:data.period_history??(data.latest_period?[data.latest_period]:[]),
+   cycle_phase:data.cycle_phase,
   }}
   onSelectDate={(date)=>{setSelectedDate(date);const d=new Date(date+'T12:00:00');setMonth(new Date(d.getFullYear(),d.getMonth(),1));}}
   selectedCheckin={selectedCheckin}
