@@ -113,3 +113,6 @@
 .cosmic-shared-space-card--cycle-update.cosmic-shared-space-card--phase-status-acknowledged,.cosmic-shared-space-card--cycle-update.cosmic-shared-space-card--phase-status-logged{border-style:solid}
 
 @media(prefers-reduced-motion:reduce){.cosmic-shared-space-card--cycle-update{transition:none}}
+
+.cycle-phase-welcome__correct{display:inline-block;margin-top:16px;color:var(--welcome-accent);font-size:11px;font-weight:750;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--welcome-accent) 40%,transparent);text-underline-offset:3px}
+.cycle-phase-welcome__correct:hover{color:var(--welcome-ink)}
