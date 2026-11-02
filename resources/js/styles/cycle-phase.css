@@ -116,3 +116,24 @@
 
 .cycle-phase-welcome__correct{display:inline-block;margin-top:16px;color:var(--welcome-accent);font-size:11px;font-weight:750;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--welcome-accent) 40%,transparent);text-underline-offset:3px}
 .cycle-phase-welcome__correct:hover{color:var(--welcome-ink)}
+
+
+/* A small settle-in animation makes a phase change feel fluid without moving
+   the surrounding dashboard layout. */
+@keyframes cycle-phase-card-settle{from{opacity:.94;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+.cosmic-dashboard[class*="cosmic-dashboard--phase-"] .cosmic-cycle-hero,
+.cosmic-dashboard[class*="cosmic-dashboard--phase-"] .cosmic-cycle-history-summary,
+.cosmic-dashboard[class*="cosmic-dashboard--phase-"] .cosmic-week-cycle,
+.cosmic-dashboard[class*="cosmic-dashboard--phase-"] .cosmic-support-cycle-hero,
+.cosmic-dashboard[class*="cosmic-dashboard--phase-"] .cosmic-support-care-guide,
+.cosmic-shared-space-card[class*="cosmic-shared-space-card--phase-"],
+.cosmic-floral-calendar[class*="cosmic-floral-calendar--phase-"] .cosmic-floral-calendar__heading{animation:cycle-phase-card-settle .48s ease both}
+@media(prefers-reduced-motion:reduce){
+ .cosmic-dashboard[class*="cosmic-dashboard--phase-"] .cosmic-cycle-hero,
+ .cosmic-dashboard[class*="cosmic-dashboard--phase-"] .cosmic-cycle-history-summary,
+ .cosmic-dashboard[class*="cosmic-dashboard--phase-"] .cosmic-week-cycle,
+ .cosmic-dashboard[class*="cosmic-dashboard--phase-"] .cosmic-support-cycle-hero,
+ .cosmic-dashboard[class*="cosmic-dashboard--phase-"] .cosmic-support-care-guide,
+ .cosmic-shared-space-card[class*="cosmic-shared-space-card--phase-"],
+ .cosmic-floral-calendar[class*="cosmic-floral-calendar--phase-"] .cosmic-floral-calendar__heading{animation:none}
+}
