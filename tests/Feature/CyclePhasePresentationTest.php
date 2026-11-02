@@ -131,4 +131,102 @@ class CyclePhasePresentationTest extends TestCase
 
         $this->assertDatabaseCount('cycle_phase_presentations', 0);
     }
+
+    public function test_returning_during_a_later_phase_does_not_queue_missed_phase_welcomes(): void
+    {
+        $user = User::factory()->create();
+        $start = today()->subDays(45)->toDateString();
+
+        $user->cycleProfile()->create([
+            'timezone' => config('app.timezone', 'UTC'),
+            'active_journey' => 'cycle',
+            'average_cycle_length' => 28,
+            'average_period_length' => 5,
+            'cycle_regularity' => 'regular',
+            'contraception_type' => 'none',
+            'cycle_tracking_started_at' => $start,
+        ]);
+        $user->periodLogs()->create(['start_date' => $start, 'end_date' => today()->subDays(41)->toDateString()]);
+
+        $dashboard = $this->actingAs($user)->getJson('/api/dashboard')->assertOk();
+        $dashboard->assertJsonPath('cycle_phase.phase', 'luteal')
+            ->assertJsonPath('phase_presentation.phase', 'luteal')
+            ->assertJsonPath('phase_presentation.should_present', true)
+            ->assertJsonPath('missed_period_reminder', true);
+
+        $this->assertDatabaseCount('cycle_phase_presentations', 1);
+        $this->assertDatabaseHas('cycle_phase_presentations', [
+            'user_id' => $user->id,
+            'phase' => 'luteal',
+            'status' => 'pending',
+        ]);
+    }
+
+    public function test_acknowledging_a_non_menstrual_phase_does_not_create_a_period_log(): void
+    {
+        $user = User::factory()->create();
+        $start = today()->subDays(8)->toDateString();
+
+        $user->cycleProfile()->create([
+            'timezone' => config('app.timezone', 'UTC'),
+            'active_journey' => 'cycle',
+            'average_cycle_length' => 28,
+            'average_period_length' => 5,
+            'cycle_regularity' => 'regular',
+            'contraception_type' => 'none',
+            'cycle_tracking_started_at' => $start,
+        ]);
+        $user->periodLogs()->create(['start_date' => $start, 'end_date' => today()->subDays(4)->toDateString()]);
+
+        $dashboard = $this->actingAs($user)->getJson('/api/dashboard')->assertOk();
+        $dashboard->assertJsonPath('cycle_phase.phase', 'follicular');
+        $presentationId = $dashboard->json('phase_presentation.id');
+
+        $this->patchJson('/api/cycle-phase-presentations/'.$presentationId, [
+            'action' => 'confirm',
+        ])->assertOk()->assertJsonPath('period_recorded', false);
+
+        $this->assertDatabaseCount('period_logs', 1);
+        $this->assertDatabaseHas('cycle_phase_presentations', [
+            'id' => $presentationId,
+            'status' => 'acknowledged',
+        ]);
+    }
+
+    public function test_menstrual_welcome_can_save_the_actual_start_date_instead_of_the_estimated_date(): void
+    {
+        $user = User::factory()->create();
+        $expectedStart = today()->toDateString();
+        $actualStart = today()->subDay()->toDateString();
+        $previousStart = today()->subDays(28)->toDateString();
+
+        $user->cycleProfile()->create([
+            'timezone' => config('app.timezone', 'UTC'),
+            'active_journey' => 'cycle',
+            'average_cycle_length' => 28,
+            'average_period_length' => 5,
+            'cycle_regularity' => 'regular',
+            'contraception_type' => 'none',
+            'cycle_tracking_started_at' => $previousStart,
+        ]);
+        $user->periodLogs()->create(['start_date' => $previousStart, 'end_date' => today()->subDays(24)->toDateString()]);
+
+        $dashboard = $this->actingAs($user)->getJson('/api/dashboard')->assertOk();
+        $presentationId = $dashboard->json('phase_presentation.id');
+
+        $this->patchJson('/api/cycle-phase-presentations/'.$presentationId, [
+            'action' => 'confirm',
+            'start_date' => $actualStart,
+        ])->assertOk()->assertJsonPath('period_recorded', true);
+
+        $this->assertDatabaseHas('period_logs', [
+            'user_id' => $user->id,
+            'start_date' => $actualStart,
+        ]);
+
+        $refreshed = $this->getJson('/api/dashboard')->assertOk();
+        $refreshed->assertJsonPath('latest_period.start_date', $actualStart)
+            ->assertJsonPath('phase_presentation.should_present', false);
+    }
+
 }
