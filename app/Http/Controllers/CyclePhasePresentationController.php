@@ -23,7 +23,7 @@ class CyclePhasePresentationController extends Controller
 
         $periodStartDate = $validated['start_date'] ?? $presentation->phase_start_date->format('Y-m-d');
         if ($validated['action'] === 'confirm' && $presentation->phase === 'menstrual') {
-            PeriodLog::query()->updateOrCreate(
+            PeriodLog::query()->firstOrCreate(
                 [
                     'user_id' => $request->user()->id,
                     'start_date' => $periodStartDate,
