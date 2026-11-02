@@ -17,7 +17,7 @@ type SharedRelationship = {
     status: 'pending' | 'accepted' | 'revoked';
     companion_name: string | null;
     companion_journey: 'cycle' | 'fertility' | 'pregnancy' | 'postpartum' | null;
-    companion_cycle_summary: { last_period_start:string; last_period_end?:string|null; flow_intensity?:string|null; cycle_day:number; estimated_next_period:string|null; estimated_cycle_length?:number|null; period_is_active?:boolean; current_period_day?:number|null; average_cycle_length:number|null; average_period_length:number|null; cycle_regularity:string; fertility_estimate_available:boolean; estimated_ovulation_date:string|null; estimated_fertile_start:string|null; estimated_fertile_end:string|null; period_history:{start_date:string;end_date:string|null}[]; cycle_phase?:{phase:'menstrual'|'follicular'|'ovulatory'|'luteal'|'unknown';is_estimated:boolean;cycle_day:number}|null } | null;
+    companion_cycle_summary: { last_period_start:string; last_period_end?:string|null; flow_intensity?:string|null; cycle_day:number; estimated_next_period:string|null; estimated_cycle_length?:number|null; period_is_active?:boolean; current_period_day?:number|null; average_cycle_length:number|null; average_period_length:number|null; cycle_regularity:string; fertility_estimate_available:boolean; estimated_ovulation_date:string|null; estimated_fertile_start:string|null; estimated_fertile_end:string|null; period_history:{start_date:string;end_date:string|null}[]; cycle_phase?:{phase:'menstrual'|'follicular'|'ovulatory'|'luteal'|'unknown';is_estimated:boolean;cycle_day:number;presentation_status?:'pending'|'dismissed'|'acknowledged'|null}|null } | null;
     companion_pregnancy_summary: { status: string; due_date: string; gestational_week: number | null; trimester: number | null; days_until_due: number | null } | null;
     companion_wellbeing: { log_date: string; mood?: string[]; symptoms?: string[]; energy_level?: number | null; category?: string; notes?: string | null } | null;
     companion_wellbeing_history?: { log_date:string; mood:string[]; symptoms:string[]; energy_level:string|null; notes:string|null }[] | null;
@@ -66,8 +66,8 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
     const permissions = connection?.companion_sharing_preferences ?? connection?.sharing_preferences;
     const supportName = data.profile.display_name?.trim() || data.user.name?.trim().split(/\s+/)[0] || 'there';
     const primaryName = connection?.companion_name?.trim() || 'your partner';
-    const partnerPhase = connection?.companion_cycle_summary?.cycle_phase?.phase ?? null;
-    return <div className={'cosmic-dashboard cosmic-support-dashboard '+(partnerPhase&&partnerPhase!=='unknown'?'cosmic-dashboard--phase-'+partnerPhase:'')} data-cycle-phase={partnerPhase??'unknown'}>
+    const partnerPhase = connection?.companion_cycle_summary?.cycle_phase?.phase ?? null;\n    const partnerPhaseStatus = connection?.companion_cycle_summary?.cycle_phase?.presentation_status === 'acknowledged' ? 'acknowledged' : connection?.companion_cycle_summary?.cycle_phase?.is_estimated ? 'estimated' : 'logged';
+    return <div className={'cosmic-dashboard cosmic-support-dashboard '+(partnerPhase&&partnerPhase!=='unknown'?'cosmic-dashboard--phase-'+partnerPhase:'')} data-cycle-phase={partnerPhase??'unknown'} data-cycle-phase-status={partnerPhaseStatus}>
         <header className="cosmic-header">
             <a className="cosmic-brand" href="/dashboard"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a>
             <nav><a className="is-active" href="/dashboard">Home</a><a href="/connections">Connections</a><a href="/astrology">The Cosmic Atelier</a><a href="/profile">Profile & settings</a></nav>
