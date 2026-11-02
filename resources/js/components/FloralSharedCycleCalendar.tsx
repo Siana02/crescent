@@ -28,15 +28,11 @@ export default function FloralSharedCycleCalendar({cycle,ownerName='your partner
   const records=(cycle.period_history??[]).slice().sort((a,b)=>a.start_date.localeCompare(b.start_date));
   for(const period of records){
    if(period.end_date){for(let d=period.start_date;d<=period.end_date;d=addDays(d,1))confirmed.add(d);continue;}
-   const isLatest=period.start_date===cycle.last_period_start;
    const estimateEnd=addDays(period.start_date,expectedDays-1);
-   if(isLatest&&period.start_date<=today){
-    for(let d=period.start_date;d<=today;d=addDays(d,1))confirmed.add(d);
-    for(let d=addDays(today,1);d<=estimateEnd;d=addDays(d,1))estimated.add(d);
-   }else{
-    confirmed.add(period.start_date);
-    for(let d=addDays(period.start_date,1);d<=estimateEnd;d=addDays(d,1))estimated.add(d);
-   }
+   // Only the recorded start is factual until an end date is logged. The
+   // remaining duration is a soft estimate, including elapsed days.
+   confirmed.add(period.start_date);
+   for(let d=addDays(period.start_date,1);d<=estimateEnd;d=addDays(d,1))estimated.add(d);
   }
   if(cycle.estimated_next_period){for(let d=cycle.estimated_next_period;d<=addDays(cycle.estimated_next_period,expectedDays-1);d=addDays(d,1))if(!confirmed.has(d))estimated.add(d);}
   return {confirmedPeriodDates:confirmed,estimatedPeriodDates:estimated};
