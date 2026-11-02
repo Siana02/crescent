@@ -95,6 +95,20 @@ export default function CyclePhaseWelcome({
     }, []);
     const content = copy[phase];
     const Icon = icons[phase];
+    const phaseStartedToday = phaseStartDate === today;
+    const phaseDateLabel = new Date(phaseStartDate + 'T12:00:00').toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
+    const subtitle = phaseStartedToday
+        ? content.subtitle
+        : content.subtitle.replace('You’re entering', 'You’re in');
+    const note = phaseStartedToday
+        ? content.note
+        : phase === 'menstrual'
+            ? 'Your period was expected to start on ' + phaseDateLabel + '. If bleeding has begun, confirm it below and choose the actual first day.'
+            : phase === 'follicular'
+                ? 'Your follicular phase is underway. This is an estimate based on the cycle dates you have shared.'
+                : phase === 'ovulatory'
+                    ? 'Your ovulatory window is estimated to be underway. This is a prediction, not confirmation that ovulation has occurred.'
+                    : 'Your cycle is estimated to be in its luteal phase. Make room for the pace that feels right to you.';
 
     return (
         <div className={'cycle-phase-welcome cycle-phase-welcome--' + phase} role="dialog" aria-modal="true" aria-labelledby="cycle-phase-welcome-title" aria-describedby="cycle-phase-welcome-note">
@@ -109,10 +123,10 @@ export default function CyclePhaseWelcome({
                     <Icon size={44} strokeWidth={1.25} />
                     <span className="cycle-phase-welcome__petal">✿</span>
                 </div>
-                <p className="cycle-phase-welcome__eyebrow">{content.eyebrow}</p>
+                <p className="cycle-phase-welcome__eyebrow">{phaseStartedToday ? content.eyebrow : 'YOUR CURRENT CHAPTER'}</p>
                 <h2 id="cycle-phase-welcome-title">{content.title}</h2>
-                <h3>{content.subtitle}</h3>
-                <p className="cycle-phase-welcome__note" id="cycle-phase-welcome-note">{content.note}</p>
+                <h3>{subtitle}</h3>
+                <p className="cycle-phase-welcome__note" id="cycle-phase-welcome-note">{note}</p>
                 {phase === 'menstrual' && (
                     <label className="cycle-phase-welcome__date">
                         When did your period begin?
