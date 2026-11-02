@@ -155,11 +155,20 @@ class CyclePhasePresentationTest extends TestCase
             ->assertJsonPath('missed_period_reminder', true);
 
         $this->assertDatabaseCount('cycle_phase_presentations', 1);
+        $presentationId = $dashboard->json('phase_presentation.id');
         $this->assertDatabaseHas('cycle_phase_presentations', [
             'user_id' => $user->id,
             'phase' => 'luteal',
             'status' => 'pending',
         ]);
+
+        $this->patchJson('/api/cycle-phase-presentations/'.$presentationId, [
+            'action' => 'dismiss',
+        ])->assertOk()->assertJsonPath('presentation.status', 'dismissed');
+
+        $this->getJson('/api/dashboard')
+            ->assertOk()
+            ->assertJsonPath('missed_period_reminder', false);
     }
 
     public function test_acknowledging_a_non_menstrual_phase_does_not_create_a_period_log(): void
