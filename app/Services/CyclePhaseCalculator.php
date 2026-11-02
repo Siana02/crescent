@@ -66,6 +66,11 @@ class CyclePhaseCalculator
             $ovulationDate = $follicularStart->addDay();
         }
 
+        // Present ovulation as a short estimated phase around the predicted
+        // ovulation day, rather than a single calendar day.
+        $ovulatoryStart = $ovulationDate->subDay();
+        $lutealStart = $ovulationDate->addDays(2);
+
         if (! $ovulationEstimateAvailable) {
             if ($today->lessThan($menstrualEndExclusive)) {
                 $phase = 'menstrual';
@@ -92,19 +97,19 @@ class CyclePhaseCalculator
             $phaseStart = $cycleStart;
             $nextPhase = 'follicular';
             $nextPhaseDate = $follicularStart;
-        } elseif ($today->lessThan($ovulationDate)) {
+        } elseif ($today->lessThan($ovulatoryStart)) {
             $phase = 'follicular';
             $phaseStart = $follicularStart;
             $nextPhase = 'ovulatory';
-            $nextPhaseDate = $ovulationDate;
-        } elseif ($today->equalTo($ovulationDate)) {
+            $nextPhaseDate = $ovulatoryStart;
+        } elseif ($today->lessThan($lutealStart)) {
             $phase = 'ovulatory';
-            $phaseStart = $ovulationDate;
+            $phaseStart = $ovulatoryStart;
             $nextPhase = 'luteal';
-            $nextPhaseDate = $ovulationDate->addDay();
+            $nextPhaseDate = $lutealStart;
         } else {
             $phase = 'luteal';
-            $phaseStart = $ovulationDate->addDay();
+            $phaseStart = $lutealStart;
             $nextPhase = 'menstrual';
             $nextPhaseDate = $nextPeriod;
         }
