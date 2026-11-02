@@ -16,13 +16,15 @@ class CyclePhasePresentationController extends Controller
 
         $validated = $request->validate([
             'action' => ['required', Rule::in(['confirm', 'dismiss'])],
+            'start_date' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
         ]);
 
+        $periodStartDate = $validated['start_date'] ?? $presentation->phase_start_date->format('Y-m-d');
         if ($validated['action'] === 'confirm' && $presentation->phase === 'menstrual') {
             PeriodLog::query()->updateOrCreate(
                 [
                     'user_id' => $request->user()->id,
-                    'start_date' => $presentation->cycle_start_date->format('Y-m-d'),
+                    'start_date' => $periodStartDate,
                 ],
                 [
                     'end_date' => null,
