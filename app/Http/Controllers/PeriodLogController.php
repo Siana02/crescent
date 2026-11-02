@@ -101,7 +101,7 @@ class PeriodLogController extends Controller
 
         $duplicate = $request->user()->periodLogs()
             ->whereDate('start_date', $validated['start_date'])
-            ->whereKeyNot($period->id)
+            ->where('id', '!=', $period->id)
             ->exists();
 
         if ($duplicate) {
