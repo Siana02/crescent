@@ -83,3 +83,30 @@
 .cycle-phase-welcome__date input{width:100%;border:1px solid var(--welcome-border);border-radius:12px;background:#fff9;color:var(--welcome-ink);padding:11px 12px;font:inherit;font-weight:600}
 
 .cosmic-dashboard--phase-menstrual .cosmic-support-care-guide,.cosmic-dashboard--phase-follicular .cosmic-support-care-guide,.cosmic-dashboard--phase-ovulatory .cosmic-support-care-guide,.cosmic-dashboard--phase-luteal .cosmic-support-care-guide{background:linear-gradient(135deg,var(--cycle-phase-surface),#fffdfd 82%);border-color:var(--cycle-phase-border);transition:background-color .45s ease,border-color .45s ease}
+
+/* Estimate styling is intentionally softer than a logged or user-acknowledged phase. */
+.cosmic-dashboard--phase-status-estimated .cosmic-cycle-hero,
+.cosmic-dashboard--phase-status-estimated .cosmic-cycle-history-summary,
+.cosmic-dashboard--phase-status-estimated .cosmic-week-cycle,
+.cosmic-dashboard--phase-status-estimated .cosmic-support-cycle-hero,
+.cosmic-dashboard--phase-status-estimated .cosmic-support-care-guide{
+ background-image:linear-gradient(135deg,color-mix(in srgb,var(--cycle-phase-surface) 58%,white),#fffdfd 88%);
+ border-style:dashed;
+ box-shadow:none;
+}
+.cosmic-dashboard--phase-status-acknowledged .cosmic-cycle-hero,
+.cosmic-dashboard--phase-status-acknowledged .cosmic-cycle-history-summary,
+.cosmic-dashboard--phase-status-acknowledged .cosmic-week-cycle,
+.cosmic-dashboard--phase-status-acknowledged .cosmic-support-cycle-hero,
+.cosmic-dashboard--phase-status-acknowledged .cosmic-support-care-guide,
+.cosmic-dashboard--phase-status-logged .cosmic-cycle-hero,
+.cosmic-dashboard--phase-status-logged .cosmic-cycle-history-summary,
+.cosmic-dashboard--phase-status-logged .cosmic-week-cycle,
+.cosmic-dashboard--phase-status-logged .cosmic-support-cycle-hero,
+.cosmic-dashboard--phase-status-logged .cosmic-support-care-guide{border-style:solid}
+.cosmic-shared-partner-space--phase-status-estimated .cosmic-shared-space-card--checkin{background-image:linear-gradient(135deg,#ffffffa8,#fffdfd);border-style:dashed}
+.cosmic-shared-partner-space--phase-status-acknowledged .cosmic-shared-space-card--checkin,
+.cosmic-shared-partner-space--phase-status-logged .cosmic-shared-space-card--checkin{border-style:solid}
+.cosmic-floral-calendar--phase-status-estimated .cosmic-floral-calendar__heading{background-image:linear-gradient(135deg,#ffffffa8,#fffdfd);border-style:dashed}
+.cosmic-floral-calendar--phase-status-acknowledged .cosmic-floral-calendar__heading,
+.cosmic-floral-calendar--phase-status-logged .cosmic-floral-calendar__heading{border-style:solid}
