@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Flower2, Leaf, MoonStar, Sparkles, X } from 'lucide-react';
 
 export type CyclePhase = 'menstrual' | 'follicular' | 'ovulatory' | 'luteal';
@@ -57,13 +57,42 @@ export default function CyclePhaseWelcome({
     onRespond: (action: 'confirm' | 'dismiss', startDate?: string) => void;
 }) {
     const [periodStartDate, setPeriodStartDate] = useState(phaseStartDate || today);
+    const panelRef = useRef<HTMLElement>(null);
+
+    useEffect(() => {
+        const panel = panelRef.current;
+        if (!panel) return;
+        const focusable = () => Array.from(panel.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), a[href], select:not(:disabled), textarea:not(:disabled)'));
+        focusable()[0]?.focus();
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && !busy) {
+                event.preventDefault();
+                onRespond('dismiss');
+                return;
+            }
+            if (event.key !== 'Tab') return;
+            const items = focusable();
+            if (!items.length) return;
+            const first = items[0];
+            const last = items[items.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [busy, onRespond]);
     const content = copy[phase];
     const Icon = icons[phase];
 
     return (
-        <div className={'cycle-phase-welcome cycle-phase-welcome--' + phase} role="dialog" aria-modal="true" aria-labelledby="cycle-phase-welcome-title">
+        <div className={'cycle-phase-welcome cycle-phase-welcome--' + phase} role="dialog" aria-modal="true" aria-labelledby="cycle-phase-welcome-title" aria-describedby="cycle-phase-welcome-note">
             <div className="cycle-phase-welcome__backdrop" />
-            <section className="cycle-phase-welcome__panel">
+            <section className="cycle-phase-welcome__panel" ref={panelRef}>
                 <button className="cycle-phase-welcome__close" type="button" aria-label="Dismiss this presentation" onClick={() => onRespond('dismiss')} disabled={busy}>
                     <X size={17} />
                 </button>
@@ -76,7 +105,7 @@ export default function CyclePhaseWelcome({
                 <p className="cycle-phase-welcome__eyebrow">{content.eyebrow}</p>
                 <h2 id="cycle-phase-welcome-title">{content.title}</h2>
                 <h3>{content.subtitle}</h3>
-                <p className="cycle-phase-welcome__note">{content.note}</p>
+                <p className="cycle-phase-welcome__note" id="cycle-phase-welcome-note">{content.note}</p>
                 {phase === 'menstrual' && (
                     <label className="cycle-phase-welcome__date">
                         When did your period begin?
