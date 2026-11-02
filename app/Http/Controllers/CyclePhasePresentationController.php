@@ -70,4 +70,25 @@ class CyclePhasePresentationController extends Controller
             'period_recorded' => $validated['action'] === 'confirm' && $presentation->phase === 'menstrual',
         ]);
     }
+
+    public function dismissMissedPeriodReminder(Request $request): JsonResponse
+    {
+        $timezone = $request->user()->cycleProfile()->value('timezone') ?? config('app.timezone', 'UTC');
+        $today = now($timezone)->toDateString();
+        $validated = $request->validate([
+            'expected_period_date' => ['required', 'date_format:Y-m-d', 'before_or_equal:'.$today],
+        ]);
+
+        $profile = $request->user()->cycleProfile;
+        abort_unless($profile, 404);
+
+        $profile->update([
+            'missed_period_reminder_dismissed_for' => $validated['expected_period_date'],
+        ]);
+
+        return response()->json([
+            'dismissed_for' => $profile->fresh()->missed_period_reminder_dismissed_for?->format('Y-m-d'),
+        ]);
+    }
+
 }
