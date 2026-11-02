@@ -72,7 +72,11 @@ function CycleHistoryContent(){
  const [error,setError]=useState('');
  const [yearIndex,setYearIndex]=useState(0);
  const [expandedYears,setExpandedYears]=useState<number[]>([]);
- const [touchStart,setTouchStart]=useState<number|null>(null);\n const [editingPeriodId,setEditingPeriodId]=useState<number|null>(null);\n const [editStartDate,setEditStartDate]=useState('');\n const [correctionBusy,setCorrectionBusy]=useState(false);\n const [correctionError,setCorrectionError]=useState('');\n const [correctionNotice,setCorrectionNotice]=useState('');
+ const [touchStart,setTouchStart]=useState<number|null>(null);
+ const [editingPeriodId,setEditingPeriodId]=useState<number|null>(null);
+ const [editStartDate,setEditStartDate]=useState('');
+ const [correctionBusy,setCorrectionBusy]=useState(false);
+ const [correctionError,setCorrectionError]=useState('');
  useEffect(()=>{Promise.all([
   fetch('/api/dashboard?timezone='+encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'),{credentials:'same-origin',headers:{Accept:'application/json'}}),
   fetch('/api/periods',{credentials:'same-origin',headers:{Accept:'application/json'}}),
@@ -96,7 +100,7 @@ function CycleHistoryContent(){
  const yearCycles=cycles.filter(c=>fromKey(c.start).getFullYear()===selectedYear);
  const visibleCycles=expandedYears.includes(selectedYear)?yearCycles:yearCycles.slice(0,4);
  const beginCorrection=(cycle:CycleRecord)=>{setEditingPeriodId(cycle.periodId);setEditStartDate(cycle.start);setCorrectionError('');};
- const saveCorrection=async(event:FormEvent<HTMLFormElement>)=>{event.preventDefault();if(!editingPeriodId)return;setCorrectionBusy(true);setCorrectionError('');setCorrectionNotice('');try{const token=document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')??'';const cycle=cycles.find(item=>item.periodId===editingPeriodId);if(!cycle)throw new Error('That period record is no longer available.');const response=await fetch('/api/periods/'+editingPeriodId,{method:'PUT',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-CSRF-TOKEN':token},body:JSON.stringify({start_date:editStartDate,end_date:cycle.periodEnd})});const result=await response.json();if(!response.ok)throw new Error(result.message??'The period date could not be corrected.');setEditingPeriodId(null);window.location.reload();}catch(error){setCorrectionError(error instanceof Error?error.message:'The period date could not be corrected.');}finally{setCorrectionBusy(false);}};
+ const saveCorrection=async(event:FormEvent<HTMLFormElement>)=>{event.preventDefault();if(!editingPeriodId)return;setCorrectionBusy(true);setCorrectionError('');try{const token=document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')??'';const cycle=cycles.find(item=>item.periodId===editingPeriodId);if(!cycle)throw new Error('That period record is no longer available.');const response=await fetch('/api/periods/'+editingPeriodId,{method:'PUT',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-CSRF-TOKEN':token},body:JSON.stringify({start_date:editStartDate,end_date:cycle.periodEnd})});const result=await response.json();if(!response.ok)throw new Error(result.message??'The period date could not be corrected.');setEditingPeriodId(null);window.location.reload();}catch(error){setCorrectionError(error instanceof Error?error.message:'The period date could not be corrected.');}finally{setCorrectionBusy(false);}};
  const previousYear=()=>{setYearIndex(i=>Math.min(years.length-1,i+1));};
  const nextYear=()=>{setYearIndex(i=>Math.max(0,i-1));};
  if(loading)return <main className="ch-page ch-loading">Gathering your cycle petals… ✿</main>;
@@ -124,7 +128,7 @@ function CycleHistoryContent(){
    {yearCycles.length>4&&<button type="button" className="ch-show-all" onClick={()=>setExpandedYears(v=>v.includes(selectedYear)?v.filter(y=>y!==selectedYear):[...v,selectedYear])}>{expandedYears.includes(selectedYear)?'Show fewer cycles':'View all '+yearCycles.length+' cycles for '+selectedYear}<ChevronDown size={16}/></button>}
    <p className="ch-swipe-hint">♡ Swipe left or right to move between years</p>
   </section>
-  {correctionNotice&&<p className="ch-correction-notice" role="status">{correctionNotice}</p>}\n  <section className="ch-chart-panel"><div className="ch-year-heading"><div><p className="ch-eyebrow">YOUR PATTERNS AT A GLANCE</p><h2>Cycle length over time <span>✧</span></h2><p>Completed cycles with two recorded period start dates.</p></div><span className="ch-chart-flower">✿</span></div>
+  <section className="ch-chart-panel"><div className="ch-year-heading"><div><p className="ch-eyebrow">YOUR PATTERNS AT A GLANCE</p><h2>Cycle length over time <span>✧</span></h2><p>Completed cycles with two recorded period start dates.</p></div><span className="ch-chart-flower">✿</span></div>
    {cycles.filter(c=>c.cycleDays!==null).length===0?<p className="ch-chart-empty">Log at least two period start dates to see your cycle-length graph.</p>:<div className="ch-chart" role="img" aria-label="Bar chart of recent cycle lengths">{cycles.filter(c=>c.cycleDays!==null).slice(0,8).reverse().map(c=><div className="ch-chart-column" key={c.start}><span>{c.cycleDays}d</span><div className="ch-chart-bar" style={{height:Math.max(12,Math.min(100,((c.cycleDays??0)/45)*100))+'%'}}/><small>{pretty(c.start)}</small></div>)}</div>}
    <p className="ch-chart-note"><Info size={15}/> Cycle lengths use the first day of one period to the first day of the next. Predictions and flower colours are estimates, not contraception or diagnosis.</p>
   </section>
