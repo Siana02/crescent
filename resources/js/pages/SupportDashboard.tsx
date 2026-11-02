@@ -1,4 +1,5 @@
 import '../styles/cosmic-dashboard.css';
+import '../styles/cycle-phase.css';
 import SiteCredit from '../components/SiteCredit';
 import RemindCheckin from '../components/RemindCheckin';
 import SharedCompatibilityCard from '../components/SharedCompatibilityCard';
