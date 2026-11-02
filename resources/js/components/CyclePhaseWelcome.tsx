@@ -58,6 +58,13 @@ export default function CyclePhaseWelcome({
 }) {
     const [periodStartDate, setPeriodStartDate] = useState(phaseStartDate || today);
     const panelRef = useRef<HTMLElement>(null);
+    const onRespondRef = useRef(onRespond);
+    const busyRef = useRef(busy);
+
+    useEffect(() => {
+        onRespondRef.current = onRespond;
+        busyRef.current = busy;
+    }, [busy, onRespond]);
 
     useEffect(() => {
         const panel = panelRef.current;
@@ -65,9 +72,9 @@ export default function CyclePhaseWelcome({
         const focusable = () => Array.from(panel.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), a[href], select:not(:disabled), textarea:not(:disabled)'));
         focusable()[0]?.focus();
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape' && !busy) {
+            if (event.key === 'Escape' && !busyRef.current) {
                 event.preventDefault();
-                onRespond('dismiss');
+                onRespondRef.current('dismiss');
                 return;
             }
             if (event.key !== 'Tab') return;
@@ -85,7 +92,7 @@ export default function CyclePhaseWelcome({
         };
         document.addEventListener('keydown', handleKeyDown);
         return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [busy, onRespond]);
+    }, []);
     const content = copy[phase];
     const Icon = icons[phase];
 
