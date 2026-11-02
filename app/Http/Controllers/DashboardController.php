@@ -79,8 +79,7 @@ class DashboardController extends Controller
         $periodIsActive = (bool) ($latestPeriod && $lastStart && ($periodEnd === null || $periodEnd->greaterThanOrEqualTo($today)));
         $currentPeriodDay = $periodIsActive ? ((int) $lastStart->diffInDays($today) + 1) : null;
 
-        $ovulationEstimateAvailable = $profile->contraception_type === 'none'
-            && $profile->cycle_regularity !== 'irregular';
+        $ovulationEstimateAvailable = ! $usesHormonalContraception;
         $cyclePhase = $isPregnancyJourney ? null : app(\App\Services\CyclePhaseCalculator::class)->calculate(
             $lastStart,
             $today,
@@ -231,7 +230,7 @@ class DashboardController extends Controller
                             $todayForCompanion,
                             $sharedCycleLength,
                             $companionProfile?->average_period_length,
-                            (bool) $canEstimateFertility,
+                            (bool) $canEstimateCycle,
                         );
                         $estimatedNextDate = $canEstimateCycle
                             ? $periodStart->addDays((int) $sharedCycleLength)
