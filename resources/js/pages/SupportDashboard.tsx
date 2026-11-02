@@ -66,8 +66,9 @@ export default function SupportDashboard({ data, onLogout }: { data: SupportDash
     const permissions = connection?.companion_sharing_preferences ?? connection?.sharing_preferences;
     const supportName = data.profile.display_name?.trim() || data.user.name?.trim().split(/\s+/)[0] || 'there';
     const primaryName = connection?.companion_name?.trim() || 'your partner';
-    const partnerPhase = connection?.companion_cycle_summary?.cycle_phase?.phase ?? null;\n    const partnerPhaseStatus = connection?.companion_cycle_summary?.cycle_phase?.presentation_status === 'acknowledged' ? 'acknowledged' : connection?.companion_cycle_summary?.cycle_phase?.is_estimated ? 'estimated' : 'logged';
-    return <div className={'cosmic-dashboard cosmic-support-dashboard '+(partnerPhase&&partnerPhase!=='unknown'?'cosmic-dashboard--phase-'+partnerPhase:'')} data-cycle-phase={partnerPhase??'unknown'} data-cycle-phase-status={partnerPhaseStatus}>
+    const partnerPhase = connection?.companion_cycle_summary?.cycle_phase?.phase ?? null;
+    const partnerPhaseStatus = connection?.companion_cycle_summary?.cycle_phase?.presentation_status === 'acknowledged' ? 'acknowledged' : connection?.companion_cycle_summary?.cycle_phase?.is_estimated ? 'estimated' : 'logged';
+    return <div className={'cosmic-dashboard cosmic-support-dashboard '+(partnerPhase&&partnerPhase!=='unknown'?'cosmic-dashboard--phase-'+partnerPhase+' cosmic-dashboard--phase-status-'+partnerPhaseStatus:'')} data-cycle-phase={partnerPhase??'unknown'} data-cycle-phase-status={partnerPhaseStatus}>
         <header className="cosmic-header">
             <a className="cosmic-brand" href="/dashboard"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a>
             <nav><a className="is-active" href="/dashboard">Home</a><a href="/connections">Connections</a><a href="/astrology">The Cosmic Atelier</a><a href="/profile">Profile & settings</a></nav>
