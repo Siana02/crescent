@@ -20,13 +20,34 @@ class CyclePhaseCalculator
         ?int $periodLength,
         bool $ovulationEstimateAvailable = true,
     ): ?array {
-        if (! $lastConfirmedStart || ! $cycleLength || $cycleLength < 18 || $cycleLength > 45) {
+        if (! $lastConfirmedStart) {
             return null;
         }
 
         $periodLength = max(2, min($periodLength ?: 5, 10));
         $cycleStart = $lastConfirmedStart->startOfDay();
         $today = $today->startOfDay();
+        $menstrualEndExclusive = $cycleStart->addDays($periodLength);
+
+        if (! $cycleLength || $cycleLength < 18 || $cycleLength > 45) {
+            if ($today->lessThan($menstrualEndExclusive)) {
+                return [
+                    'phase' => 'menstrual',
+                    'cycle_start_date' => $cycleStart->toDateString(),
+                    'cycle_start_is_confirmed' => true,
+                    'cycle_day' => (int) $cycleStart->diffInDays($today) + 1,
+                    'is_estimated' => false,
+                    'phase_start_date' => $cycleStart->toDateString(),
+                    'next_phase' => null,
+                    'next_phase_date' => null,
+                    'expected_period_date' => null,
+                    'next_period_date' => null,
+                    'ovulation_date' => null,
+                ];
+            }
+
+            return null;
+        }
 
         // Move the estimate forward by complete expected cycles when a user
         // returns after an unlogged expected period. Those projected starts
