@@ -7,6 +7,7 @@ use App\Models\CyclePhasePresentation;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class PeriodLogController extends Controller
@@ -77,14 +78,14 @@ class PeriodLogController extends Controller
         }
 
         try {
-            $push = app(\App\Services\CrescentPushService::class);
+            $push = app(\\App\\Services\\CrescentPushService::class);
             if ($isNewPeriodStart) {
                 $push->notifyPartners($request->user(), 'partner_menstruating', 'cycle_details', 'crescent:partner-period-start:'.$request->user()->id.':'.$validated['start_date'], 60 * 24 * 30);
             }
             if ($isNewPeriodEnd) {
                 $push->notifyPartners($request->user(), 'partner_period_ended', 'cycle_details', 'crescent:partner-period-end:'.$request->user()->id.':'.$validated['start_date'], 60 * 24 * 30);
             }
-        } catch (\Throwable $exception) {
+        } catch (\\Throwable $exception) {
             report($exception);
         }
 
@@ -97,7 +98,7 @@ class PeriodLogController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, \App\Models\PeriodLog $period): JsonResponse
+    public function update(Request $request, \\App\\Models\\PeriodLog $period): JsonResponse
     {
         abort_unless($period->user_id === $request->user()->id, 404);
 
@@ -122,17 +123,27 @@ class PeriodLogController extends Controller
         }
 
         $previousStart = $period->start_date->format('Y-m-d');
-        $period->update([
-            'start_date' => $validated['start_date'],
-            'end_date' => $validated['end_date'] ?? null,
-            'flow_intensity' => $validated['flow_intensity'] ?? $period->flow_intensity,
-            'notes' => $validated['notes'] ?? $period->notes,
-        ]);
 
-        $profile = $request->user()->cycleProfile;
-        if ($profile?->cycle_tracking_started_at?->format('Y-m-d') === $previousStart) {
-            $profile->update(['cycle_tracking_started_at' => $validated['start_date']]);
-        }
+        DB::transaction(function () use ($request, $period, $validated, $previousStart) {
+            $period->update([
+                'start_date' => $validated['start_date'],
+                'end_date' => $validated['end_date'] ?? null,
+                'flow_intensity' => $validated['flow_intensity'] ?? $period->flow_intensity,
+                'notes' => $validated['notes'] ?? $period->notes,
+            ]);
+
+            $profile = $request->user()->cycleProfile;
+            if ($profile?->cycle_tracking_started_at?->format('Y-m-d') === $previousStart) {
+                $profile->update(['cycle_tracking_started_at' => $validated['start_date']]);
+            }
+
+            // A correction changes the basis for every future estimate. Retire
+            // pending welcomes so an outdated phase can never be presented.
+            CyclePhasePresentation::query()
+                ->where('user_id', $request->user()->id)
+                ->where('status', 'pending')
+                ->update(['status' => 'superseded', 'responded_at' => now()]);
+        });
 
         return response()->json([
             'period' => [
@@ -144,5 +155,4 @@ class PeriodLogController extends Controller
             'recalculated' => true,
         ]);
     }
-
 }
