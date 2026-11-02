@@ -82,6 +82,7 @@ Route::middleware(['auth', 'active.account'])->group(function () {
     Route::put('/api/cycle-profile', [CycleProfileController::class, 'update']);
     Route::patch('/api/cycle-profile/astrology-consent', [CycleProfileController::class, 'astrologyConsent']);
     Route::patch('/api/cycle-phase-presentations/{presentation}', [CyclePhasePresentationController::class, 'respond'])->middleware('throttle:30,1');
+    Route::post('/api/cycle-timing-reminder/dismiss', [CyclePhasePresentationController::class, 'dismissMissedPeriodReminder'])->middleware('throttle:10,1');
     Route::get('/api/periods', [PeriodLogController::class, 'index']);
     Route::post('/api/periods', [PeriodLogController::class, 'store']);
     Route::put('/api/periods/{period}', [PeriodLogController::class, 'update']);
