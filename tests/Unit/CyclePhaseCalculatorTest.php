@@ -58,4 +58,21 @@ class CyclePhaseCalculatorTest extends TestCase
         $this->assertNull($result['ovulation_date']);
         $this->assertNull($result['next_phase']);
     }
+
+    public function test_it_can_style_a_logged_menstrual_phase_when_average_cycle_length_is_not_yet_known(): void
+    {
+        $calculator = new CyclePhaseCalculator();
+        $result = $calculator->calculate(
+            CarbonImmutable::parse('2026-10-01'),
+            CarbonImmutable::parse('2026-10-03'),
+            null,
+            5,
+        );
+
+        $this->assertSame('menstrual', $result['phase']);
+        $this->assertFalse($result['is_estimated']);
+        $this->assertNull($result['next_period_date']);
+        $this->assertNull($result['next_phase']);
+    }
+
 }
