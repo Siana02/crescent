@@ -229,4 +229,40 @@ class CyclePhasePresentationTest extends TestCase
             ->assertJsonPath('phase_presentation.should_present', false);
     }
 
+
+    public function test_logging_a_period_manually_closes_the_pending_menstrual_welcome(): void
+    {
+        $user = User::factory()->create();
+        $start = today()->subDays(28)->toDateString();
+        $expectedStart = today()->toDateString();
+
+        $user->cycleProfile()->create([
+            'timezone' => config('app.timezone', 'UTC'),
+            'active_journey' => 'cycle',
+            'average_cycle_length' => 28,
+            'average_period_length' => 5,
+            'cycle_regularity' => 'regular',
+            'contraception_type' => 'none',
+            'cycle_tracking_started_at' => $start,
+        ]);
+        $user->periodLogs()->create(['start_date' => $start, 'end_date' => today()->subDays(24)->toDateString()]);
+
+        $dashboard = $this->actingAs($user)->getJson('/api/dashboard')->assertOk();
+        $presentationId = $dashboard->json('phase_presentation.id');
+
+        $this->postJson('/api/periods', [
+            'start_date' => $expectedStart,
+            'flow_intensity' => 'medium',
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('cycle_phase_presentations', [
+            'id' => $presentationId,
+            'status' => 'acknowledged',
+        ]);
+
+        $this->getJson('/api/dashboard')
+            ->assertOk()
+            ->assertJsonPath('phase_presentation.should_present', false);
+    }
+
 }
