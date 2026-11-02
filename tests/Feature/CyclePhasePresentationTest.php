@@ -278,12 +278,17 @@ class CyclePhasePresentationTest extends TestCase
 
         $this->assertDatabaseHas('cycle_phase_presentations', [
             'id' => $presentationId,
-            'status' => 'acknowledged',
+            'status' => 'superseded',
         ]);
 
         $this->getJson('/api/dashboard')
             ->assertOk()
             ->assertJsonPath('phase_presentation.should_present', false);
+
+        $this->assertDatabaseHas('cycle_phase_presentations', [
+            'id' => $presentationId,
+            'status' => 'acknowledged',
+        ]);
     }
 
 }
