@@ -127,6 +127,7 @@ export default function CyclePhaseWelcome({
                         Not right now
                     </button>
                 </div>
+                <a className="cycle-phase-welcome__correct" href="/cycle-history">Something feels different? Correct my cycle</a>
                 <p className="cycle-phase-welcome__footnote">
                     {estimated ? 'A gentle estimate based on your cycle history. You can update your dates at any time.' : 'Based on the period dates you have logged.'}
                 </p>
