@@ -10,6 +10,7 @@ type CycleCalendarSummary = {
   fertility_estimate_available:boolean; estimated_ovulation_date:string|null;
   estimated_fertile_start:string|null; estimated_fertile_end:string|null;
   period_history:{start_date:string;end_date:string|null}[];
+  cycle_phase?:{phase:'menstrual'|'follicular'|'ovulatory'|'luteal'|'unknown';is_estimated:boolean}|null;
 };
 function keyOf(date:Date){return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');}
 function dateFromKey(value:string){return new Date(value+'T12:00:00');}
@@ -48,7 +49,7 @@ export default function FloralSharedCycleCalendar({cycle,ownerName='your partner
  const activeSexLogs=sexLogHistory?sexLogHistory.filter(log=>log.log_date===selected):selectedSexLogs;
  const selectedKind=kind(selected);
  const detail=selectedKind==='period'?'Confirmed period day · part of your logged cycle':selectedKind==='estimated-period'?'Estimated period day · not yet confirmed by a period log':selectedKind==='ovulation'?'Estimated ovulation day · often around day 14 in a typical 28-day cycle, but timing varies':selectedKind==='fertile'?'Estimated fertile window · pregnancy is more likely':selectedKind==='lower'?'Lower estimated fertility · not a guaranteed safe day':'Cycle estimate unavailable for this date';
- return <section id="floral-calendar" className="cosmic-floral-calendar" aria-labelledby="floral-calendar-title">
+ return <section id="floral-calendar" className={'cosmic-floral-calendar'+(cycle.cycle_phase?.phase&&cycle.cycle_phase.phase!=='unknown'?' cosmic-floral-calendar--phase-'+cycle.cycle_phase.phase:'')} aria-labelledby="floral-calendar-title">
   <div className="cosmic-floral-calendar__heading"><div><p className="cosmic-eyebrow">A SHARED RHYTHM, IN BLOOM</p><h3 id="floral-calendar-title">{ownerName}'s cycle calendar</h3><p>{editable?'Select a date to review your cycle, then add or update a period entry.':'View-only for '+(viewerName?.trim()||'you')+' · '+ownerName+' controls their own cycle entries'}</p></div><span aria-hidden="true">✿</span></div>
   <div className="cosmic-floral-calendar__month"><button type="button" aria-label="Previous month" onClick={()=>setMonth(new Date(month.getFullYear(),month.getMonth()-1,1))}>‹</button><strong>{month.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</strong><button type="button" aria-label="Next month" onClick={()=>setMonth(new Date(month.getFullYear(),month.getMonth()+1,1))}>›</button></div>
   <div className="cosmic-floral-calendar__grid" role="group" aria-label="Read-only cycle calendar">
