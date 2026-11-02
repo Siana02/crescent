@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CyclePhasePresentation;
 use App\Models\Relationship;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Cache;
@@ -76,6 +77,46 @@ class DashboardController extends Controller
             : null;
         $periodIsActive = (bool) ($latestPeriod && $lastStart && ($periodEnd === null || $periodEnd->greaterThanOrEqualTo($today)));
         $currentPeriodDay = $periodIsActive ? ((int) $lastStart->diffInDays($today) + 1) : null;
+
+        $ovulationEstimateAvailable = $profile->contraception_type === 'none'
+            && $profile->cycle_regularity !== 'irregular';
+        $cyclePhase = $isPregnancyJourney ? null : app(\App\Services\CyclePhaseCalculator::class)->calculate(
+            $lastStart,
+            $today,
+            $cycleLengthForEstimate,
+            $profile->average_period_length,
+            $ovulationEstimateAvailable,
+        );
+        $phasePresentation = null;
+        $missedPeriodReminder = false;
+
+        if ($cyclePhase && in_array($cyclePhase['phase'], ['menstrual', 'follicular', 'ovulatory', 'luteal'], true)) {
+            $presentation = CyclePhasePresentation::firstOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'cycle_start_date' => $cyclePhase['cycle_start_date'],
+                    'phase' => $cyclePhase['phase'],
+                    'phase_start_date' => $cyclePhase['phase_start_date'],
+                ],
+                [
+                    'status' => 'pending',
+                    'presented_at' => now(),
+                ],
+            );
+
+            $phasePresentation = [
+                'id' => $presentation->id,
+                'phase' => $presentation->phase,
+                'cycle_start_date' => $presentation->cycle_start_date->format('Y-m-d'),
+                'phase_start_date' => $presentation->phase_start_date->format('Y-m-d'),
+                'status' => $presentation->status,
+                'should_present' => $presentation->status === 'pending',
+            ];
+
+            $projectedStart = CarbonImmutable::parse($cyclePhase['cycle_start_date'], $profile->timezone);
+            $missedPeriodReminder = ! $cyclePhase['cycle_start_is_confirmed']
+                && $today->greaterThan($projectedStart->addDays(max(2, min(($profile->average_period_length ?: 5), 10)) - 1));
+        }
         $daysUntilEstimate = null;
 
         if ($estimatedNext) {
@@ -370,6 +411,9 @@ class DashboardController extends Controller
             'estimated_next_period' => $estimatedNext?->toDateString(),
             'days_until_estimate' => $daysUntilEstimate,
             'fertility_window' => $fertilityWindow,
+            'cycle_phase' => $cyclePhase,
+            'phase_presentation' => $phasePresentation,
+            'missed_period_reminder' => $missedPeriodReminder,
             'relationships' => $relationships,
             'pregnancy' => $pregnancySummary,
             'today_checkin' => $todayCheckin ? [
