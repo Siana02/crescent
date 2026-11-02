@@ -23,7 +23,7 @@ class CyclePhasePresentationController extends Controller
 
         $periodStartDate = $validated['start_date'] ?? $presentation->phase_start_date->format('Y-m-d');
         if ($validated['action'] === 'confirm' && $presentation->phase === 'menstrual') {
-            PeriodLog::query()->firstOrCreate(
+            $period = PeriodLog::query()->firstOrCreate(
                 [
                     'user_id' => $request->user()->id,
                     'start_date' => $periodStartDate,
@@ -33,6 +33,20 @@ class CyclePhasePresentationController extends Controller
                     'flow_intensity' => null,
                 ],
             );
+
+            if ($period->wasRecentlyCreated) {
+                try {
+                    app(\App\Services\CrescentPushService::class)->notifyPartners(
+                        $request->user(),
+                        'partner_menstruating',
+                        'cycle_details',
+                        'crescent:partner-period-start:'.$request->user()->id.':'.$periodStartDate,
+                        60 * 24 * 30,
+                    );
+                } catch (\Throwable $exception) {
+                    report($exception);
+                }
+            }
         }
 
         $presentation->update([
