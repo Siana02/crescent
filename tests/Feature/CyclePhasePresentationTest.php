@@ -13,7 +13,7 @@ class CyclePhasePresentationTest extends TestCase
     public function test_dashboard_exposes_a_menstrual_phase_welcome_and_confirming_it_records_the_period_start(): void
     {
         $user = User::factory()->create();
-        $start = today()->subDays(2)->toDateString();
+        $start = today()->subDays(28)->toDateString();
 
         $user->cycleProfile()->create([
             'timezone' => config('app.timezone', 'UTC'),
@@ -24,7 +24,7 @@ class CyclePhasePresentationTest extends TestCase
             'contraception_type' => 'none',
             'cycle_tracking_started_at' => $start,
         ]);
-        $user->periodLogs()->create(['start_date' => $start, 'end_date' => null]);
+        $user->periodLogs()->create(['start_date' => $start, 'end_date' => today()->subDays(24)->toDateString()]);
 
         $dashboard = $this->actingAs($user)->getJson('/api/dashboard')->assertOk();
         $dashboard->assertJsonPath('cycle_phase.phase', 'menstrual')
@@ -86,7 +86,7 @@ class CyclePhasePresentationTest extends TestCase
     {
         $owner = User::factory()->create();
         $other = User::factory()->create();
-        $start = today()->subDays(2)->toDateString();
+        $start = today()->subDays(28)->toDateString();
 
         $owner->cycleProfile()->create([
             'timezone' => config('app.timezone', 'UTC'),
@@ -97,7 +97,7 @@ class CyclePhasePresentationTest extends TestCase
             'contraception_type' => 'none',
             'cycle_tracking_started_at' => $start,
         ]);
-        $owner->periodLogs()->create(['start_date' => $start]);
+        $owner->periodLogs()->create(['start_date' => $start, 'end_date' => today()->subDays(24)->toDateString()]);
 
         $presentationId = $this->actingAs($owner)->getJson('/api/dashboard')->json('phase_presentation.id');
 
