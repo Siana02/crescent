@@ -221,6 +221,14 @@ class DashboardController extends Controller
                         $canEstimateFertility = $canEstimateCycle
                             && $companionProfile?->contraception_type === 'none'
                             && $companionProfile?->cycle_regularity !== 'irregular';
+
+                        $sharedCyclePhase = app(\\App\\Services\\CyclePhaseCalculator::class)->calculate(
+                            $periodStart,
+                            $todayForCompanion,
+                            $sharedCycleLength,
+                            $companionProfile?->average_period_length,
+                            (bool) $canEstimateFertility,
+                        );
                         $estimatedNextDate = $canEstimateCycle
                             ? $periodStart->addDays((int) $sharedCycleLength)
                             : null;
@@ -230,6 +238,7 @@ class DashboardController extends Controller
                             'last_period_end' => $lastSharedPeriod->end_date?->format('Y-m-d'),
                             'flow_intensity' => $lastSharedPeriod->flow_intensity,
                             'cycle_day' => (int) $periodStart->diffInDays($todayForCompanion) + 1,
+                            'cycle_phase' => $sharedCyclePhase,
                             'estimated_next_period' => $estimatedNextDate?->toDateString(),
                             'period_is_active' => (bool) ($lastSharedPeriod->end_date === null || $lastSharedPeriod->end_date->format('Y-m-d') >= $todayForCompanion->toDateString()),
                             'current_period_day' => ($lastSharedPeriod->end_date === null || $lastSharedPeriod->end_date->format('Y-m-d') >= $todayForCompanion->toDateString()) ? ((int) $periodStart->diffInDays($todayForCompanion) + 1) : null,
