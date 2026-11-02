@@ -21,7 +21,7 @@ type DashboardData = {
  latest_period:{start_date:string;end_date:string|null}|null;
  period_history?:{start_date:string;end_date:string|null}[];
  cycle_day:number|null;estimated_next_period:string|null;days_until_estimate:number|null;
- cycle_phase?:{phase:'menstrual'|'follicular'|'ovulatory'|'luteal'|'unknown';cycle_start_date:string;cycle_start_is_confirmed:boolean;cycle_day:number;is_estimated:boolean;phase_start_date:string|null;next_phase:string|null;next_phase_date:string|null;expected_period_date:string|null;next_period_date:string;ovulation_date:string|null}|null;
+ cycle_phase?:{phase:'menstrual'|'follicular'|'ovulatory'|'luteal'|'unknown';cycle_start_date:string;cycle_start_is_confirmed:boolean;cycle_day:number;is_estimated:boolean;phase_start_date:string|null;next_phase:string|null;next_phase_date:string|null;expected_period_date:string|null;next_period_date:string|null;ovulation_date:string|null}|null;
  phase_presentation?:{id:number;phase:'menstrual'|'follicular'|'ovulatory'|'luteal';cycle_start_date:string;phase_start_date:string;status:'pending'|'dismissed'|'acknowledged';should_present:boolean}|null;
  missed_period_reminder?:boolean;
  fertility_window:{ovulation_date:string;start_date:string;end_date:string}|null;
