@@ -99,8 +99,9 @@ class DashboardController extends Controller
                     'phase_start_date' => $cyclePhase['phase_start_date'],
                 ],
                 [
-                    'status' => 'pending',
+                    'status' => $cyclePhase['phase'] === 'menstrual' && $cyclePhase['cycle_start_is_confirmed'] ? 'acknowledged' : 'pending',
                     'presented_at' => now(),
+                    'responded_at' => $cyclePhase['phase'] === 'menstrual' && $cyclePhase['cycle_start_is_confirmed'] ? now() : null,
                 ],
             );
 
