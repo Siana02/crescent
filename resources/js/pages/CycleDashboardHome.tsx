@@ -4,6 +4,8 @@ import { Cloud, CloudRain, CloudSun, Droplet, Flower2, Heart, Leaf, Moon, Smile,
 import Button from '../components/Button';
 import SharedPartnerSpace from '../components/SharedPartnerSpace';
 import FloralSharedCycleCalendar from '../components/FloralSharedCycleCalendar';
+import CyclePhaseWelcome, { type CyclePhase } from '../components/CyclePhaseWelcome';
+import '../styles/cycle-phase.css';
 import { getMoonPhase } from '../utils/moonPhase';
 import '../styles/cosmic-dashboard.css';
 import '../styles/cycle-history.css';
@@ -16,6 +18,9 @@ type DashboardData = {
  today_sex_logs?:{id:number;log_date:string;sex_drive:number|null;activities:string[];protection_methods:string[];orgasm:boolean|null;notes:string|null}[];
  relationships?:any[];
  fertility_window:{ovulation_date:string;start_date:string;end_date:string}|null;
+ cycle_phase:{phase:'menstrual'|'follicular'|'ovulatory'|'luteal'|'unknown';cycle_start_date:string;cycle_start_is_confirmed:boolean;cycle_day:number;is_estimated:boolean;phase_start_date:string|null;next_phase:string|null;next_phase_date:string|null;expected_period_date:string|null;next_period_date:string;ovulation_date:string|null}|null;
+ phase_presentation:{id:number;phase:CyclePhase;cycle_start_date:string;phase_start_date:string;status:'pending'|'dismissed'|'acknowledged';should_present:boolean}|null;
+ missed_period_reminder?:boolean;
  today_checkin:{log_date:string;energy_level:string|null;mood:string[]|string|null;symptoms:string[];notes:string|null}|null;
 };
 type Props={data:DashboardData;onLogout:()=>Promise<void>;onRefresh:()=>Promise<void>};
@@ -131,6 +136,9 @@ export default function CycleDashboardHome({data,onLogout,onRefresh}:Props){
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState('');
  const [notice,setNotice]=useState('');
+ const [phaseWelcome,setPhaseWelcome]=useState(data.phase_presentation??null);
+ const [phaseWelcomeBusy,setPhaseWelcomeBusy]=useState(false);
+ useEffect(()=>setPhaseWelcome(data.phase_presentation??null),[data.phase_presentation?.id,data.phase_presentation?.status]);
  const today=dateKeyInTimezone(data.profile.timezone||Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC');
  useEffect(()=>{fetch('/api/daily-checkins?dates=1',{credentials:'same-origin',headers:{Accept:'application/json'}}).then(r=>r.ok?r.json():Promise.reject()).then(result=>setCheckinDates(Array.isArray(result.dates)?result.dates:[])).catch(()=>setCheckinDates([]));},[historyRefresh]);
  useEffect(()=>{let cancelled=false;fetch('/api/sex-logs?date='+encodeURIComponent(selectedDate),{credentials:'same-origin',headers:{Accept:'application/json'}}).then(async r=>{if(!r.ok)throw new Error('Could not load private desire logs.');return r.json();}).then(result=>{if(!cancelled)setSelectedSexLogs(Array.isArray(result.logs)?result.logs:[]);}).catch(()=>{if(!cancelled)setSelectedSexLogs([]);});return()=>{cancelled=true;};},[selectedDate,historyRefresh]);
@@ -158,7 +166,11 @@ export default function CycleDashboardHome({data,onLogout,onRefresh}:Props){
  const periodPastEstimate=!hormonal&&data.days_until_estimate!==null&&data.days_until_estimate<0;
  const periodHasEnded=Boolean(data.latest_period?.end_date&&data.latest_period.end_date<today);
  const ovulationToday=!hormonal&&daysToOvulation===0;
- const phase=data.cycle_day==null?'Your cycle story begins when you log a period.':confirmedPeriodToday?'Menstrual phase · confirmed':periodDueToday?'Period expected today · not yet confirmed':periodPastEstimate?'Period estimate has passed':ovulationToday?'Estimated ovulation day':fertile?'Estimated fertile window':periodHasEnded?'Follicular phase (estimated)':data.cycle_day<=5?'Menstrual phase (estimated)':data.cycle_day<=Math.max(6,(data.profile.average_cycle_length??28)-14)?'Follicular phase (estimated)':'Luteal phase (estimated)';
+ const phaseNames:Record<string,string>={menstrual:'Menstrual',follicular:'Follicular',ovulatory:'Ovulatory',luteal:'Luteal'};
+ const currentPhase=data.cycle_phase?.phase??null;
+ const phase=currentPhase&&currentPhase!=='unknown'
+  ? phaseNames[currentPhase]+' phase'+(data.cycle_phase?.is_estimated?' · estimated':'')
+  : data.cycle_day==null?'Your cycle story begins when you log a period.':confirmedPeriodToday?'Menstrual phase':periodDueToday?'Period expected today':periodPastEstimate?'Your cycle timing may have shifted':ovulationToday?'Ovulatory phase':fertile?'Fertile window estimate':'Cycle phase estimate';
  const week=useMemo(()=>{const d=new Date(selectedDate+'T12:00:00');d.setDate(d.getDate()-((d.getDay()+6)%7));return Array.from({length:7},(_,i)=>{const n=new Date(d);n.setDate(d.getDate()+i);return n;});},[selectedDate]);
  const monthDays=useMemo(()=>{const first=new Date(month.getFullYear(),month.getMonth(),1);const count=new Date(month.getFullYear(),month.getMonth()+1,0).getDate();return [...Array((first.getDay()+6)%7).fill(null),...Array.from({length:count},(_,i)=>i+1)];},[month]);
  const selectedMoon=getMoonPhase(new Date(selectedDate+'T12:00:00'));
@@ -189,6 +201,19 @@ export default function CycleDashboardHome({data,onLogout,onRefresh}:Props){
  function openPeriodLog(date=today,ending=false,updating=false){setPeriodStart(ending||updating?(data.latest_period?.start_date??date):date);setPeriodEnd(ending?today:'');setPeriodFlow(data.latest_period?.flow_intensity??'medium');setPeriodMode(ending?'end':updating?'update':'start');setModal('period');}
  function openSymptomsForSelectedDate(){if(historyLoading){setNotice('Loading your selected day…');return;}if(historyError){setError(historyError);return;}const existing=selectedCheckin?.log_date===selectedDate?selectedCheckin:null;setPickedSymptoms(existing?.symptoms??[]);setSymptomMood(existing?.mood??[]);setSymptomNotes(existing?.notes??'');setSeverity(severityFromNotes(existing?.notes));setModal('symptoms');}
  async function saveCheckin(event:FormEvent<HTMLFormElement>){event.preventDefault();setBusy(true);setError('');try{const response=await fetch('/api/daily-checkins',{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-CSRF-TOKEN':csrf()},body:JSON.stringify({log_date:selectedDate,energy_level:energy||null,mood:mood.length?mood:null,symptoms:Array.from(new Set([...(selectedCheckin?.log_date===selectedDate?selectedCheckin.symptoms:[]).filter(s=>!['anxiety','irritability','mood_swings','overwhelmed','low_mood'].includes(s)),...selectedMoodSymptoms(mood)])),notes:checkinNotes.trim()||null})});const result=await response.json();if(!response.ok)throw new Error(errorText(result,'Your check-in could not be saved.'));setSavedCheckin(true);setSelectedCheckin(result.checkin??null);setHistoryRefresh(value=>value+1);await onRefresh();setNotice('Your check-in is saved to your cycle record. Your partner can see it when wellbeing sharing is on. ✧');}catch(e){setError(e instanceof Error?e.message:'Your check-in could not be saved.');}finally{setBusy(false);}}
+ async function respondToPhaseWelcome(action:'confirm'|'dismiss'){
+  if(!phaseWelcome)return;
+  setPhaseWelcomeBusy(true);setError('');
+  try{
+   const response=await fetch('/api/cycle-phase-presentations/'+phaseWelcome.id,{method:'PATCH',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-CSRF-TOKEN':csrf()},body:JSON.stringify({action})});
+   const result=await response.json();
+   if(!response.ok)throw new Error(errorText(result,'Your cycle update could not be saved.'));
+   setPhaseWelcome({...phaseWelcome,status:action==='confirm'?'acknowledged':'dismissed',should_present:false});
+   if(result.period_recorded)setNotice('Your period start has been added to your cycle record. Your calendar and estimates are being refreshed. ✨');
+   await onRefresh();
+  }catch(e){setError(e instanceof Error?e.message:'Your cycle update could not be saved.');}
+  finally{setPhaseWelcomeBusy(false);}
+ }
  async function savePeriod(event:FormEvent<HTMLFormElement>){event.preventDefault();setBusy(true);setError('');try{const response=await fetch('/api/periods',{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-CSRF-TOKEN':csrf()},body:JSON.stringify({start_date:periodStart,end_date:periodEnd||null,flow_intensity:periodFlow})});const result=await response.json();if(!response.ok)throw new Error(errorText(result,'Period log could not be saved.'));setSelectedDate(periodEnd||periodStart);setHistoryRefresh(value=>value+1);await onRefresh();setModal(null);setNotice('Period dates saved. Your cycle, calendar and history have been refreshed. ✨');}catch(e){setError(e instanceof Error?e.message:'Period log could not be saved.');}finally{setBusy(false);}}
  async function saveSymptoms(event:FormEvent<HTMLFormElement>){event.preventDefault();setBusy(true);setError('');try{const logDate=selectedDate>today?today:selectedDate;const all=Array.from(new Set([...pickedSymptoms,...selectedMoodSymptoms(symptomMood)]));const noteLines=symptomNotes.split('\n').filter(line=>!/^Symptom severity:/i.test(line));const notes=[...noteLines,...(all.length?['Symptom severity: '+severity]:[])].filter(Boolean).join('\n')||null;const response=await fetch('/api/daily-checkins',{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-CSRF-TOKEN':csrf()},body:JSON.stringify({log_date:logDate,symptoms:all,mood:symptomMood.length?symptomMood:null,notes})});const result=await response.json();if(!response.ok)throw new Error(errorText(result,'Symptoms could not be saved.'));setSelectedCheckin(result.checkin??null);setHistoryRefresh(value=>value+1);if(logDate===today){setCheckinNotes(result.checkin?.notes??'');setMood(result.checkin?.mood??[]);setEnergy(result.checkin?.energy_level??'');setSavedCheckin(true);}await onRefresh();setModal(null);setNotice('Your symptoms are saved to your cycle record and shared according to your connection preferences. ✧');}catch(e){setError(e instanceof Error?e.message:'Your symptom notes could not be saved.');}finally{setBusy(false);}}
  async function saveSex(event:FormEvent<HTMLFormElement>){event.preventDefault();setBusy(true);setError('');try{const response=await fetch('/api/sex-logs',{method:'POST',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-CSRF-TOKEN':csrf()},body:JSON.stringify({log_date:sexDate,activities,protection_methods:protection,sex_drive:Number(sexDrive),orgasm:orgasm===''?null:orgasm==='yes',notes:sexNotes.trim()||null})});const result=await response.json();if(!response.ok)throw new Error(errorText(result,'Sexual wellbeing log could not be saved.'));setSelectedDate(sexDate);setHistoryRefresh(value=>value+1);await onRefresh();setModal(null);setNotice('Your personal sexual-wellbeing log is saved and shared according to your connection preferences. ✧');}catch(e){setError(e instanceof Error?e.message:'Sexual wellbeing log could not be saved.');}finally{setBusy(false);}}
@@ -202,9 +227,12 @@ export default function CycleDashboardHome({data,onLogout,onRefresh}:Props){
  ];
  const articleOffset=data.cycle_day==null?0:data.cycle_day<=5?1:data.cycle_day<=14?2:data.cycle_day<=17?0:3;
  const recommendedArticles=[...articles.slice(articleOffset),...articles.slice(0,articleOffset)];
- return <div className="cosmic-dashboard">
+ return <div className={'cosmic-dashboard '+(currentPhase&&currentPhase!=='unknown'?'cosmic-dashboard--phase-'+currentPhase:'')} data-cycle-phase={currentPhase??'unknown'}>
  <header className="cosmic-header"><a className="cosmic-brand" href="/" aria-label="Crescent home"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a><nav><a className="is-active" href="/dashboard">Home</a><a href="#moon-calendar">Moon & cycle</a><a href="#read-next">Read & explore</a><a href="/astrology">The Cosmic Atelier</a><a href="/connections">Connections</a><a href="/profile">Profile & settings</a></nav><div className="cosmic-header__right"><span>✦ Just for you</span><button onClick={()=>void onLogout()}>Sign out</button></div><MobileNavigationMenu onLogout={onLogout} /></header>
  <main className="cosmic-main">
+ {phaseWelcome?.should_present&&<CyclePhaseWelcome phase={phaseWelcome.phase} estimated={Boolean(data.cycle_phase?.is_estimated)} busy={phaseWelcomeBusy} onRespond={respondToPhaseWelcome}/>}
+ {data.missed_period_reminder&&<section className="cycle-timing-reminder"><div><p className="cosmic-eyebrow">A LITTLE CHECK-IN</p><h2>A quick cycle check-in 🌙</h2><p>Your period was previously estimated to begin on {data.cycle_phase?.expected_period_date?labelDate(data.cycle_phase.expected_period_date,{month:'long',day:'numeric'}):'an earlier date'}, but we haven’t recorded a start date yet. Your cycle timing may have shifted.</p></div><a href="/cycle-history">Update my cycle ↗</a></section>}
+
  <section className="cosmic-welcome"><div><p className="cosmic-eyebrow">YOUR LITTLE UNIVERSE · {new Intl.DateTimeFormat(undefined,{weekday:'long',month:'long',day:'numeric',timeZone:data.profile.timezone||undefined}).format(new Date(today+'T12:00:00'))}</p><h1>Hello, {firstName}<em>let's tune in.</em></h1><p>Your body isn't a mystery to solve. It's a story you get to know, one day at a time.</p></div><div className="cosmic-welcome__art" aria-hidden="true"><span>🌙</span><i>✦</i><b>✿</b></div></section>
  {data.profile.partner_preference==='co_tracker'&&<section className="co-cycling-portal-banner"><div><p className="cosmic-eyebrow">YOUR CO-CYCLING SPACE · TWO RHYTHMS, ONE SHARED JOURNEY</p><h2>Your cycles, your boundaries, your shared space.</h2><p>Keep your own cycle history private by default, choose what to share in Connections, and use your shared space for check-ins, notes and care that works for both of you.</p></div><a href="/connections">Manage your connection ↗</a></section>}
 
