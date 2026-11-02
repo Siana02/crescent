@@ -58,14 +58,8 @@ class PeriodLogController extends Controller
             ],
         );
 
-        CyclePhasePresentation::query()
-            ->where('user_id', $request->user()->id)
-            ->where('phase', 'menstrual')
-            ->where('status', 'pending')
-            ->whereDate('cycle_start_date', '<=', CarbonImmutable::parse($validated['start_date'], $timezone)->addDays(10)->toDateString())
-            ->update(['status' => 'acknowledged', 'responded_at' => now()]);
-
-        // Any other pending phase welcome was based on the previous timeline.
+        // A newly logged start changes the basis for every pending phase
+        // welcome. The dashboard will mark the matching logged phase as settled.
         CyclePhasePresentation::query()
             ->where('user_id', $request->user()->id)
             ->where('status', 'pending')
