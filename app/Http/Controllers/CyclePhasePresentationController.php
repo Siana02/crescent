@@ -14,9 +14,11 @@ class CyclePhasePresentationController extends Controller
     {
         abort_unless($presentation->user_id === $request->user()->id, 404);
 
+        $timezone = $request->user()->cycleProfile()->value('timezone') ?? config('app.timezone', 'UTC');
+        $today = now($timezone)->toDateString();
         $validated = $request->validate([
             'action' => ['required', Rule::in(['confirm', 'dismiss'])],
-            'start_date' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
+            'start_date' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:'.$today],
         ]);
 
         $periodStartDate = $validated['start_date'] ?? $presentation->phase_start_date->format('Y-m-d');
