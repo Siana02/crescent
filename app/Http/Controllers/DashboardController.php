@@ -76,14 +76,19 @@ class DashboardController extends Controller
         $periodEnd = $latestPeriod?->end_date
             ? CarbonImmutable::parse($latestPeriod->end_date->format('Y-m-d'), $profile->timezone)->startOfDay()
             : null;
-        $periodIsActive = (bool) ($latestPeriod && $lastStart && ($periodEnd === null || $periodEnd->greaterThanOrEqualTo($today)));
-        $currentPeriodDay = $periodIsActive ? ((int) $lastStart->diffInDays($today) + 1) : null;
-
-        $ovulationEstimateAvailable = ! $usesHormonalContraception;
         $periodLengthForEstimate = $latestPeriod?->end_date
             ? (int) CarbonImmutable::parse($latestPeriod->start_date->format('Y-m-d'), $profile->timezone)
                 ->diffInDays(CarbonImmutable::parse($latestPeriod->end_date->format('Y-m-d'), $profile->timezone)) + 1
             : $profile->average_period_length;
+        $estimatedPeriodEnd = $lastStart?->addDays(max(2, min(($periodLengthForEstimate ?: 5), 10)) - 1);
+        $periodIsActive = (bool) ($latestPeriod && $lastStart && (
+            $periodEnd
+                ? $periodEnd->greaterThanOrEqualTo($today)
+                : ($estimatedPeriodEnd && $today->lessThanOrEqualTo($estimatedPeriodEnd))
+        ));
+        $currentPeriodDay = $periodIsActive ? ((int) $lastStart->diffInDays($today) + 1) : null;
+
+        $ovulationEstimateAvailable = ! $usesHormonalContraception;
         $cyclePhase = $isPregnancyJourney ? null : app(\App\Services\CyclePhaseCalculator::class)->calculate(
             $lastStart,
             $today,
@@ -265,6 +270,10 @@ class DashboardController extends Controller
                         $sharedPeriodLength = $lastSharedPeriod->end_date
                             ? (int) $periodStart->diffInDays(CarbonImmutable::parse($lastSharedPeriod->end_date->format('Y-m-d'), $companionTimezone)) + 1
                             : $companionProfile?->average_period_length;
+                        $sharedEstimatedPeriodEnd = $periodStart->addDays(max(2, min(($sharedPeriodLength ?: 5), 10)) - 1);
+                        $sharedPeriodIsActive = $lastSharedPeriod->end_date
+                            ? CarbonImmutable::parse($lastSharedPeriod->end_date->format('Y-m-d'), $companionTimezone)->greaterThanOrEqualTo($todayForCompanion)
+                            : $todayForCompanion->lessThanOrEqualTo($sharedEstimatedPeriodEnd);
                         $sharedCyclePhase = app(\App\Services\CyclePhaseCalculator::class)->calculate(
                             $periodStart,
                             $todayForCompanion,
@@ -300,8 +309,8 @@ class DashboardController extends Controller
                             'cycle_day' => $sharedCyclePhase['cycle_day'] ?? ((int) $periodStart->diffInDays($todayForCompanion) + 1),
                             'cycle_phase' => $sharedCyclePhase,
                             'estimated_next_period' => $estimatedNextDate?->toDateString(),
-                            'period_is_active' => (bool) ($lastSharedPeriod->end_date === null || $lastSharedPeriod->end_date->format('Y-m-d') >= $todayForCompanion->toDateString()),
-                            'current_period_day' => ($lastSharedPeriod->end_date === null || $lastSharedPeriod->end_date->format('Y-m-d') >= $todayForCompanion->toDateString()) ? ((int) $periodStart->diffInDays($todayForCompanion) + 1) : null,
+                            'period_is_active' => (bool) $sharedPeriodIsActive,
+                            'current_period_day' => $sharedPeriodIsActive ? ((int) $periodStart->diffInDays($todayForCompanion) + 1) : null,
                             'average_cycle_length' => $companionProfile?->average_cycle_length,
                             'estimated_cycle_length' => $sharedCycleLength,
                             'average_period_length' => $companionProfile?->average_period_length,
