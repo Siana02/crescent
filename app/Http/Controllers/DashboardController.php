@@ -226,13 +226,23 @@ class DashboardController extends Controller
                             && $companionProfile?->contraception_type === 'none'
                             && $companionProfile?->cycle_regularity !== 'irregular';
 
-                        $sharedCyclePhase = app(\\App\\Services\\CyclePhaseCalculator::class)->calculate(
+                        $sharedCyclePhase = app(\App\Services\CyclePhaseCalculator::class)->calculate(
                             $periodStart,
                             $todayForCompanion,
                             $sharedCycleLength,
                             $companionProfile?->average_period_length,
                             (bool) $canEstimateCycle,
                         );
+
+                        if ($sharedCyclePhase) {
+                            $sharedPhasePresentation = CyclePhasePresentation::query()
+                                ->where('user_id', $companion->id)
+                                ->whereDate('cycle_start_date', $sharedCyclePhase['cycle_start_date'])
+                                ->where('phase', $sharedCyclePhase['phase'])
+                                ->whereDate('phase_start_date', $sharedCyclePhase['phase_start_date'])
+                                ->first();
+                            $sharedCyclePhase['presentation_status'] = $sharedPhasePresentation?->status;
+                        }
                         $estimatedNextDate = $canEstimateCycle
                             ? $periodStart->addDays((int) $sharedCycleLength)
                             : null;
