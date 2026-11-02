@@ -169,7 +169,7 @@ export default function CycleDashboardHome({data,onLogout,onRefresh}:Props){
  const phaseNames:Record<string,string>={menstrual:'Menstrual',follicular:'Follicular',ovulatory:'Ovulatory',luteal:'Luteal'};
  const currentPhase=data.cycle_phase?.phase??null;
  const phase=currentPhase&&currentPhase!=='unknown'
-  ? phaseNames[currentPhase]+' phase'+(data.cycle_phase?.is_estimated?' · estimated':'')
+  ? phaseNames[currentPhase]+' phase'+(data.cycle_phase?.is_estimated&&data.phase_presentation?.status!=='acknowledged'?' · estimated':'')
   : data.cycle_day==null?'Your cycle story begins when you log a period.':confirmedPeriodToday?'Menstrual phase':periodDueToday?'Period expected today':periodPastEstimate?'Your cycle timing may have shifted':ovulationToday?'Ovulatory phase':fertile?'Fertile window estimate':'Cycle phase estimate';
  const week=useMemo(()=>{const d=new Date(selectedDate+'T12:00:00');d.setDate(d.getDate()-((d.getDay()+6)%7));return Array.from({length:7},(_,i)=>{const n=new Date(d);n.setDate(d.getDate()+i);return n;});},[selectedDate]);
  const monthDays=useMemo(()=>{const first=new Date(month.getFullYear(),month.getMonth(),1);const count=new Date(month.getFullYear(),month.getMonth()+1,0).getDate();return [...Array((first.getDay()+6)%7).fill(null),...Array.from({length:count},(_,i)=>i+1)];},[month]);
