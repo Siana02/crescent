@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CyclePhasePresentation;
+
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -52,6 +54,15 @@ class PeriodLogController extends Controller
                 'notes' => $validated['notes'] ?? null,
             ],
         );
+
+        // A manually logged start supersedes any still-pending menstrual
+        // welcome for this or an earlier projected cycle.
+        CyclePhasePresentation::query()
+            ->where('user_id', $request->user()->id)
+            ->where('phase', 'menstrual')
+            ->where('status', 'pending')
+            ->whereDate('cycle_start_date', '<=', CarbonImmutable::parse($validated['start_date'], $timezone)->addDays(10)->toDateString())
+            ->update(['status' => 'acknowledged', 'responded_at' => now()]);
 
         // A period logged soon after returning from postpartum can have started
         // shortly before the user switched journeys. Keep older pregnancy-era
