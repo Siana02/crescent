@@ -190,6 +190,12 @@ class CyclePhasePresentationTest extends TestCase
         $this->getJson('/api/dashboard')
             ->assertOk()
             ->assertJsonPath('missed_period_reminder', false);
+
+        $user->fresh()->cycleProfile->update(['average_cycle_length' => 30]);
+        $revisedReminder = $this->getJson('/api/dashboard')
+            ->assertOk()
+            ->assertJsonPath('missed_period_reminder', true);
+        $this->assertNotSame($expectedDate, $revisedReminder->json('missed_period_reminder_date'));
     }
 
     public function test_acknowledging_a_non_menstrual_phase_does_not_create_a_period_log(): void
