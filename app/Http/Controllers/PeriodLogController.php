@@ -65,6 +65,12 @@ class PeriodLogController extends Controller
             ->whereDate('cycle_start_date', '<=', CarbonImmutable::parse($validated['start_date'], $timezone)->addDays(10)->toDateString())
             ->update(['status' => 'acknowledged', 'responded_at' => now()]);
 
+        // Any other pending phase welcome was based on the previous timeline.
+        CyclePhasePresentation::query()
+            ->where('user_id', $request->user()->id)
+            ->where('status', 'pending')
+            ->update(['status' => 'superseded', 'responded_at' => now()]);
+
         $profile = $request->user()->cycleProfile;
         if ($profile?->active_journey === 'cycle' && $profile->cycle_tracking_started_at) {
             $loggedStart = CarbonImmutable::parse($validated['start_date'], $timezone);
