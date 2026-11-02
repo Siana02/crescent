@@ -13,6 +13,7 @@ class CyclePhasePresentationController extends Controller
     public function respond(Request $request, CyclePhasePresentation $presentation): JsonResponse
     {
         abort_unless($presentation->user_id === $request->user()->id, 404);
+        abort_unless($presentation->status === 'pending', 409);
 
         $timezone = $request->user()->cycleProfile()->value('timezone') ?? config('app.timezone', 'UTC');
         $today = now($timezone)->toDateString();
