@@ -137,3 +137,9 @@
  .cosmic-shared-space-card[class*="cosmic-shared-space-card--phase-"],
  .cosmic-floral-calendar[class*="cosmic-floral-calendar--phase-"] .cosmic-floral-calendar__heading{animation:none}
 }
+
+
+.cycle-timing-reminder__actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.cycle-timing-reminder__dismiss{border:0;background:transparent;color:var(--cycle-phase-ink,#80647a);font:inherit;font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.cycle-timing-reminder__dismiss:disabled{opacity:.55;cursor:wait}
+@media(max-width:640px){.cycle-timing-reminder__actions{align-items:flex-start;flex-direction:column;gap:8px}}
