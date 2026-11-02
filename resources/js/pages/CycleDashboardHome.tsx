@@ -227,7 +227,10 @@ export default function CycleDashboardHome({data,onLogout,onRefresh}:Props){
  ];
  const articleOffset=data.cycle_day==null?0:data.cycle_day<=5?1:data.cycle_day<=14?2:data.cycle_day<=17?0:3;
  const recommendedArticles=[...articles.slice(articleOffset),...articles.slice(0,articleOffset)];
- const phaseLogged=currentPhase==='menstrual'&&Boolean(data.cycle_phase?.cycle_start_is_confirmed);\n const phaseAcknowledged=data.phase_presentation?.status==='acknowledged';\n const phaseVisualStatus=phaseLogged?'logged':phaseAcknowledged?'acknowledged':'estimated';\n return <div className={'cosmic-dashboard '+(currentPhase&&currentPhase!=='unknown'?'cosmic-dashboard--phase-'+currentPhase+' cosmic-dashboard--phase-status-'+phaseVisualStatus:'')} data-cycle-phase={currentPhase??'unknown'} data-cycle-phase-status={phaseVisualStatus}>
+ const phaseLogged=currentPhase==='menstrual'&&Boolean(data.cycle_phase?.cycle_start_is_confirmed);
+ const phaseAcknowledged=data.phase_presentation?.status==='acknowledged';
+ const phaseVisualStatus=phaseLogged?'logged':phaseAcknowledged?'acknowledged':'estimated';
+ return <div className={'cosmic-dashboard '+(currentPhase&&currentPhase!=='unknown'?'cosmic-dashboard--phase-'+currentPhase+' cosmic-dashboard--phase-status-'+phaseVisualStatus:'')} data-cycle-phase={currentPhase??'unknown'} data-cycle-phase-status={phaseVisualStatus}>
  <header className="cosmic-header"><a className="cosmic-brand" href="/" aria-label="Crescent home"><span className="cosmic-brand__mark">☾</span><span>crescent<span>.</span></span></a><nav><a className="is-active" href="/dashboard">Home</a><a href="#moon-calendar">Moon & cycle</a><a href="#read-next">Read & explore</a><a href="/astrology">The Cosmic Atelier</a><a href="/connections">Connections</a><a href="/profile">Profile & settings</a></nav><div className="cosmic-header__right"><span>✦ Just for you</span><button onClick={()=>void onLogout()}>Sign out</button></div><MobileNavigationMenu onLogout={onLogout} /></header>
  <main className="cosmic-main">
  {phaseWelcome?.should_present&&<CyclePhaseWelcome phase={phaseWelcome.phase} estimated={Boolean(data.cycle_phase?.is_estimated)} phaseStartDate={phaseWelcome.phase_start_date} today={today} busy={phaseWelcomeBusy} onRespond={respondToPhaseWelcome}/>}
@@ -260,7 +263,7 @@ export default function CycleDashboardHome({data,onLogout,onRefresh}:Props){
    estimated_fertile_start:hormonal?null:data.fertility_window?.start_date??null,
    estimated_fertile_end:hormonal?null:data.fertility_window?.end_date??null,
    period_history:data.period_history??(data.latest_period?[data.latest_period]:[]),
-   cycle_phase:data.cycle_phase,
+   cycle_phase:data.cycle_phase?{...data.cycle_phase,presentation_status:data.phase_presentation?.status??null}:null,
   }}
   onSelectDate={(date)=>{setSelectedDate(date);const d=new Date(date+'T12:00:00');setMonth(new Date(d.getFullYear(),d.getMonth(),1));}}
   selectedCheckin={selectedCheckin}
