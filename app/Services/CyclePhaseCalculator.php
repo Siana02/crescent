@@ -49,9 +49,6 @@ class CyclePhaseCalculator
             return null;
         }
 
-        // Move the estimate forward by complete expected cycles when a user
-        // returns after an unlogged expected period. Those projected starts
-        // remain estimates until the user records an actual period.
         while ($cycleStart->addDays($cycleLength)->lessThanOrEqualTo($today)) {
             $cycleStart = $cycleStart->addDays($cycleLength);
         }
@@ -60,9 +57,11 @@ class CyclePhaseCalculator
         $nextPeriod = $cycleStart->addDays($cycleLength);
         $menstrualEndExclusive = $cycleStart->addDays($periodLength);
         $follicularStart = $menstrualEndExclusive;
-        $ovulationDate = $nextPeriod->subDays(14);
 
-        // Keep phase boundaries chronologically valid for shorter cycles.
+        // Cycle day 1 is the first period day. In a 28-day cycle, day 14
+        // falls 15 days before the next period start (day 29).
+        $ovulationDate = $nextPeriod->subDays(15);
+
         if ($ovulationDate->lessThanOrEqualTo($follicularStart)) {
             $ovulationDate = $follicularStart->addDay();
         }
