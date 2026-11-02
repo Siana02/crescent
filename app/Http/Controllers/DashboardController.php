@@ -139,9 +139,11 @@ class DashboardController extends Controller
             ];
 
             $projectedStart = CarbonImmutable::parse($cyclePhase['cycle_start_date'], $profile->timezone);
+            $missedPeriodReminderDate = $cyclePhase['expected_period_date'] ?? null;
+            $reminderDismissedFor = $profile->missed_period_reminder_dismissed_for?->format('Y-m-d');
             $missedPeriodReminder = ! $cyclePhase['cycle_start_is_confirmed']
-                && $presentation->status !== 'dismissed'
-                && $today->greaterThan($projectedStart->addDays(max(2, min(($periodLengthForEstimate ?: 5), 10)) - 1));
+                && $today->greaterThan($projectedStart->addDays(max(2, min(($periodLengthForEstimate ?: 5), 10)) - 1))
+                && $missedPeriodReminderDate !== $reminderDismissedFor;
         }
 
         // Keep the next-period and ovulation estimates aligned with the same
@@ -494,6 +496,7 @@ class DashboardController extends Controller
             'cycle_phase' => $cyclePhase,
             'phase_presentation' => $phasePresentation,
             'missed_period_reminder' => $missedPeriodReminder,
+            'missed_period_reminder_date' => $missedPeriodReminder ? ($missedPeriodReminderDate ?? null) : null,
             'relationships' => $relationships,
             'pregnancy' => $pregnancySummary,
             'today_checkin' => $todayCheckin ? [
