@@ -3,9 +3,9 @@ import SiteCredit from '../components/SiteCredit';
 import { ArrowLeft, ArrowRight, ChevronDown, ChevronLeft, ChevronRight, Flower2, Heart, Info, MoonStar, Sparkles } from 'lucide-react';
 import '../styles/cycle-history.css';
 
-type PeriodRecord = { start_date:string; end_date:string|null; flow_intensity?:string|null };
+type PeriodRecord = { id:number; start_date:string; end_date:string|null; flow_intensity?:string|null };
 type DashboardPayload = { user:{name:string}; profile:{display_name:string|null;average_cycle_length:number|null;average_period_length:number|null;timezone:string}; latest_period:PeriodRecord|null; period_history:PeriodRecord[]; cycle_day:number|null; estimated_cycle_length:number|null; estimated_next_period:string|null };
-type CycleRecord = {start:string;end:string;periodEnd:string|null;cycleDays:number|null;periodDays:number|null;current:boolean};
+type CycleRecord = {periodId:number;start:string;end:string;periodEnd:string|null;cycleDays:number|null;periodDays:number|null;current:boolean};
 const dayMs=86400000;
 const fromKey=(value:string)=>new Date(value+'T12:00:00');
 const keyOf=(value:Date)=>value.getFullYear()+'-'+String(value.getMonth()+1).padStart(2,'0')+'-'+String(value.getDate()).padStart(2,'0');
@@ -72,7 +72,7 @@ function CycleHistoryContent(){
  const [error,setError]=useState('');
  const [yearIndex,setYearIndex]=useState(0);
  const [expandedYears,setExpandedYears]=useState<number[]>([]);
- const [touchStart,setTouchStart]=useState<number|null>(null);
+ const [touchStart,setTouchStart]=useState<number|null>(null);\n const [editingPeriodId,setEditingPeriodId]=useState<number|null>(null);\n const [editStartDate,setEditStartDate]=useState('');\n const [correctionBusy,setCorrectionBusy]=useState(false);\n const [correctionError,setCorrectionError]=useState('');\n const [correctionNotice,setCorrectionNotice]=useState('');
  useEffect(()=>{Promise.all([
   fetch('/api/dashboard?timezone='+encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'),{credentials:'same-origin',headers:{Accept:'application/json'}}),
   fetch('/api/periods',{credentials:'same-origin',headers:{Accept:'application/json'}}),
@@ -87,7 +87,7 @@ function CycleHistoryContent(){
    const cycleDays=next?diffDays(p.start_date,next.start_date):null;
    const periodDays=p.end_date?diffDays(p.start_date,p.end_date)+1:null;
    const end=next?addDays(next.start_date,-1):today;
-   return {start:p.start_date,end,periodEnd:p.end_date,cycleDays,periodDays,current:!next};
+   return {periodId:p.id,start:p.start_date,end,periodEnd:p.end_date,cycleDays,periodDays,current:!next};
   }).reverse();
  },[data,today]);
  const years=useMemo(()=>Array.from(new Set(cycles.map(c=>fromKey(c.start).getFullYear()))).sort((a,b)=>b-a),[cycles]);
@@ -95,6 +95,8 @@ function CycleHistoryContent(){
  const selectedYear=years[yearIndex]??new Date(today+'T12:00:00').getFullYear();
  const yearCycles=cycles.filter(c=>fromKey(c.start).getFullYear()===selectedYear);
  const visibleCycles=expandedYears.includes(selectedYear)?yearCycles:yearCycles.slice(0,4);
+ const beginCorrection=(cycle:CycleRecord)=>{setEditingPeriodId(cycle.periodId);setEditStartDate(cycle.start);setCorrectionError('');setCorrectionNotice('');};
+ const saveCorrection=async(event:React.FormEvent<HTMLFormElement>)=>{event.preventDefault();if(!editingPeriodId)return;setCorrectionBusy(true);setCorrectionError('');setCorrectionNotice('');try{const token=document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')??'';const cycle=cycles.find(item=>item.periodId===editingPeriodId);if(!cycle)throw new Error('That period record is no longer available.');const response=await fetch('/api/periods/'+editingPeriodId,{method:'PUT',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-CSRF-TOKEN':token},body:JSON.stringify({start_date:editStartDate,end_date:cycle.periodEnd})});const result=await response.json();if(!response.ok)throw new Error(result.message??'The period date could not be corrected.');setCorrectionNotice('Your corrected date is saved. Crescent has recalculated your cycle timeline and estimates.');setEditingPeriodId(null);window.location.reload();}catch(error){setCorrectionError(error instanceof Error?error.message:'The period date could not be corrected.');}finally{setCorrectionBusy(false);}};
  const previousYear=()=>{setYearIndex(i=>Math.min(years.length-1,i+1));};
  const nextYear=()=>{setYearIndex(i=>Math.max(0,i-1));};
  if(loading)return <main className="ch-page ch-loading">Gathering your cycle petals… ✿</main>;
@@ -111,11 +113,18 @@ function CycleHistoryContent(){
     <div className="ch-period-track" aria-label={cycle.periodDays!==null?cycle.periodDays+' confirmed period days':'Period duration not confirmed'}><span className="ch-period-track__label">Period dates</span>{cycle.periodDays!==null?Array.from({length:Math.min(14,cycle.periodDays)},(_,i)=><span key={i} className="ch-flower ch-flower--period" title={'Confirmed period day '+(i+1)}>✿</span>):<small>End date not recorded</small>}</div>
     <div className="ch-cycle-card__legend"><span><i className="ch-dot period"/>Period</span><span><i className="ch-dot lower"/>Lower estimated fertility</span><span><i className="ch-dot fertile"/>Fertile estimate</span><span><i className="ch-dot ovulation"/>Ovulation estimate</span></div>
     <div className="ch-cycle-facts"><span><b>Period length</b>{cycle.periodDays!==null?cycle.periodDays+' days':'Not recorded'}{cycle.periodDays!==null&&<small className="ch-cycle-range">{cycle.periodDays>=2&&cycle.periodDays<=7?'✓ Within common range':'Outside common range'}</small>}</span><span><b>Period dates</b>{cycle.periodEnd?pretty(cycle.start)+' – '+pretty(cycle.periodEnd):'End date not recorded'}</span></div>
+    <div className="ch-cycle-correction"><button type="button" onClick={()=>beginCorrection(cycle)}>Correct period dates</button></div>
+    {editingPeriodId===cycle.periodId&&<form className="ch-correction-form" onSubmit={saveCorrection}>
+     <label>Correct period start date<input type="date" value={editStartDate} max={today} onChange={event=>setEditStartDate(event.target.value)} required/></label>
+     <p>Changing this date recalculates cycle day, phase timing, future estimates and shared cycle information. Your symptom and wellbeing entries keep their original dates.</p>
+     {correctionError&&<p className="ch-correction-error" role="alert">{correctionError}</p>}
+     <div><button type="submit" disabled={correctionBusy||!editStartDate}>{correctionBusy?'Saving…':'Save corrected date'}</button><button type="button" onClick={()=>setEditingPeriodId(null)}>Cancel</button></div>
+    </form>}
    </article>)}</section>;})}</div>}
    {yearCycles.length>4&&<button type="button" className="ch-show-all" onClick={()=>setExpandedYears(v=>v.includes(selectedYear)?v.filter(y=>y!==selectedYear):[...v,selectedYear])}>{expandedYears.includes(selectedYear)?'Show fewer cycles':'View all '+yearCycles.length+' cycles for '+selectedYear}<ChevronDown size={16}/></button>}
    <p className="ch-swipe-hint">♡ Swipe left or right to move between years</p>
   </section>
-  <section className="ch-chart-panel"><div className="ch-year-heading"><div><p className="ch-eyebrow">YOUR PATTERNS AT A GLANCE</p><h2>Cycle length over time <span>✧</span></h2><p>Completed cycles with two recorded period start dates.</p></div><span className="ch-chart-flower">✿</span></div>
+  {correctionNotice&&<p className="ch-correction-notice" role="status">{correctionNotice}</p>}\n  <section className="ch-chart-panel"><div className="ch-year-heading"><div><p className="ch-eyebrow">YOUR PATTERNS AT A GLANCE</p><h2>Cycle length over time <span>✧</span></h2><p>Completed cycles with two recorded period start dates.</p></div><span className="ch-chart-flower">✿</span></div>
    {cycles.filter(c=>c.cycleDays!==null).length===0?<p className="ch-chart-empty">Log at least two period start dates to see your cycle-length graph.</p>:<div className="ch-chart" role="img" aria-label="Bar chart of recent cycle lengths">{cycles.filter(c=>c.cycleDays!==null).slice(0,8).reverse().map(c=><div className="ch-chart-column" key={c.start}><span>{c.cycleDays}d</span><div className="ch-chart-bar" style={{height:Math.max(12,Math.min(100,((c.cycleDays??0)/45)*100))+'%'}}/><small>{pretty(c.start)}</small></div>)}</div>}
    <p className="ch-chart-note"><Info size={15}/> Cycle lengths use the first day of one period to the first day of the next. Predictions and flower colours are estimates, not contraception or diagnosis.</p>
   </section>
