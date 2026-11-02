@@ -118,6 +118,22 @@ class DashboardController extends Controller
             $missedPeriodReminder = ! $cyclePhase['cycle_start_is_confirmed']
                 && $today->greaterThan($projectedStart->addDays(max(2, min(($profile->average_period_length ?: 5), 10)) - 1));
         }
+
+        // Keep the next-period and ovulation estimates aligned with the same
+        // projected cycle used by the phase timeline after a missed period.
+        if ($cyclePhase && $cyclePhase['phase'] !== 'unknown' && ! $usesHormonalContraception) {
+            $estimatedNext = CarbonImmutable::parse($cyclePhase['next_period_date'], $profile->timezone)->startOfDay();
+
+            if ($profile->contraception_type === 'none' && $profile->cycle_regularity !== 'irregular' && $cyclePhase['ovulation_date']) {
+                $estimatedOvulation = CarbonImmutable::parse($cyclePhase['ovulation_date'], $profile->timezone)->startOfDay();
+                $fertilityWindow = [
+                    'ovulation_date' => $estimatedOvulation->toDateString(),
+                    'start_date' => $estimatedOvulation->subDays(5)->toDateString(),
+                    'end_date' => $estimatedOvulation->addDay()->toDateString(),
+                ];
+            }
+        }
+
         $daysUntilEstimate = null;
 
         if ($estimatedNext) {
@@ -246,7 +262,14 @@ class DashboardController extends Controller
                         $estimatedNextDate = $canEstimateCycle
                             ? $periodStart->addDays((int) $sharedCycleLength)
                             : null;
-                        $estimatedOvulation = $canEstimateFertility ? $estimatedNextDate?->subDays(15) : null;
+                        $estimatedOvulation = $canEstimateFertility ? $estimatedNextDate?->subDays(14) : null;
+
+                        if ($sharedCyclePhase && $sharedCyclePhase['phase'] !== 'unknown' && $canEstimateCycle) {
+                            $estimatedNextDate = CarbonImmutable::parse($sharedCyclePhase['next_period_date'], $companionTimezone)->startOfDay();
+                            if ($canEstimateFertility && $sharedCyclePhase['ovulation_date']) {
+                                $estimatedOvulation = CarbonImmutable::parse($sharedCyclePhase['ovulation_date'], $companionTimezone)->startOfDay();
+                            }
+                        }
                         $sharedCycleSummary = [
                             'last_period_start' => $lastSharedPeriod->start_date->format('Y-m-d'),
                             'last_period_end' => $lastSharedPeriod->end_date?->format('Y-m-d'),
