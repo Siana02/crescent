@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\CyclePhasePresentation;
-
+use App\Models\PeriodLog;
+use App\Services\CrescentPushService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Throwable;
 
 class PeriodLogController extends Controller
 {
@@ -56,8 +58,6 @@ class PeriodLogController extends Controller
             ],
         );
 
-        // A manually logged start supersedes any still-pending menstrual
-        // welcome for this or an earlier projected cycle.
         CyclePhasePresentation::query()
             ->where('user_id', $request->user()->id)
             ->where('phase', 'menstrual')
@@ -65,9 +65,6 @@ class PeriodLogController extends Controller
             ->whereDate('cycle_start_date', '<=', CarbonImmutable::parse($validated['start_date'], $timezone)->addDays(10)->toDateString())
             ->update(['status' => 'acknowledged', 'responded_at' => now()]);
 
-        // A period logged soon after returning from postpartum can have started
-        // shortly before the user switched journeys. Keep older pregnancy-era
-        // history out of the current-cycle overview while allowing recent logs.
         $profile = $request->user()->cycleProfile;
         if ($profile?->active_journey === 'cycle' && $profile->cycle_tracking_started_at) {
             $loggedStart = CarbonImmutable::parse($validated['start_date'], $timezone);
@@ -78,14 +75,14 @@ class PeriodLogController extends Controller
         }
 
         try {
-            $push = app(\\App\\Services\\CrescentPushService::class);
+            $push = app(CrescentPushService::class);
             if ($isNewPeriodStart) {
                 $push->notifyPartners($request->user(), 'partner_menstruating', 'cycle_details', 'crescent:partner-period-start:'.$request->user()->id.':'.$validated['start_date'], 60 * 24 * 30);
             }
             if ($isNewPeriodEnd) {
                 $push->notifyPartners($request->user(), 'partner_period_ended', 'cycle_details', 'crescent:partner-period-end:'.$request->user()->id.':'.$validated['start_date'], 60 * 24 * 30);
             }
-        } catch (\\Throwable $exception) {
+        } catch (Throwable $exception) {
             report($exception);
         }
 
@@ -98,7 +95,7 @@ class PeriodLogController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, \\App\\Models\\PeriodLog $period): JsonResponse
+    public function update(Request $request, PeriodLog $period): JsonResponse
     {
         abort_unless($period->user_id === $request->user()->id, 404);
 
@@ -137,8 +134,6 @@ class PeriodLogController extends Controller
                 $profile->update(['cycle_tracking_started_at' => $validated['start_date']]);
             }
 
-            // A correction changes the basis for every future estimate. Retire
-            // pending welcomes so an outdated phase can never be presented.
             CyclePhasePresentation::query()
                 ->where('user_id', $request->user()->id)
                 ->where('status', 'pending')
