@@ -24,7 +24,7 @@ export default function FloralSharedCycleCalendar({cycle,ownerName='your partner
  const days=useMemo(()=>{const first=new Date(month.getFullYear(),month.getMonth(),1);const count=new Date(month.getFullYear(),month.getMonth()+1,0).getDate();return [...Array((first.getDay()+6)%7).fill(null),...Array.from({length:count},(_,i)=>i+1)];},[month]);
  const {confirmedPeriodDates,estimatedPeriodDates}=useMemo(()=>{
   const confirmed=new Set<string>();const estimated=new Set<string>();
-  const today=todayDate??keyOf(new Date());const expectedDays=Math.max(1,cycle.average_period_length??5);
+  const expectedDays=Math.max(1,cycle.average_period_length??5);
   const records=(cycle.period_history??[]).slice().sort((a,b)=>a.start_date.localeCompare(b.start_date));
   for(const period of records){
    if(period.end_date){for(let d=period.start_date;d<=period.end_date;d=addDays(d,1))confirmed.add(d);continue;}
