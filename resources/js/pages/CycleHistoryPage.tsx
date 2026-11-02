@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import SiteCredit from '../components/SiteCredit';
 import { ArrowLeft, ArrowRight, ChevronDown, ChevronLeft, ChevronRight, Flower2, Heart, Info, MoonStar, Sparkles } from 'lucide-react';
 import '../styles/cycle-history.css';
@@ -95,8 +95,8 @@ function CycleHistoryContent(){
  const selectedYear=years[yearIndex]??new Date(today+'T12:00:00').getFullYear();
  const yearCycles=cycles.filter(c=>fromKey(c.start).getFullYear()===selectedYear);
  const visibleCycles=expandedYears.includes(selectedYear)?yearCycles:yearCycles.slice(0,4);
- const beginCorrection=(cycle:CycleRecord)=>{setEditingPeriodId(cycle.periodId);setEditStartDate(cycle.start);setCorrectionError('');setCorrectionNotice('');};
- const saveCorrection=async(event:React.FormEvent<HTMLFormElement>)=>{event.preventDefault();if(!editingPeriodId)return;setCorrectionBusy(true);setCorrectionError('');setCorrectionNotice('');try{const token=document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')??'';const cycle=cycles.find(item=>item.periodId===editingPeriodId);if(!cycle)throw new Error('That period record is no longer available.');const response=await fetch('/api/periods/'+editingPeriodId,{method:'PUT',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-CSRF-TOKEN':token},body:JSON.stringify({start_date:editStartDate,end_date:cycle.periodEnd})});const result=await response.json();if(!response.ok)throw new Error(result.message??'The period date could not be corrected.');setCorrectionNotice('Your corrected date is saved. Crescent has recalculated your cycle timeline and estimates.');setEditingPeriodId(null);window.location.reload();}catch(error){setCorrectionError(error instanceof Error?error.message:'The period date could not be corrected.');}finally{setCorrectionBusy(false);}};
+ const beginCorrection=(cycle:CycleRecord)=>{setEditingPeriodId(cycle.periodId);setEditStartDate(cycle.start);setCorrectionError('');};
+ const saveCorrection=async(event:FormEvent<HTMLFormElement>)=>{event.preventDefault();if(!editingPeriodId)return;setCorrectionBusy(true);setCorrectionError('');setCorrectionNotice('');try{const token=document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')??'';const cycle=cycles.find(item=>item.periodId===editingPeriodId);if(!cycle)throw new Error('That period record is no longer available.');const response=await fetch('/api/periods/'+editingPeriodId,{method:'PUT',credentials:'same-origin',headers:{Accept:'application/json','Content-Type':'application/json','X-CSRF-TOKEN':token},body:JSON.stringify({start_date:editStartDate,end_date:cycle.periodEnd})});const result=await response.json();if(!response.ok)throw new Error(result.message??'The period date could not be corrected.');setEditingPeriodId(null);window.location.reload();}catch(error){setCorrectionError(error instanceof Error?error.message:'The period date could not be corrected.');}finally{setCorrectionBusy(false);}};
  const previousYear=()=>{setYearIndex(i=>Math.min(years.length-1,i+1));};
  const nextYear=()=>{setYearIndex(i=>Math.max(0,i-1));};
  if(loading)return <main className="ch-page ch-loading">Gathering your cycle petals… ✿</main>;
