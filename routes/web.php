@@ -84,6 +84,7 @@ Route::middleware(['auth', 'active.account'])->group(function () {
     Route::patch('/api/cycle-phase-presentations/{presentation}', [CyclePhasePresentationController::class, 'respond'])->middleware('throttle:30,1');
     Route::get('/api/periods', [PeriodLogController::class, 'index']);
     Route::post('/api/periods', [PeriodLogController::class, 'store']);
+    Route::put('/api/periods/{period}', [PeriodLogController::class, 'update']);
     Route::get('/api/daily-checkins', [DailyCheckinController::class, 'show'])->middleware('throttle:60,1');
     Route::post('/api/daily-checkins', [DailyCheckinController::class, 'store'])->middleware('throttle:30,1');
     Route::get('/api/sex-logs', [SexLogController::class, 'index'])->middleware('throttle:60,1');
