@@ -1,0 +1,67 @@
+/* Crescent's cycle cards keep their layout while their atmosphere follows the current phase. */
+.cosmic-dashboard--phase-menstrual{--cycle-phase-surface:#fff0f4;--cycle-phase-border:#f0cbd7;--cycle-phase-ink:#8f4f68;--cycle-phase-accent:#c66f91}
+.cosmic-dashboard--phase-follicular{--cycle-phase-surface:#fff3e9;--cycle-phase-border:#efd9bd;--cycle-phase-ink:#896b50;--cycle-phase-accent:#c99569}
+.cosmic-dashboard--phase-ovulatory{--cycle-phase-surface:#f5efff;--cycle-phase-border:#ddd0f3;--cycle-phase-ink:#725b91;--cycle-phase-accent:#a38acb}
+.cosmic-dashboard--phase-luteal{--cycle-phase-surface:#f1effb;--cycle-phase-border:#d8d2ec;--cycle-phase-ink:#6c648b;--cycle-phase-accent:#9185b8}
+.cosmic-dashboard--phase-menstrual .cosmic-cycle-hero,
+.cosmic-dashboard--phase-follicular .cosmic-cycle-hero,
+.cosmic-dashboard--phase-ovulatory .cosmic-cycle-hero,
+.cosmic-dashboard--phase-luteal .cosmic-cycle-hero,
+.cosmic-dashboard--phase-menstrual .cosmic-cycle-history-summary,
+.cosmic-dashboard--phase-follicular .cosmic-cycle-history-summary,
+.cosmic-dashboard--phase-ovulatory .cosmic-cycle-history-summary,
+.cosmic-dashboard--phase-luteal .cosmic-cycle-history-summary,
+.cosmic-dashboard--phase-menstrual .cosmic-week-cycle,
+.cosmic-dashboard--phase-follicular .cosmic-week-cycle,
+.cosmic-dashboard--phase-ovulatory .cosmic-week-cycle,
+.cosmic-dashboard--phase-luteal .cosmic-week-cycle{
+ background:linear-gradient(135deg,var(--cycle-phase-surface),#fffdfd 78%);
+ border-color:var(--cycle-phase-border);
+ transition:background-color .45s ease,border-color .45s ease,box-shadow .45s ease;
+}
+.cosmic-dashboard--phase-menstrual .cosmic-cycle-orb,
+.cosmic-dashboard--phase-follicular .cosmic-cycle-orb,
+.cosmic-dashboard--phase-ovulatory .cosmic-cycle-orb,
+.cosmic-dashboard--phase-luteal .cosmic-cycle-orb{color:var(--cycle-phase-ink)}
+.cosmic-dashboard--phase-menstrual .cosmic-cycle-estimate-label,
+.cosmic-dashboard--phase-follicular .cosmic-cycle-estimate-label,
+.cosmic-dashboard--phase-ovulatory .cosmic-cycle-estimate-label,
+.cosmic-dashboard--phase-luteal .cosmic-cycle-estimate-label{color:var(--cycle-phase-accent)}
+.cosmic-dashboard--phase-menstrual .cosmic-cycle-hero{background-image:radial-gradient(circle at 92% 14%,#e9a6bb35 0 2px,transparent 3px),linear-gradient(135deg,var(--cycle-phase-surface),#fffdfd 78%)}
+.cosmic-dashboard--phase-follicular .cosmic-cycle-hero{background-image:radial-gradient(circle at 92% 14%,#d8b48b45 0 2px,transparent 3px),linear-gradient(135deg,var(--cycle-phase-surface),#fffdfd 78%)}
+.cosmic-dashboard--phase-ovulatory .cosmic-cycle-hero{background-image:radial-gradient(circle at 92% 14%,#b8a3e855 0 2px,transparent 3px),linear-gradient(135deg,var(--cycle-phase-surface),#fffdfd 78%)}
+.cosmic-dashboard--phase-luteal .cosmic-cycle-hero{background-image:radial-gradient(circle at 92% 14%,#a9a0d855 0 2px,transparent 3px),linear-gradient(135deg,var(--cycle-phase-surface),#fffdfd 78%)}
+
+/* One-time phase-entry welcome. */
+.cycle-phase-welcome{position:fixed;inset:0;z-index:1200;display:grid;place-items:center;padding:20px}
+.cycle-phase-welcome__backdrop{position:absolute;inset:0;background:rgba(49,34,55,.34);backdrop-filter:blur(7px);animation:cycle-phase-fade-in .28s ease both}
+.cycle-phase-welcome__panel{--welcome-bg:#fff0f4;--welcome-border:#efcbd8;--welcome-ink:#79445a;--welcome-accent:#b65e81;position:relative;width:min(100%,470px);max-height:min(90vh,760px);overflow:auto;padding:34px 32px 27px;border:1px solid var(--welcome-border);border-radius:30px;background:linear-gradient(160deg,var(--welcome-bg),#fffdfd 76%);box-shadow:0 24px 90px #39233a35;text-align:center;animation:cycle-phase-rise-in .38s cubic-bezier(.2,.8,.2,1) both}
+.cycle-phase-welcome--follicular .cycle-phase-welcome__panel{--welcome-bg:#fff3e9;--welcome-border:#efd9bd;--welcome-ink:#80664e;--welcome-accent:#b9875c}
+.cycle-phase-welcome--ovulatory .cycle-phase-welcome__panel{--welcome-bg:#f5efff;--welcome-border:#ddd0f3;--welcome-ink:#6f598b;--welcome-accent:#9276bd}
+.cycle-phase-welcome--luteal .cycle-phase-welcome__panel{--welcome-bg:#f1effb;--welcome-border:#d8d2ec;--welcome-ink:#655d82;--welcome-accent:#887bad}
+.cycle-phase-welcome__close{position:absolute;top:15px;right:15px;display:grid;place-items:center;width:34px;height:34px;border:0;border-radius:50%;background:#fff9;color:var(--welcome-ink);cursor:pointer}
+.cycle-phase-welcome__art{position:relative;display:grid;place-items:center;width:104px;height:104px;margin:0 auto 18px;border-radius:42% 58% 52% 48%;background:radial-gradient(circle at 50% 42%,#fff 0 23%,transparent 24%),linear-gradient(145deg,#ffffffaa,var(--welcome-border));color:var(--welcome-accent);animation:cycle-phase-art-settle .8s ease both}
+.cycle-phase-welcome__spark,.cycle-phase-welcome__petal{position:absolute;color:var(--welcome-accent)}
+.cycle-phase-welcome__spark--one{top:4px;right:8px;font-size:24px}
+.cycle-phase-welcome__spark--two{bottom:5px;left:9px;font-size:17px}
+.cycle-phase-welcome__petal{right:5px;bottom:12px;font-size:21px}
+.cycle-phase-welcome__eyebrow{margin:0 0 10px;color:var(--welcome-accent);font-size:10px;font-weight:800;letter-spacing:.17em}
+.cycle-phase-welcome__panel h2{margin:0;color:var(--welcome-ink);font-family:var(--serif,Georgia,serif);font-size:clamp(30px,7vw,39px);font-weight:400;line-height:1.1}
+.cycle-phase-welcome__panel h3{margin:13px 0 9px;color:var(--welcome-ink);font-size:16px;font-weight:700}
+.cycle-phase-welcome__note{max-width:360px;margin:0 auto;color:#826f7c;font-size:13px;line-height:1.75}
+.cycle-phase-welcome__actions{display:grid;gap:9px;margin-top:23px}
+.cycle-phase-welcome__actions button{min-height:46px;border-radius:999px;font:inherit;font-size:13px;font-weight:750;cursor:pointer;transition:transform .2s ease,background-color .2s ease,opacity .2s ease}
+.cycle-phase-welcome__actions button:hover{transform:translateY(-1px)}
+.cycle-phase-welcome__actions button:disabled{opacity:.55;cursor:wait;transform:none}
+.cycle-phase-welcome__confirm{border:1px solid var(--welcome-accent);background:var(--welcome-accent);color:#fff}
+.cycle-phase-welcome__dismiss{border:1px solid var(--welcome-border);background:#fff9;color:var(--welcome-ink)}
+.cycle-phase-welcome__footnote{margin:17px 0 0;color:#9b8995;font-size:10px;line-height:1.5}
+.cycle-timing-reminder{display:flex;align-items:center;justify-content:space-between;gap:22px;margin:0 0 22px;padding:19px 22px;border:1px solid #e6d9ed;border-radius:20px;background:linear-gradient(120deg,#f7f0fa,#fffafd)}
+.cycle-timing-reminder h2{margin:5px 0;color:#69547c;font-family:var(--serif,Georgia,serif);font-size:24px;font-weight:400}
+.cycle-timing-reminder p:not(.cosmic-eyebrow){max-width:650px;margin:0;color:#8c7b93;font-size:12px;line-height:1.7}
+.cycle-timing-reminder>a{flex:none;color:#80638f;font-size:12px;font-weight:800;text-decoration:none}
+@keyframes cycle-phase-fade-in{from{opacity:0}to{opacity:1}}
+@keyframes cycle-phase-rise-in{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes cycle-phase-art-settle{0%{transform:scale(.9) rotate(-5deg)}65%{transform:scale(1.035) rotate(2deg)}100%{transform:scale(1) rotate(0)}}
+@media(max-width:600px){.cycle-phase-welcome__panel{padding:30px 21px 23px;border-radius:24px}.cycle-timing-reminder{align-items:flex-start;flex-direction:column}.cycle-timing-reminder>a{padding-top:3px}}
+@media(prefers-reduced-motion:reduce){.cycle-phase-welcome__backdrop,.cycle-phase-welcome__panel,.cycle-phase-welcome__art{animation:none}.cycle-phase-welcome__actions button{transition:none}.cosmic-dashboard--phase-menstrual .cosmic-cycle-hero,.cosmic-dashboard--phase-follicular .cosmic-cycle-hero,.cosmic-dashboard--phase-ovulatory .cosmic-cycle-hero,.cosmic-dashboard--phase-luteal .cosmic-cycle-hero{transition:none}}
