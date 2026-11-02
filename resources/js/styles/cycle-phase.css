@@ -67,10 +67,6 @@
 @media(prefers-reduced-motion:reduce){.cycle-phase-welcome__backdrop,.cycle-phase-welcome__panel,.cycle-phase-welcome__art{animation:none}.cycle-phase-welcome__actions button{transition:none}.cosmic-dashboard--phase-menstrual .cosmic-cycle-hero,.cosmic-dashboard--phase-follicular .cosmic-cycle-hero,.cosmic-dashboard--phase-ovulatory .cosmic-cycle-hero,.cosmic-dashboard--phase-luteal .cosmic-cycle-hero{transition:none}}
 
 .cosmic-dashboard--phase-menstrual .cosmic-support-cycle-hero,.cosmic-dashboard--phase-follicular .cosmic-support-cycle-hero,.cosmic-dashboard--phase-ovulatory .cosmic-support-cycle-hero,.cosmic-dashboard--phase-luteal .cosmic-support-cycle-hero{background:linear-gradient(135deg,var(--cycle-phase-surface),#fffdfd 78%);border-color:var(--cycle-phase-border);transition:background-color .45s ease,border-color .45s ease}
-.cosmic-shared-partner-space--phase-menstrual .cosmic-shared-space-card--checkin:not(.cosmic-shared-space-card--cycle-update){background:linear-gradient(135deg,#fff0f4,#fffdfd);border-color:#f0cbd7}
-.cosmic-shared-partner-space--phase-follicular .cosmic-shared-space-card--checkin:not(.cosmic-shared-space-card--cycle-update){background:linear-gradient(135deg,#fff3e9,#fffdfd);border-color:#efd9bd}
-.cosmic-shared-partner-space--phase-ovulatory .cosmic-shared-space-card--checkin:not(.cosmic-shared-space-card--cycle-update){background:linear-gradient(135deg,#f5efff,#fffdfd);border-color:#ddd0f3}
-.cosmic-shared-partner-space--phase-luteal .cosmic-shared-space-card--checkin:not(.cosmic-shared-space-card--cycle-update){background:linear-gradient(135deg,#f1effb,#fffdfd);border-color:#d8d2ec}
 .cosmic-floral-calendar--phase-menstrual{--calendar-phase-surface:#fff0f4;--calendar-phase-border:#f0cbd7;--calendar-phase-ink:#96536d}
 .cosmic-floral-calendar--phase-follicular{--calendar-phase-surface:#fff3e9;--calendar-phase-border:#efd9bd;--calendar-phase-ink:#896b50}
 .cosmic-floral-calendar--phase-ovulatory{--calendar-phase-surface:#f5efff;--calendar-phase-border:#ddd0f3;--calendar-phase-ink:#725b91}
@@ -104,9 +100,6 @@
 .cosmic-dashboard--phase-status-logged .cosmic-week-cycle,
 .cosmic-dashboard--phase-status-logged .cosmic-support-cycle-hero,
 .cosmic-dashboard--phase-status-logged .cosmic-support-care-guide{border-style:solid}
-.cosmic-shared-partner-space--phase-status-estimated .cosmic-shared-space-card--checkin{background-image:linear-gradient(135deg,#ffffffa8,#fffdfd);border-style:dashed}
-.cosmic-shared-partner-space--phase-status-acknowledged .cosmic-shared-space-card--checkin,
-.cosmic-shared-partner-space--phase-status-logged .cosmic-shared-space-card--checkin{border-style:solid}
 .cosmic-floral-calendar--phase-status-estimated .cosmic-floral-calendar__heading{background-image:linear-gradient(135deg,#ffffffa8,#fffdfd);border-style:dashed}
 .cosmic-floral-calendar--phase-status-acknowledged .cosmic-floral-calendar__heading,
 .cosmic-floral-calendar--phase-status-logged .cosmic-floral-calendar__heading{border-style:solid}
