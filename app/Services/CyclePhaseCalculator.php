@@ -1,0 +1,133 @@
+<?php
+
+namespace App\Services;
+
+use Carbon\CarbonImmutable;
+
+class CyclePhaseCalculator
+{
+    /**
+     * Build the current phase from the latest confirmed period start.
+     *
+     * Future cycle starts are projections only. They never create period logs.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function calculate(
+        ?CarbonImmutable $lastConfirmedStart,
+        CarbonImmutable $today,
+        ?int $cycleLength,
+        ?int $periodLength,
+        bool $ovulationEstimateAvailable = true,
+    ): ?array {
+        if (! $lastConfirmedStart) {
+            return null;
+        }
+
+        $periodLength = max(2, min($periodLength ?: 5, 10));
+        $cycleStart = $lastConfirmedStart->startOfDay();
+        $today = $today->startOfDay();
+        $menstrualEndExclusive = $cycleStart->addDays($periodLength);
+
+        if (! $cycleLength || $cycleLength < 18 || $cycleLength > 45) {
+            if ($today->lessThan($menstrualEndExclusive)) {
+                return [
+                    'phase' => 'menstrual',
+                    'cycle_start_date' => $cycleStart->toDateString(),
+                    'cycle_start_is_confirmed' => true,
+                    'cycle_day' => (int) $cycleStart->diffInDays($today) + 1,
+                    'is_estimated' => false,
+                    'phase_start_date' => $cycleStart->toDateString(),
+                    'next_phase' => null,
+                    'next_phase_date' => null,
+                    'expected_period_date' => null,
+                    'next_period_date' => null,
+                    'ovulation_date' => null,
+                ];
+            }
+
+            return null;
+        }
+
+        while ($cycleStart->addDays($cycleLength)->lessThanOrEqualTo($today)) {
+            $cycleStart = $cycleStart->addDays($cycleLength);
+        }
+
+        $cycleStartIsConfirmed = $cycleStart->equalTo($lastConfirmedStart->startOfDay());
+        $nextPeriod = $cycleStart->addDays($cycleLength);
+        $menstrualEndExclusive = $cycleStart->addDays($periodLength);
+        $follicularStart = $menstrualEndExclusive;
+
+        // Cycle day 1 is the first period day. In a 28-day cycle, day 14
+        // falls 15 days before the next period start (day 29).
+        $ovulationDate = $nextPeriod->subDays(15);
+
+        if ($ovulationDate->lessThanOrEqualTo($follicularStart)) {
+            $ovulationDate = $follicularStart->addDay();
+        }
+
+        // Present ovulation as a short estimated phase around the predicted
+        // ovulation day, rather than a single calendar day.
+        $ovulatoryStart = $ovulationDate->subDay();
+        $lutealStart = $ovulationDate->addDays(2);
+
+        if (! $ovulationEstimateAvailable) {
+            if ($today->lessThan($menstrualEndExclusive)) {
+                $phase = 'menstrual';
+                $phaseStart = $cycleStart;
+                $nextPhase = null;
+                $nextPhaseDate = null;
+            } else {
+                return [
+                    'phase' => 'unknown',
+                    'cycle_start_date' => $cycleStart->toDateString(),
+                    'cycle_start_is_confirmed' => $cycleStartIsConfirmed,
+                    'cycle_day' => (int) $cycleStart->diffInDays($today) + 1,
+                    'is_estimated' => true,
+                    'phase_start_date' => null,
+                    'next_phase' => null,
+                    'next_phase_date' => null,
+                    'expected_period_date' => $cycleStartIsConfirmed ? null : $cycleStart->toDateString(),
+                    'next_period_date' => $nextPeriod->toDateString(),
+                    'ovulation_date' => null,
+                ];
+            }
+        } elseif ($today->lessThan($menstrualEndExclusive)) {
+            $phase = 'menstrual';
+            $phaseStart = $cycleStart;
+            $nextPhase = 'follicular';
+            $nextPhaseDate = $follicularStart;
+        } elseif ($today->lessThan($ovulatoryStart)) {
+            $phase = 'follicular';
+            $phaseStart = $follicularStart;
+            $nextPhase = 'ovulatory';
+            $nextPhaseDate = $ovulatoryStart;
+        } elseif ($today->lessThan($lutealStart)) {
+            $phase = 'ovulatory';
+            $phaseStart = $ovulatoryStart;
+            $nextPhase = 'luteal';
+            $nextPhaseDate = $lutealStart;
+        } else {
+            $phase = 'luteal';
+            $phaseStart = $lutealStart;
+            $nextPhase = 'menstrual';
+            $nextPhaseDate = $nextPeriod;
+        }
+
+        $cycleDay = (int) $cycleStart->diffInDays($today) + 1;
+
+        return [
+            'phase' => $phase,
+            'cycle_start_date' => $cycleStart->toDateString(),
+            'cycle_start_is_confirmed' => $cycleStartIsConfirmed,
+            'cycle_day' => $cycleDay,
+            'is_estimated' => ! $cycleStartIsConfirmed || $phase !== 'menstrual',
+            'phase_start_date' => $phaseStart->toDateString(),
+            'next_phase' => $nextPhase,
+            'next_phase_date' => $nextPhaseDate?->toDateString(),
+            'expected_period_date' => $cycleStartIsConfirmed ? null : $cycleStart->toDateString(),
+            'next_period_date' => $nextPeriod->toDateString(),
+            'ovulation_date' => $ovulationEstimateAvailable ? $ovulationDate->toDateString() : null,
+        ];
+    }
+}

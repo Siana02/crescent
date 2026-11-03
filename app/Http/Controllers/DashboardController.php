@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CyclePhasePresentation;
 use App\Models\Relationship;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Cache;
@@ -51,6 +52,7 @@ class DashboardController extends Controller
             ->whereDate('start_date', '>=', $today->subMonths(6)->toDateString())
             ->get()
             ->map(fn ($period) => [
+                'id' => $period->id,
                 'start_date' => $period->start_date->format('Y-m-d'),
                 'end_date' => $period->end_date?->format('Y-m-d'),
                 'flow_intensity' => $period->flow_intensity,
@@ -74,8 +76,92 @@ class DashboardController extends Controller
         $periodEnd = $latestPeriod?->end_date
             ? CarbonImmutable::parse($latestPeriod->end_date->format('Y-m-d'), $profile->timezone)->startOfDay()
             : null;
-        $periodIsActive = (bool) ($latestPeriod && $lastStart && ($periodEnd === null || $periodEnd->greaterThanOrEqualTo($today)));
+        $periodLengthForEstimate = $latestPeriod?->end_date
+            ? (int) CarbonImmutable::parse($latestPeriod->start_date->format('Y-m-d'), $profile->timezone)
+                ->diffInDays(CarbonImmutable::parse($latestPeriod->end_date->format('Y-m-d'), $profile->timezone)) + 1
+            : $profile->average_period_length;
+        $estimatedPeriodEnd = $lastStart?->addDays(max(2, min(($periodLengthForEstimate ?: 5), 10)) - 1);
+        $periodIsActive = (bool) ($latestPeriod && $lastStart && (
+            $periodEnd
+                ? $periodEnd->greaterThanOrEqualTo($today)
+                : ($estimatedPeriodEnd && $today->lessThanOrEqualTo($estimatedPeriodEnd))
+        ));
         $currentPeriodDay = $periodIsActive ? ((int) $lastStart->diffInDays($today) + 1) : null;
+
+        $ovulationEstimateAvailable = ! $usesHormonalContraception;
+        $cyclePhase = $isPregnancyJourney ? null : app(\App\Services\CyclePhaseCalculator::class)->calculate(
+            $lastStart,
+            $today,
+            $cycleLengthForEstimate,
+            $periodLengthForEstimate,
+            $ovulationEstimateAvailable,
+        );
+        $cycleDay = $cyclePhase['cycle_day'] ?? $cycleDay;
+        $phasePresentation = null;
+        $missedPeriodReminder = false;
+        $missedPeriodReminderDate = null;
+
+        if ($cyclePhase && in_array($cyclePhase['phase'], ['menstrual', 'follicular', 'ovulatory', 'luteal'], true)) {
+            CyclePhasePresentation::query()
+                ->where('user_id', $user->id)
+                ->where('status', 'pending')
+                ->where(function ($query) use ($cyclePhase) {
+                    $query->whereDate('cycle_start_date', '!=', $cyclePhase['cycle_start_date'])
+                        ->orWhere('phase', '!=', $cyclePhase['phase'])
+                        ->orWhereDate('phase_start_date', '!=', $cyclePhase['phase_start_date']);
+                })
+                ->update(['status' => 'superseded', 'responded_at' => now()]);
+
+            $presentation = CyclePhasePresentation::firstOrNew([
+                'user_id' => $user->id,
+                'cycle_start_date' => $cyclePhase['cycle_start_date'],
+                'phase' => $cyclePhase['phase'],
+                'phase_start_date' => $cyclePhase['phase_start_date'],
+            ]);
+
+            // If a corrected date later recreates the same phase window, make
+            // it eligible again. Dismissed and acknowledged welcomes stay final.
+            if (! $presentation->exists || $presentation->status === 'superseded') {
+                $loggedMenstrualPhase = $cyclePhase['phase'] === 'menstrual' && $cyclePhase['cycle_start_is_confirmed'];
+                $presentation->fill([
+                    'status' => $loggedMenstrualPhase ? 'acknowledged' : 'pending',
+                    'presented_at' => now(),
+                    'responded_at' => $loggedMenstrualPhase ? now() : null,
+                ])->save();
+            }
+
+            $phasePresentation = [
+                'id' => $presentation->id,
+                'phase' => $presentation->phase,
+                'cycle_start_date' => $presentation->cycle_start_date->format('Y-m-d'),
+                'phase_start_date' => $presentation->phase_start_date->format('Y-m-d'),
+                'status' => $presentation->status,
+                'should_present' => $presentation->status === 'pending',
+            ];
+
+            $projectedStart = CarbonImmutable::parse($cyclePhase['cycle_start_date'], $profile->timezone);
+            $missedPeriodReminderDate = $cyclePhase['expected_period_date'] ?? null;
+            $reminderDismissedFor = $profile->missed_period_reminder_dismissed_for?->format('Y-m-d');
+            $missedPeriodReminder = ! $cyclePhase['cycle_start_is_confirmed']
+                && $today->greaterThan($projectedStart->addDays(max(2, min(($periodLengthForEstimate ?: 5), 10)) - 1))
+                && $missedPeriodReminderDate !== $reminderDismissedFor;
+        }
+
+        // Keep the next-period and ovulation estimates aligned with the same
+        // projected cycle used by the phase timeline after a missed period.
+        if ($cyclePhase && $cyclePhase['phase'] !== 'unknown' && $cyclePhase['next_period_date'] && ! $usesHormonalContraception) {
+            $estimatedNext = CarbonImmutable::parse($cyclePhase['next_period_date'], $profile->timezone)->startOfDay();
+
+            if ($profile->contraception_type === 'none' && $profile->cycle_regularity !== 'irregular' && $cyclePhase['ovulation_date']) {
+                $estimatedOvulation = CarbonImmutable::parse($cyclePhase['ovulation_date'], $profile->timezone)->startOfDay();
+                $fertilityWindow = [
+                    'ovulation_date' => $estimatedOvulation->toDateString(),
+                    'start_date' => $estimatedOvulation->subDays(5)->toDateString(),
+                    'end_date' => $estimatedOvulation->addDay()->toDateString(),
+                ];
+            }
+        }
+
         $daysUntilEstimate = null;
 
         if ($estimatedNext) {
@@ -162,7 +248,11 @@ class DashboardController extends Controller
                 $sharedWellbeingHistory = null;
 
                 if ($companion && $companionJourney && in_array($companionJourney, ['cycle', 'fertility'], true) && $companionPreferences['cycle_details']) {
-                    $sharedPeriods = $companion->periodLogs()->orderByDesc('start_date')->limit(12)->get();
+                    $sharedPeriodQuery = $companion->periodLogs();
+                    if ($companionProfile?->cycle_tracking_started_at) {
+                        $sharedPeriodQuery->whereDate('start_date', '>=', $companionProfile->cycle_tracking_started_at->format('Y-m-d'));
+                    }
+                    $sharedPeriods = $sharedPeriodQuery->orderByDesc('start_date')->limit(12)->get();
                     $lastSharedPeriod = $sharedPeriods->first();
                     if ($lastSharedPeriod) {
                         $companionTimezone = $companionProfile?->timezone ?: config('app.timezone', 'UTC');
@@ -179,18 +269,51 @@ class DashboardController extends Controller
                         $canEstimateFertility = $canEstimateCycle
                             && $companionProfile?->contraception_type === 'none'
                             && $companionProfile?->cycle_regularity !== 'irregular';
+
+                        $sharedPeriodLength = $lastSharedPeriod->end_date
+                            ? (int) $periodStart->diffInDays(CarbonImmutable::parse($lastSharedPeriod->end_date->format('Y-m-d'), $companionTimezone)) + 1
+                            : $companionProfile?->average_period_length;
+                        $sharedEstimatedPeriodEnd = $periodStart->addDays(max(2, min(($sharedPeriodLength ?: 5), 10)) - 1);
+                        $sharedPeriodIsActive = $lastSharedPeriod->end_date
+                            ? CarbonImmutable::parse($lastSharedPeriod->end_date->format('Y-m-d'), $companionTimezone)->greaterThanOrEqualTo($todayForCompanion)
+                            : $todayForCompanion->lessThanOrEqualTo($sharedEstimatedPeriodEnd);
+                        $sharedCyclePhase = app(\App\Services\CyclePhaseCalculator::class)->calculate(
+                            $periodStart,
+                            $todayForCompanion,
+                            $sharedCycleLength,
+                            $sharedPeriodLength,
+                            (bool) $canEstimateCycle,
+                        );
+
+                        if ($sharedCyclePhase) {
+                            $sharedPhasePresentation = CyclePhasePresentation::query()
+                                ->where('user_id', $companion->id)
+                                ->whereDate('cycle_start_date', $sharedCyclePhase['cycle_start_date'])
+                                ->where('phase', $sharedCyclePhase['phase'])
+                                ->whereDate('phase_start_date', $sharedCyclePhase['phase_start_date'])
+                                ->first();
+                            $sharedCyclePhase['presentation_status'] = $sharedPhasePresentation?->status;
+                        }
                         $estimatedNextDate = $canEstimateCycle
                             ? $periodStart->addDays((int) $sharedCycleLength)
                             : null;
-                        $estimatedOvulation = $canEstimateFertility ? $estimatedNextDate?->subDays(15) : null;
+                        $estimatedOvulation = $canEstimateFertility ? $estimatedNextDate?->subDays(14) : null;
+
+                        if ($sharedCyclePhase && $sharedCyclePhase['phase'] !== 'unknown' && $canEstimateCycle) {
+                            $estimatedNextDate = CarbonImmutable::parse($sharedCyclePhase['next_period_date'], $companionTimezone)->startOfDay();
+                            if ($canEstimateFertility && $sharedCyclePhase['ovulation_date']) {
+                                $estimatedOvulation = CarbonImmutable::parse($sharedCyclePhase['ovulation_date'], $companionTimezone)->startOfDay();
+                            }
+                        }
                         $sharedCycleSummary = [
                             'last_period_start' => $lastSharedPeriod->start_date->format('Y-m-d'),
                             'last_period_end' => $lastSharedPeriod->end_date?->format('Y-m-d'),
                             'flow_intensity' => $lastSharedPeriod->flow_intensity,
-                            'cycle_day' => (int) $periodStart->diffInDays($todayForCompanion) + 1,
+                            'cycle_day' => $sharedCyclePhase['cycle_day'] ?? ((int) $periodStart->diffInDays($todayForCompanion) + 1),
+                            'cycle_phase' => $sharedCyclePhase,
                             'estimated_next_period' => $estimatedNextDate?->toDateString(),
-                            'period_is_active' => (bool) ($lastSharedPeriod->end_date === null || $lastSharedPeriod->end_date->format('Y-m-d') >= $todayForCompanion->toDateString()),
-                            'current_period_day' => ($lastSharedPeriod->end_date === null || $lastSharedPeriod->end_date->format('Y-m-d') >= $todayForCompanion->toDateString()) ? ((int) $periodStart->diffInDays($todayForCompanion) + 1) : null,
+                            'period_is_active' => (bool) $sharedPeriodIsActive,
+                            'current_period_day' => $sharedPeriodIsActive ? ((int) $periodStart->diffInDays($todayForCompanion) + 1) : null,
                             'average_cycle_length' => $companionProfile?->average_cycle_length,
                             'estimated_cycle_length' => $sharedCycleLength,
                             'average_period_length' => $companionProfile?->average_period_length,
@@ -358,6 +481,7 @@ class DashboardController extends Controller
                 'cycle_tracking_started_at' => $profile->cycle_tracking_started_at?->format('Y-m-d'),
             ],
             'latest_period' => $latestPeriod ? [
+                'id' => $latestPeriod->id,
                 'start_date' => $latestPeriod->start_date->format('Y-m-d'),
                 'end_date' => $latestPeriod->end_date?->format('Y-m-d'),
                 'flow_intensity' => $latestPeriod->flow_intensity,
@@ -370,6 +494,10 @@ class DashboardController extends Controller
             'estimated_next_period' => $estimatedNext?->toDateString(),
             'days_until_estimate' => $daysUntilEstimate,
             'fertility_window' => $fertilityWindow,
+            'cycle_phase' => $cyclePhase,
+            'phase_presentation' => $phasePresentation,
+            'missed_period_reminder' => $missedPeriodReminder,
+            'missed_period_reminder_date' => $missedPeriodReminder ? ($missedPeriodReminderDate ?? null) : null,
             'relationships' => $relationships,
             'pregnancy' => $pregnancySummary,
             'today_checkin' => $todayCheckin ? [

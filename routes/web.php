@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AstrologyController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CyclePhasePresentationController;
 use App\Http\Controllers\CycleProfileController;
 use App\Http\Controllers\DailyCheckinController;
 use App\Http\Controllers\DashboardController;
@@ -80,8 +81,11 @@ Route::middleware(['auth', 'active.account'])->group(function () {
     Route::get('/api/astrology/week-ahead', [AstrologyController::class, 'weekAhead'])->middleware('throttle:30,1');
     Route::put('/api/cycle-profile', [CycleProfileController::class, 'update']);
     Route::patch('/api/cycle-profile/astrology-consent', [CycleProfileController::class, 'astrologyConsent']);
+    Route::patch('/api/cycle-phase-presentations/{presentation}', [CyclePhasePresentationController::class, 'respond'])->middleware('throttle:30,1');
+    Route::post('/api/cycle-timing-reminder/dismiss', [CyclePhasePresentationController::class, 'dismissMissedPeriodReminder'])->middleware('throttle:10,1');
     Route::get('/api/periods', [PeriodLogController::class, 'index']);
     Route::post('/api/periods', [PeriodLogController::class, 'store']);
+    Route::put('/api/periods/{period}', [PeriodLogController::class, 'update']);
     Route::get('/api/daily-checkins', [DailyCheckinController::class, 'show'])->middleware('throttle:60,1');
     Route::post('/api/daily-checkins', [DailyCheckinController::class, 'store'])->middleware('throttle:30,1');
     Route::get('/api/sex-logs', [SexLogController::class, 'index'])->middleware('throttle:60,1');
