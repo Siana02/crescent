@@ -14,7 +14,6 @@ import EditorialArticlePage from './pages/EditorialArticlePage';
 import CycleHistoryPage from './pages/CycleHistoryPage';
 import LegalPage from './pages/LegalPage';
 import AppUpdater from './components/AppUpdater';
-import NotificationPrompt from './components/NotificationPrompt';
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -60,7 +59,6 @@ createRoot(mount).render(
     <React.StrictMode>
         {page}
         <AppUpdater />
-        {path === '/dashboard' && <NotificationPrompt />}
         {!["/login", "/register", "/"].includes(path) && <InstallAppPrompt />}
     </React.StrictMode>,
 );
