@@ -143,6 +143,7 @@ export default function AuthPage({ mode }: AuthPageProps) {
             else if (isRegister) window.location.assign('/onboarding');
             else if (inviteCode && data.relationship_role !== 'support' && !data.onboarding_completed) window.location.assign(`/onboarding${codeQuery}`);
             else if (inviteCode) window.location.assign(`/connections${codeQuery}`);
+            else if (!data.onboarding_completed) window.location.assign('/onboarding');
             else window.location.assign('/dashboard');
         } catch {
             setError('We could not reach Crescent. Check your connection and try again.');
