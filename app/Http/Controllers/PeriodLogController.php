@@ -108,20 +108,50 @@ class PeriodLogController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $duplicate = $request->user()->periodLogs()
-            ->whereDate('start_date', $validated['start_date'])
-            ->where('id', '!=', $period->id)
-            ->exists();
-
-        if ($duplicate) {
-            return response()->json([
-                'message' => 'A period already starts on that date. Edit that record instead of creating a duplicate.',
-            ], 422);
-        }
-
         $previousStart = $period->start_date->format('Y-m-d');
+        $updatedPeriod = DB::transaction(function () use ($request, $period, $validated, $previousStart) {
+            $duplicate = $request->user()->periodLogs()
+                ->whereDate('start_date', $validated['start_date'])
+                ->where('id', '!=', $period->id)
+                ->lockForUpdate()
+                ->first();
 
-        DB::transaction(function () use ($request, $period, $validated, $previousStart) {
+            if ($duplicate) {
+                // A corrected start can coincide with a separately logged
+                // start (for example, the first bleeding day was logged twice).
+                // Consolidate the records so the corrected period has one
+                // start and retains its end date and user-entered details.
+                $endDates = collect([
+                    $duplicate->end_date?->format('Y-m-d'),
+                    $period->end_date?->format('Y-m-d'),
+                    $validated['end_date'] ?? null,
+                ])->filter()->sort()->values();
+                $notes = collect([$duplicate->notes, $period->notes, $validated['notes'] ?? null])
+                    ->filter(fn ($note) => filled($note))
+                    ->unique()
+                    ->implode("\n");
+
+                $duplicate->update([
+                    'end_date' => $endDates->last(),
+                    'flow_intensity' => $validated['flow_intensity'] ?? $duplicate->flow_intensity ?? $period->flow_intensity,
+                    'notes' => $notes !== '' ? $notes : null,
+                ]);
+                $period->delete();
+                $canonicalPeriod = $duplicate->fresh();
+
+                $profile = $request->user()->cycleProfile;
+                if ($profile?->cycle_tracking_started_at && in_array($profile->cycle_tracking_started_at->format('Y-m-d'), [$previousStart, $validated['start_date']], true)) {
+                    $profile->update(['cycle_tracking_started_at' => $validated['start_date']]);
+                }
+
+                CyclePhasePresentation::query()
+                    ->where('user_id', $request->user()->id)
+                    ->where('status', 'pending')
+                    ->update(['status' => 'superseded', 'responded_at' => now()]);
+
+                return $canonicalPeriod;
+            }
+
             $period->update([
                 'start_date' => $validated['start_date'],
                 'end_date' => $validated['end_date'] ?? null,
@@ -138,14 +168,16 @@ class PeriodLogController extends Controller
                 ->where('user_id', $request->user()->id)
                 ->where('status', 'pending')
                 ->update(['status' => 'superseded', 'responded_at' => now()]);
+
+            return $period->fresh();
         });
 
         return response()->json([
             'period' => [
-                'id' => $period->id,
-                'start_date' => $period->start_date->format('Y-m-d'),
-                'end_date' => $period->end_date?->format('Y-m-d'),
-                'flow_intensity' => $period->flow_intensity,
+                'id' => $updatedPeriod->id,
+                'start_date' => $updatedPeriod->start_date->format('Y-m-d'),
+                'end_date' => $updatedPeriod->end_date?->format('Y-m-d'),
+                'flow_intensity' => $updatedPeriod->flow_intensity,
             ],
             'recalculated' => true,
         ]);
