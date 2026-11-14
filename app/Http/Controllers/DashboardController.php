@@ -46,7 +46,9 @@ class DashboardController extends Controller
             ? CarbonImmutable::parse($previousPeriod->start_date->format('Y-m-d'), $profile->timezone)->startOfDay()
             : null;
         $observedCycleLength = ($lastStart && $previousStart) ? (int) $previousStart->diffInDays($lastStart) : null;
-        $cycleLengthForEstimate = $observedCycleLength ?: $profile->average_cycle_length;
+        $cycleLengthForEstimate = $observedCycleLength && $observedCycleLength >= 18 && $observedCycleLength <= 45
+            ? $observedCycleLength
+            : $profile->average_cycle_length;
         $periodHistory = $isPregnancyJourney ? collect() : (clone $periodQuery)
             ->reorder('start_date')
             ->whereDate('start_date', '>=', $today->subMonths(6)->toDateString())
@@ -263,7 +265,9 @@ class DashboardController extends Controller
                         $observedSharedCycleLength = $previousSharedPeriod
                             ? (int) CarbonImmutable::parse($previousSharedPeriod->start_date->format('Y-m-d'), $companionTimezone)->diffInDays($periodStart)
                             : null;
-                        $sharedCycleLength = $observedSharedCycleLength ?: $companionProfile?->average_cycle_length;
+                        $sharedCycleLength = $observedSharedCycleLength && $observedSharedCycleLength >= 18 && $observedSharedCycleLength <= 45
+                            ? $observedSharedCycleLength
+                            : $companionProfile?->average_cycle_length;
                         $canEstimateCycle = $sharedCycleLength
                             && ! in_array($companionProfile?->contraception_type, $hormonalMethods, true);
                         $canEstimateFertility = $canEstimateCycle
